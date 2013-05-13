@@ -1,5 +1,6 @@
 <?php
 	date_default_timezone_set('UTC');
+	$matchId = 0;
 
 	final class Match{
 		public $id;
@@ -27,9 +28,9 @@
 			else
 				$region = 'XX';
 				
-			if(strpos($title_arr[1], 'Premier') !== false)
+			if(strpos($title_arr[1], 'Premier') !== false || strpos($title_arr[1], 'Code S') !== false)
 				$division = 'P';
-			else if(strpos($title_arr[1], 'Challenger') !== false)
+			else if(strpos($title_arr[1], 'Challenger') !== false || strpos($title_arr[1], 'Code A') !== false)
 				$division = 'C';
 			else
 				$region = 'X';
@@ -46,13 +47,63 @@
 		static function getNum($s){
 			return substr($s, 0, strpos($s, '='));
 		}
+		
+		static function getPlayerName($s, $num){
+			return Match::getValue($s, "player$num");
+		}
+		
+		static function getPlayerRace($s, $num){
+			return Match::getValue($s, "player$num" . "race");
+		}
+		
+		static function getPlayerFlag($s, $num){
+			return Match::getValue($s, "player$num" . "flag");
+		}
+		
+		static function getWinner($s){
+			return Match::getValue($s, 'winner');
+		}
+		
+		static function getNumGames($s){
+			// Note there are sometimes typos in liquipedia's info, so we
+			// count the number of vods.
+			return substr_count($s, 'vodgame');
+		}
+		
+		private static function getValue($s, $key){
+			$keyPos = strpos($s, "|$key=") + strlen($key) + 2;
+			$endPos = strpos($s, '|', $keyPos);
+			$valLength = $endPos - $keyPos;
+			return trim(substr($s, $keyPos, $valLength));
+		}
 	}
 	
 	final class Game{
 		public $mapname;
 		public $mapwinner;
 		public $vodlink;
-		public $setid;
+		public $matchid;
+		
+		public static function getMapName($s, $n){
+			$keyPos = strpos($s, "|map$n=") + strlen($n) + 5;
+			$endPos = strpos($s, "\n", $keyPos);
+			$valLength = $endPos - $keyPos;
+			return trim(substr($s, $keyPos, $valLength));
+		}
+		
+		public static function getMapWinner($s, $n){
+			$keyPos = strpos($s, "|map$n" . 'win=') + strlen($n) + 8;
+			$endPos = strpos($s, '|', $keyPos) - 1;
+			$valLength = $endPos - $keyPos;
+			return trim(substr($s, $keyPos, $valLength));
+		}
+		
+		public static function getVodLink($s, $n){
+			$keyPos = strpos($s, "|vodgame$n=") + strlen($n) + 9;
+			$endPos = strpos($s, "\n", $keyPos);
+			$valLength = $endPos - $keyPos;
+			return trim(substr($s, $keyPos, $valLength));
+		}
 	}
 	
 	final class Schedule{
@@ -137,64 +188,93 @@
 			if(substr($s, 0, 9) != "\n|<small>")
 				continue;
 			$id++;
-			try {
-				$sched->id = $id;
-				$sched->region = Schedule::getRegion($s);
-				$sched->time = Schedule::getTime($s);
-				$sched->division = Schedule::getDivision($s);
-				$roundAndName = Schedule::getRoundAndName($s);
-				$sched->name = Schedule::getName($roundAndName);
-				$sched->round = Schedule::getRound($roundAndName);
-				$scheduleIdMap[$sched->region][$sched->division][$sched->round][$sched->name] = $id;
-				$st->execute((array)$sched);
-			} catch (Exception $e){
-				file_put_contents('errors.txt', $e->getMessage() . "\n", FILE_APPEND);
-			}
+			$sched->id = $id;
+			$sched->region = Schedule::getRegion($s);
+			$sched->time = Schedule::getTime($s);
+			$sched->division = Schedule::getDivision($s);
+			$roundAndName = Schedule::getRoundAndName($s);
+			$sched->name = Schedule::getName($roundAndName);
+			$sched->round = Schedule::getRound($roundAndName);
+			$scheduleIdMap[$sched->region][$sched->division][$sched->round][$sched->name] = $id;
+			$st->execute((array)$sched);
 		}
 	}
 	
 	function parseMatches($title, $mwtext_str){
-		/*
-		|match1={{MatchMaps
-		|vodgame1=http://www.youtube.com/watch?v=75IepHhCUh0&list=SPn9kCgJGjpyL8KjCZeWMoUO4x0_pdwO2F&index=1
-		|vodgame2=http://www.youtube.com/watch?v=Y6aruKHpMaM&list=SPn9kCgJGjpyL8KjCZeWMoUO4x0_pdwO2F&index=2
-		|vodgame3=http://www.youtube.com/watch?v=MfUcakHfWlk&list=SPn9kCgJGjpyL8KjCZeWMoUO4x0_pdwO2F&index=3
-		|player1=KiLLeR |player1race=z |player1flag=cl
-		|player2=aLive |player2race=t |player2flag=kr
-		|winner=1
-		|map1win=2 |map1=Whirlwind
-		|map2win=1 |map2=Cloud Kingdom
-		|map3win=1 |map3=Akilon Wastes
-		*/
-		global $db, $scheduleIdMap;
+		global $db, $scheduleIdMap, $matchId;
 		list($region, $division, $round) = Match::splitTitle($title);
+		$fields[] = "id";
+		$fields[] = "winner";
+		$fields[] = "player1name";
+		$fields[] = "player2name";
+		$fields[] = "player1race";
+		$fields[] = "player2race";
+		$fields[] = "player1flag";
+		$fields[] = "player2flag";
+		$fields[] = "numgames";
+		$fields[] = "matchname";
+		$fields[] = "scheduleid";
+		$fields[] = "matchnum";
+		$colNames = implode (', ', $fields);
+		$valNames = ':' . implode (', :', $fields);
+		$st = $db->prepare("INSERT INTO matches ($colNames) values ($valNames)");
 		$group_arr = explode('{{HiddenSort|', $mwtext_str);
 		$m = new Match();
-		$id = 0;
 		foreach($group_arr as $group_str){
 			if(substr($group_str, 0, 5) != 'Group')
 				continue;
 			$scheduleName = Match::getName($group_str);
-			$scheduleId = $scheduleIdMap[$region][$division][$round][$name];
-			$match_arr = explode('|match', $mwtext_str);
+			if(!array_key_exists($region, $scheduleIdMap) || 
+				!array_key_exists($division, $scheduleIdMap[$region]) ||
+				!array_key_exists($round, $scheduleIdMap[$region][$division]) ||
+				!array_key_exists($scheduleName, $scheduleIdMap[$region][$division][$round]))
+				continue;
+			$scheduleId = $scheduleIdMap[$region][$division][$round][$scheduleName];
+			if($scheduleId == null || $scheduleId = '')
+				$six = 8;
+			$match_arr = explode('|match', $group_str);
 			foreach($match_arr as $match_str){
 				if(strpos($match_str, 'MatchMaps') === false)
 					continue;
-				$id++;
-				$m->id = $id;
+				$matchId++;
+				$m->id = $matchId;
 				$m->matchname = $scheduleName;
 				$m->matchnum = Match::getNum($match_str);
 				$m->scheduleid = $scheduleId;
-				$m->player1name = Match::getPlayerName(1, $match_str);
-				$m->player2name = Match::getPlayerName(2, $match_str);
-				$m->player1race = Match::getPlayerRace(1, $match_str);
-				$m->player2race = Match::getPlayerRace(2, $match_str);
-				$m->player1flag = Match::getPlayerFlag(1, $match_str);
-				$m->player2flag = Match::getPlayerFlag(2, $match_str);
+				$m->player1name = Match::getPlayerName($match_str, 1);
+				$m->player2name = Match::getPlayerName($match_str, 2);
+				$m->player1race = Match::getPlayerRace($match_str, 1);
+				$m->player2race = Match::getPlayerRace($match_str, 2);
+				$m->player1flag = Match::getPlayerFlag($match_str, 1);
+				$m->player2flag = Match::getPlayerFlag($match_str, 2);
 				$m->winner = Match::getWinner($match_str);
 				$m->numgames = Match::getNumGames($match_str);
-				parseGames($match_str, $m->numgames, $id);
+				$st->execute((array)$m);
+				$gamesToParse[] = array($match_str, $m->numgames, $matchId);
 			}
+		}
+		
+		$fields = array();
+		$fields[] = "mapname";
+		$fields[] = "mapwinner";
+		$fields[] = "vodlink";
+		$fields[] = "matchid";
+		$colNames = implode (', ', $fields);
+		$valNames = ':' . implode (', :', $fields);
+		$st = $db->prepare("INSERT INTO games ($colNames) values ($valNames)");
+		foreach($gamesToParse as $unparsedGame){
+			$parsedGames = parseGames($unparsedGame[0], $unparsedGame[1], $unparsedGame[2], $st);
+		}
+	}
+	
+	function parseGames($s, $numGames, $matchId, $st){
+		$g = new Game();
+		for($i = 1; $i <= $numGames; $i++){
+			$g->mapname = Game::getMapName($s, $i);
+			$g->mapwinner = Game::getMapWinner($s, $i);
+			$g->vodlink = Game::getVodLink($s, $i);
+			$g->matchid = $matchId;
+			$st->execute((array)$g);
 		}
 	}
 	
@@ -207,11 +287,16 @@
 	$titles[] = '2013 WCS Season 1 Korea GSL/Code S/Ro16';
 	$url = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&export&exportnowrap&titles=' . implode ('|', $titles);
 	
-	$mediawiki_obj = simplexml_load_file($url);
-	$db = new PDO("sqlite:/home/sam/workspace/wcsapp-server/wcsapp.sqlite");
- 	$db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
-	#parseSchedule($mediawiki_obj->page[0]->revision->text);
-	for($i = 2; $i <= 6; $i++)
-		parseMatches($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text);
-	$db = null;
+	try{
+		$mediawiki_obj = simplexml_load_file($url);
+		$db = new PDO("sqlite:wcsapp.sqlite");
+	 	$db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+		parseSchedule($mediawiki_obj->page[0]->revision->text);
+		for($i = 1; $i <= 6; $i++)
+			parseMatches($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text);
+		$db = null;
+		`echo '.dump' | sqlite3 wcsapp.sqlite | gzip -c > wcsapp.dump.gz`;
+	} catch (Exception $e){
+		file_put_contents('errors.txt', $e->getMessage() . "\n", FILE_APPEND);
+	}
 ?>
