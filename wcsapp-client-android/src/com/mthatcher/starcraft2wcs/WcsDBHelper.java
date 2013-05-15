@@ -1,6 +1,7 @@
 package com.mthatcher.starcraft2wcs;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -13,6 +14,7 @@ public class WcsDBHelper extends SQLiteOpenHelper {
 	public WcsDBHelper(Context context, String cSQL) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 		createSQL = cSQL;
+		System.out.println(cSQL);
 		deleteSQL = "DROP TABLE IF EXISTS matches; DROP TABLE IF EXISTS games; DROP TABLE IF EXISTS schedule;";
 	}
 
@@ -20,9 +22,20 @@ public class WcsDBHelper extends SQLiteOpenHelper {
 	public void onCreate(SQLiteDatabase db) {
 		db.execSQL(createSQL);
 	}
+	
+	@Override
+	public void onOpen(SQLiteDatabase db) {
+		db.execSQL(createSQL);
+	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		db.execSQL(deleteSQL);
+		onCreate(db);
+	}
+
+	@Override
+	public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		db.execSQL(deleteSQL);
 		onCreate(db);
 	}

@@ -7,6 +7,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 import java.util.zip.GZIPInputStream;
 
 import android.net.ConnectivityManager;
@@ -15,9 +18,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import android.view.Menu;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 public class LandingPage extends Activity {
 
@@ -28,13 +34,28 @@ public class LandingPage extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_landing_page);
+
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        AsyncTask<String, Integer, ArrayList<String>> task = null;
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
 		if (networkInfo != null && networkInfo.isConnected()) {
-			new DownloadDataAndUpdateDBTask(getApplicationContext()).execute(DATA_URL);
+			task = new DownloadDataAndUpdateDBTask(getApplicationContext()).execute(DATA_URL);
 		} else {
 			//TODO: Handle this.
 		}
+		
+        ArrayAdapter<String> listAdapter = null;
+		try {
+			listAdapter = new ArrayAdapter<String>(this, R.layout.terranrow, task.get());
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        final ListView listView = (ListView) findViewById(R.id.mainListView);
+        listView.setAdapter( listAdapter );
     }
 
     @Override
@@ -44,14 +65,14 @@ public class LandingPage extends Activity {
         return true;
     }
 
-    private class DownloadDataAndUpdateDBTask extends AsyncTask<String, Integer, Boolean> {
+    private class DownloadDataAndUpdateDBTask extends AsyncTask<String, Integer, ArrayList<String>> {
     	private Context context;
         public DownloadDataAndUpdateDBTask(Context applicationContext) {
         	context = applicationContext;
 		}
 
 		@Override
-        protected Boolean doInBackground(String... urls) {
+        protected ArrayList<String> doInBackground(String... urls) {
             // params comes from the execute() call: params[0] is the url.
         	// 1) Download GZipped SQL
         	InputStream is = downloadGzippedSql(urls[0]);
@@ -60,12 +81,34 @@ public class LandingPage extends Activity {
         	// 3) Execute SQL
         	WcsDBHelper dbHelper = updateDB(sql);
         	// 4) Retrieve relevant matches
-        	SQLiteDatabase db = dbHelper.getReadableDatabase();
+        	ArrayList<String> matchNames = getMatchNames(dbHelper);
         	// 5) Update UI
-			return true;
+			return matchNames;
         }
         
-        private WcsDBHelper updateDB(String sql) {
+        private ArrayList<String> getMatchNames(WcsDBHelper dbHelper) {
+        	publishProgress(40);
+        	ArrayList<String> ret = new ArrayList<String>();
+			SQLiteDatabase db = dbHelper.getReadableDatabase();
+			String table = "schedule";
+			String[] columns = new String[] {"time", "division", "region", "name"};
+			String selection = null;
+			String[] selectionArgs = null;
+			String groupBy = null;
+			String having = null;
+			String orderBy = "time";
+			Cursor c = db.query(table, columns, selection, selectionArgs, groupBy, having, orderBy);
+        	publishProgress(50);
+			c.moveToFirst();
+			while(!c.isLast()){
+				ret.add(c.getString(3));
+			}
+			c.close();
+        	publishProgress(60);
+			return ret;
+		}
+
+		private WcsDBHelper updateDB(String sql) {
         	WcsDBHelper dbHelper = new WcsDBHelper(context, sql);
         	publishProgress(30);
         	return dbHelper;
@@ -120,11 +163,5 @@ public class LandingPage extends Activity {
 		protected void onProgressUpdate(Integer... values) {
 			super.onProgressUpdate(values);
 		}
-
-		// onPostExecute displays the results of the AsyncTask.
-        @Override
-        protected void onPostExecute(Boolean result) {
-            //TODO: Call refresh / repaint to display new dataz
-       }
     }
 }
