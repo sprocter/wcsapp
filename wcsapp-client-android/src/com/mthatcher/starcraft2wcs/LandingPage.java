@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.concurrent.ExecutionException;
 import java.util.zip.GZIPInputStream;
 
@@ -21,9 +22,15 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
+import android.util.Pair;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 public class LandingPage extends Activity {
 
@@ -36,7 +43,7 @@ public class LandingPage extends Activity {
         setContentView(R.layout.activity_landing_page);
 
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        AsyncTask<String, Integer, ArrayList<String>> task = null;
+        AsyncTask<String, Integer, ArrayList<ScheduleEntry>> task = null;
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
 		if (networkInfo != null && networkInfo.isConnected()) {
 			task = new DownloadDataAndUpdateDBTask(getApplicationContext()).execute(DATA_URL);
@@ -44,9 +51,10 @@ public class LandingPage extends Activity {
 			//TODO: Handle this.
 		}
 		
-        ArrayAdapter<String> listAdapter = null;
+        ScheduleAdapter listAdapter = null;
 		try {
-			listAdapter = new ArrayAdapter<String>(this, R.layout.terranrow, task.get());
+			//listAdapter = new ArrayAdapter<String>(this, R.layout.am_row, task.get());
+			listAdapter = new ScheduleAdapter(task.get());
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -64,15 +72,61 @@ public class LandingPage extends Activity {
         getMenuInflater().inflate(R.menu.landing_page, menu);
         return true;
     }
+    
+    private class ScheduleAdapter extends BaseAdapter {
 
-    private class DownloadDataAndUpdateDBTask extends AsyncTask<String, Integer, ArrayList<String>> {
+    	ArrayList<ScheduleEntry> items;
+    	
+    	public ScheduleAdapter(ArrayList<ScheduleEntry> items){
+    		this.items = items;
+    	}
+    	
+		@Override
+		public int getCount() {
+			return items.size();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			return items.get(position);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return position;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			View v = convertView;
+			if(v == null){
+				LayoutInflater vi;
+				vi = LayoutInflater.from(getBaseContext());
+				v = vi.inflate(R.layout.schedule_row, null);
+			}
+			
+			ScheduleEntry item = items.get(position);
+			
+			if(item != null){
+				TextView tv = (TextView) v.findViewById(R.id.rowTextView);
+				if(tv != null){
+					tv.setText(item.getName() + " -- " + item.getTime());
+					tv.setCompoundDrawablesWithIntrinsicBounds(item.getIcon(), 0, 0, 0);
+				}
+			}
+			return v;
+		}
+    	
+    }
+
+    private class DownloadDataAndUpdateDBTask extends AsyncTask<String, Integer, ArrayList<ScheduleEntry>> {
     	private Context context;
         public DownloadDataAndUpdateDBTask(Context applicationContext) {
         	context = applicationContext;
 		}
 
 		@Override
-        protected ArrayList<String> doInBackground(String... urls) {
+        protected ArrayList<ScheduleEntry> doInBackground(String... urls) {
             // params comes from the execute() call: params[0] is the url.
         	// 1) Download GZipped SQL
         	InputStream is = downloadGzippedSql(urls[0]);
@@ -81,14 +135,14 @@ public class LandingPage extends Activity {
         	// 3) Execute SQL
         	WcsDBHelper dbHelper = updateDB(sql);
         	// 4) Retrieve relevant matches
-        	ArrayList<String> matchNames = getMatchNames(dbHelper);
+        	ArrayList<ScheduleEntry> matchNames = getMatchNames(dbHelper);
         	// 5) Update UI
 			return matchNames;
         }
         
-        private ArrayList<String> getMatchNames(WcsDBHelper dbHelper) {
-        	publishProgress(40);
-        	ArrayList<String> ret = new ArrayList<String>();
+        private ArrayList<ScheduleEntry> getMatchNames(WcsDBHelper dbHelper) {
+        	publishProgress(50);
+        	ArrayList<ScheduleEntry> ret = new ArrayList<ScheduleEntry>();
 			SQLiteDatabase db = dbHelper.getReadableDatabase();
 			String table = "schedule";
 			String[] columns = new String[] {"time", "division", "region", "name"};
@@ -98,19 +152,22 @@ public class LandingPage extends Activity {
 			String having = null;
 			String orderBy = "time";
 			Cursor c = db.query(table, columns, selection, selectionArgs, groupBy, having, orderBy);
-        	publishProgress(50);
+        	publishProgress(60);
 			c.moveToFirst();
 			while(!c.isLast()){
-				ret.add(c.getString(3));
+				ret.add(new ScheduleEntry(c.getString(0), c.getString(1), c.getString(2), c.getString(3)));
+				c.move(1);
 			}
 			c.close();
-        	publishProgress(60);
+        	publishProgress(70);
 			return ret;
 		}
 
 		private WcsDBHelper updateDB(String sql) {
-        	WcsDBHelper dbHelper = new WcsDBHelper(context, sql);
+        	WcsDBHelper dbHelper = new WcsDBHelper(context);
         	publishProgress(30);
+        	dbHelper.updateDB(dbHelper.getWritableDatabase(), sql);
+        	publishProgress(40);
         	return dbHelper;
 		}
 
@@ -162,6 +219,97 @@ public class LandingPage extends Activity {
 		@Override
 		protected void onProgressUpdate(Integer... values) {
 			super.onProgressUpdate(values);
+		}
+    }
+    
+    private enum Division {PREMIER, CHALLENGER};
+    private enum Region {AMERICA, EUROPE, KOREA};
+    private enum Race {TERRAN, PROTOSS, ZERG};
+    private enum Country {SE, SK, US}
+    
+    private class PlayerEntry{
+    	private Race race;
+    	private Country country;
+    	private String name;
+    	
+    	public PlayerEntry(String name, String country, String race){
+    		
+    	}
+    }
+    
+    private class ScheduleEntry{
+    	private long time;
+       	private Division division;
+    	private Region region;
+    	private String name;
+    	private ArrayList<PlayerEntry> players; 
+    	
+    	public ScheduleEntry(String time, String division, String region, String name){
+    		this.time = Long.parseLong(time);
+    		this.division = setDivisionFromString(division);
+    		this.region = setRegionFromString(region);
+    		this.name = name;
+    		players = new ArrayList<PlayerEntry>();
+    		players.add(new PlayerEntry("Jinro", "se", "terran"));
+//    		players.add("Boxer");
+//    		players.add("NonY");
+//    		players.add("iNcontroL");
+    	}
+
+		public String getTime() {
+			return new Date(time).toString();
+		}
+
+		public int getIcon() {
+			switch(region){
+			case AMERICA:
+				if(division == Division.PREMIER)
+					return R.drawable.wcsam_logo_small_premier;
+				else if(division == Division.CHALLENGER)
+					return R.drawable.wcsam_logo_small_challenger;
+				else
+					return R.drawable.wcsam_logo_small;
+			case EUROPE:
+				if(division == Division.PREMIER)
+					return R.drawable.wcseu_logo_small_premier;
+				else if(division == Division.CHALLENGER)
+					return R.drawable.wcseu_logo_small_challenger;
+				else
+					return R.drawable.wcseu_logo_small;
+			case KOREA:
+				if(division == Division.PREMIER)
+					return R.drawable.wcskr_logo_small_premier;
+				else if(division == Division.CHALLENGER)
+					return R.drawable.wcskr_logo_small_challenger;
+				else
+					return R.drawable.wcskr_logo_small;
+			default: //TODO: Add leagues to generic logo?
+				return R.drawable.wcs_logo_small;						
+			}
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		private Division setDivisionFromString(String division) {
+			if(division.equalsIgnoreCase("P"))
+				return Division.PREMIER;
+			else if (division.equalsIgnoreCase("C"))
+				return Division.CHALLENGER;
+			else
+				return null;
+		}
+		
+		private Region setRegionFromString(String region){
+			if(region.equalsIgnoreCase("AM"))
+				return Region.AMERICA;
+			else if(region.equalsIgnoreCase("KR"))
+				return Region.KOREA;
+			else if(region.equalsIgnoreCase("EU"))
+				return Region.EUROPE;
+			else
+				return null;
 		}
     }
 }
