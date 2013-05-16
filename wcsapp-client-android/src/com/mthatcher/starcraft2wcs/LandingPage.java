@@ -127,7 +127,6 @@ public class LandingPage extends Activity {
 
 		@Override
         protected ArrayList<ScheduleEntry> doInBackground(String... urls) {
-            // params comes from the execute() call: params[0] is the url.
         	// 1) Download GZipped SQL
         	InputStream is = downloadGzippedSql(urls[0]);
         	// 2) Un-gzip SQL
@@ -145,7 +144,7 @@ public class LandingPage extends Activity {
         	ArrayList<ScheduleEntry> ret = new ArrayList<ScheduleEntry>();
 			SQLiteDatabase db = dbHelper.getReadableDatabase();
 			String table = "schedule";
-			String[] columns = new String[] {"time", "division", "region", "name"};
+			String[] columns = new String[] {"id", "time", "division", "region", "name"};
 			String selection = null;
 			String[] selectionArgs = null;
 			String groupBy = null;
@@ -155,9 +154,10 @@ public class LandingPage extends Activity {
         	publishProgress(60);
 			c.moveToFirst();
 			while(!c.isLast()){
-				ret.add(new ScheduleEntry(c.getString(0), c.getString(1), c.getString(2), c.getString(3)));
+				ret.add(new ScheduleEntry(c.getString(0), c.getString(1), c.getString(2), c.getString(3), c.getString(4)));
 				c.move(1);
 			}
+//			TODO: Start here --> db.compileStatement(sql);
 			c.close();
         	publishProgress(70);
 			return ret;
@@ -233,27 +233,57 @@ public class LandingPage extends Activity {
     	private String name;
     	
     	public PlayerEntry(String name, String country, String race){
-    		
+    		this.name = name;
+    		this.country = getCountryFromString(country);
+    		this.race = getRaceFromString(race);
     	}
+
+		private Race getRaceFromString(String race) {
+			if(race.equalsIgnoreCase("z"))
+				return Race.ZERG;
+			else if(race.equalsIgnoreCase("t"))
+				return Race.TERRAN;
+			else if(race.equalsIgnoreCase("p"))
+				return Race.PROTOSS;
+			else
+				return null;
+		}
+
+		private Country getCountryFromString(String country) {
+			if(country.equalsIgnoreCase("us"))
+				return Country.US;
+			else if(country.equalsIgnoreCase("se"))
+				return Country.SE;
+			else if(country.equalsIgnoreCase("sk"))
+				return Country.SK;
+			else 
+				return null;
+		}
     }
     
     private class ScheduleEntry{
+    	private int id;
     	private long time;
        	private Division division;
     	private Region region;
     	private String name;
     	private ArrayList<PlayerEntry> players; 
     	
-    	public ScheduleEntry(String time, String division, String region, String name){
+    	public ScheduleEntry(String id, String time, String division, String region, String name){
+    		this.id = Integer.parseInt(id);
     		this.time = Long.parseLong(time);
     		this.division = setDivisionFromString(division);
     		this.region = setRegionFromString(region);
     		this.name = name;
     		players = new ArrayList<PlayerEntry>();
-    		players.add(new PlayerEntry("Jinro", "se", "terran"));
-//    		players.add("Boxer");
-//    		players.add("NonY");
-//    		players.add("iNcontroL");
+    	}
+    	
+    	public int getId(){
+    		return id;
+    	}
+    	
+    	public void addPlayer(PlayerEntry player){
+    		players.add(player);
     	}
 
 		public String getTime() {
