@@ -230,7 +230,7 @@
 				!array_key_exists($scheduleName, $scheduleIdMap[$region][$division][$round]))
 				continue;
 			$scheduleId = $scheduleIdMap[$region][$division][$round][$scheduleName];
-			if($scheduleId == null || $scheduleId = '')
+			if($scheduleId == null || $scheduleId == '')
 				$six = 8;
 			$match_arr = explode('|match', $group_str);
 			foreach($match_arr as $match_str){
@@ -291,6 +291,12 @@
 		$mediawiki_obj = simplexml_load_file($url);
 		$db = new PDO("sqlite:wcsapp.sqlite");
 	 	$db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+	 	$db->exec('DROP TABLE IF EXISTS games');
+	 	$db->exec('DROP TABLE IF EXISTS matches');
+	 	$db->exec('DROP TABLE IF EXISTS schedule');
+	 	$db->exec('CREATE TABLE "games" ("id" INTEGER PRIMARY KEY  NOT NULL ,"mapname" TEXT,"mapwinner" INTEGER DEFAULT (null) ,"vodlink" TEXT,"matchid" INTEGER NOT NULL  DEFAULT (null) );');
+	 	$db->exec('CREATE TABLE "matches" ("id" INTEGER PRIMARY KEY  NOT NULL ,"winner" TEXT,"player1name" TEXT,"player2name" TEXT,"player1race" TEXT,"player2race" TEXT,"player1flag" TEXT,"player2flag" TEXT,"numgames" INTEGER DEFAULT (null) ,"matchname" TEXT,"scheduleid" INTEGER NOT NULL  DEFAULT (null) , "matchnum" INTEGER);');
+	 	$db->exec('CREATE TABLE "schedule" ("id" INTEGER PRIMARY KEY NOT NULL ,"time" INTEGER,"division" TEXT,"region" TEXT,"name" TEXT, "round" TEXT);');
 		parseSchedule($mediawiki_obj->page[0]->revision->text);
 		for($i = 1; $i <= 6; $i++)
 			parseMatches($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text);
