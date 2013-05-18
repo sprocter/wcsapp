@@ -178,6 +178,37 @@
 		}
 	}
 
+	final class Participant{
+		public $name;
+		public $flag;
+		public $race;
+		public $place;
+		public $matcheswon;
+		public $matcheslost;
+		public $mapswon;
+		public $mapslost;
+		public $result;
+		public $scheduleid;
+		
+		public static function getGroupName($s){
+			return trim(substr($s, 0, strpos($s, "}}")));
+		}
+		
+		public static function getName($s){
+			$dblCurlyBracePos = strpos($s, "}}");
+			$pipePos = strrpos(substr($s, 0, $dblCurlyBracePos), '|') + 1;
+			$nameLength = $dblCurlyBracePos - $pipePos;
+			return trim(substr($s, $pipePos, $nameLength));		
+		}
+		
+		public static function getValue($s, $key){
+			$keyPos = strpos($s, "|$key=") + strlen($key) + 2;
+			$endPos = strpos($s, '|', $keyPos);
+			$valLength = $endPos - $keyPos;
+			return trim(substr($s, $keyPos, $valLength));
+		}
+	}
+
 	function parseSchedule($mwtext_str){
 		global $db, $scheduleIdMap;
 		$mwsched_arr = explode('Countdown',$mwtext_str);
@@ -230,8 +261,8 @@
 				!array_key_exists($scheduleName, $scheduleIdMap[$region][$division][$round]))
 				continue;
 			$scheduleId = $scheduleIdMap[$region][$division][$round][$scheduleName];
-			if($scheduleId == null || $scheduleId == '')
-				$six = 8;
+			//if($scheduleId == null || $scheduleId == '')
+				// Shouldn't happen...
 			$match_arr = explode('|match', $group_str);
 			foreach($match_arr as $match_str){
 				if(strpos($match_str, 'MatchMaps') === false)
@@ -267,6 +298,54 @@
 		}
 	}
 	
+	function parseParticipants($title, $mwtext_str){
+		global $db, $scheduleIdMap;
+		list($region, $division, $round) = Match::splitTitle($title);
+		//TODO: Refactor this query generation into a function?
+		$fields[] = "name";
+		$fields[] = "flag";
+		$fields[] = "race";
+		$fields[] = "place";
+		$fields[] = "matcheswon";
+		$fields[] = "matcheslost";
+		$fields[] = "mapswon";
+		$fields[] = "mapslost";
+		$fields[] = "result";
+		$fields[] = "scheduleid";
+		$colNames = implode (', ', $fields);
+		$valNames = ':' . implode (', :', $fields);
+		$st = $db->prepare("INSERT INTO participants ($colNames) values ($valNames)");
+		$group_arr = explode('{{HiddenSort|', $mwtext_str);
+		foreach ($group_arr as $group_str){
+			if(substr($group_str, 0, 5) != "Group")
+				continue;
+			$scheduleName = Participant::getGroupName($group_str);
+			$partipant_arr = explode('{{GroupTableSlot|', $group_str);
+			$p = new Participant();
+			foreach($partipant_arr as $s){
+				if(substr($s, 0, 9) != " {{player")
+					continue;
+				$p->name = Participant::getName($s);
+				$p->flag = Participant::getValue($s, 'flag');
+				$p->race = Participant::getValue($s, 'race');
+				$p->place = Participant::getValue($s, 'place');
+				$p->matcheswon = Participant::getValue($s, 'win_m');
+				$p->matcheslost = Participant::getValue($s, 'lose_m');
+				$p->mapswon = Participant::getValue($s, 'win_g');
+				$p->mapslost = Participant::getValue($s, 'lose_g');
+				$p->result = Participant::getValue($s, 'bg');
+				//TODO: Put this in it's own method...
+				if(!array_key_exists($region, $scheduleIdMap) || 
+				!array_key_exists($division, $scheduleIdMap[$region]) ||
+				!array_key_exists($round, $scheduleIdMap[$region][$division]) ||
+				!array_key_exists($scheduleName, $scheduleIdMap[$region][$division][$round]))
+					continue;
+				$scheduleId = $scheduleIdMap[$region][$division][$round][$scheduleName];
+				$st->execute((array)$p);
+			}
+		}
+	}
+	
 	function parseGames($s, $numGames, $matchId, $st){
 		$g = new Game();
 		for($i = 1; $i <= $numGames; $i++){
@@ -294,12 +373,16 @@
 	 	$db->exec('DROP TABLE IF EXISTS games');
 	 	$db->exec('DROP TABLE IF EXISTS matches');
 	 	$db->exec('DROP TABLE IF EXISTS schedule');
+	 	$db->exec('DROP TABLE IF EXISTS participants');
 	 	$db->exec('CREATE TABLE "games" ("id" INTEGER PRIMARY KEY  NOT NULL ,"mapname" TEXT,"mapwinner" INTEGER DEFAULT (null) ,"vodlink" TEXT,"matchid" INTEGER NOT NULL  DEFAULT (null) );');
 	 	$db->exec('CREATE TABLE "matches" ("id" INTEGER PRIMARY KEY  NOT NULL ,"winner" TEXT,"player1name" TEXT,"player2name" TEXT,"player1race" TEXT,"player2race" TEXT,"player1flag" TEXT,"player2flag" TEXT,"numgames" INTEGER DEFAULT (null) ,"matchname" TEXT,"scheduleid" INTEGER NOT NULL  DEFAULT (null) , "matchnum" INTEGER);');
 	 	$db->exec('CREATE TABLE "schedule" ("id" INTEGER PRIMARY KEY NOT NULL ,"time" INTEGER,"division" TEXT,"region" TEXT,"name" TEXT, "round" TEXT);');
+	 	$db->exec('CREATE TABLE "participants" ("id" INTEGER PRIMARY KEY NOT NULL, "name" TEXT, "flag" TEXT, "race" TEXT, "place" INTEGER, "matcheswon" INTEGER, "matcheslost" INTEGER, "mapswon" INTEGER, "mapslost" INTEGER, "result" TEXT, "scheduleid" INTEGER)');
 		parseSchedule($mediawiki_obj->page[0]->revision->text);
-		for($i = 1; $i <= 6; $i++)
+		for($i = 1; $i <= 6; $i++){
 			parseMatches($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text);
+			parseParticipants($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text);
+		}
 		$db = null;
 		`echo '.dump' | sqlite3 wcsapp.sqlite | gzip -c > wcsapp.dump.gz`;
 	} catch (Exception $e){
