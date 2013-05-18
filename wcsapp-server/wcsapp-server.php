@@ -198,7 +198,25 @@
 			$dblCurlyBracePos = strpos($s, "}}");
 			$pipePos = strrpos(substr($s, 0, $dblCurlyBracePos), '|') + 1;
 			$nameLength = $dblCurlyBracePos - $pipePos;
-			return trim(substr($s, $pipePos, $nameLength));		
+			$name = trim(substr($s, $pipePos, $nameLength));
+			if(strpos($name, '=') !== false){
+				$equalsPos = strpos($name, '=') + 1;
+				$spacePos = strpos($name, ' ');
+				$nameLength = $spacePos - $equalsPos;
+				$name = substr($name, $equalsPos, $nameLength);
+			}
+			return $name;		
+		}
+		
+		public static function getResult($s){
+			if(strpos($s, '|bg=') !== false)
+				$key = 'bg';
+			else
+				$key = 'pbg';
+			$keyPos = strpos($s, "|$key=") + strlen($key) + 2;
+			$endPos = strpos($s, '}}', $keyPos);
+			$valLength = $endPos - $keyPos;
+			return trim(substr($s, $keyPos, $valLength));			
 		}
 		
 		public static function getValue($s, $key){
@@ -333,14 +351,14 @@
 				$p->matcheslost = Participant::getValue($s, 'lose_m');
 				$p->mapswon = Participant::getValue($s, 'win_g');
 				$p->mapslost = Participant::getValue($s, 'lose_g');
-				$p->result = Participant::getValue($s, 'bg');
+				$p->result = Participant::getResult($s);
 				//TODO: Put this in it's own method...
 				if(!array_key_exists($region, $scheduleIdMap) || 
 				!array_key_exists($division, $scheduleIdMap[$region]) ||
 				!array_key_exists($round, $scheduleIdMap[$region][$division]) ||
 				!array_key_exists($scheduleName, $scheduleIdMap[$region][$division][$round]))
 					continue;
-				$scheduleId = $scheduleIdMap[$region][$division][$round][$scheduleName];
+				$p->scheduleid = $scheduleIdMap[$region][$division][$round][$scheduleName];
 				$st->execute((array)$p);
 			}
 		}
