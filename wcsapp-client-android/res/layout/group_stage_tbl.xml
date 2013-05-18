@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/group_stage_tbl"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:shrinkColumns="*"
+    android:stretchColumns="*" >
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal" >
+
+        <TextView
+            android:id="@+id/schedule_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_span="6"
+            android:text="Group Name"
+            android:textColor="#000"
+            android:textSize="18sp" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal" >
+
+        <TextView
+            android:id="@+id/schedule_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_span="6"
+            android:text="Group Date"
+            android:textColor="#000"
+            android:textSize="18sp" />
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/group_stage_participant"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/player_1_rank"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="1. "
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_1_flag"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="SK"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_1_race"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="T"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_1_name"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Jinro"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_1_match_score"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="2-0"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_1_map_score"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="4-0"
+            android:textColor="#000000" />
+    </TableRow>
+
+    <TableRow>
+
+        <TextView
+            android:id="@+id/player_2_rank"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="2. "
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_2_flag"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="SK"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_2_race"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="T"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_2_name"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Jinro"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_2_match_score"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="2-0"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_2_map_score"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="4-0"
+            android:textColor="#000000" />
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/group_stage_participant"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/player_3_rank"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="3. "
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_3_flag"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="SK"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_3_race"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="T"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_3_name"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Jinro"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_3_match_score"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="2-0"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_3_map_score"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="4-0"
+            android:textColor="#000000" />
+    </TableRow>
+
+    <TableRow>
+
+        <TextView
+            android:id="@+id/player_4_rank"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="4. "
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_4_flag"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="SK"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_4_race"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="T"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_4_name"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Jinro"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_4_match_score"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="2-0"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/player_4_map_score"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="4-0"
+            android:textColor="#000000" />
+    </TableRow>
+
+</TableLayout>

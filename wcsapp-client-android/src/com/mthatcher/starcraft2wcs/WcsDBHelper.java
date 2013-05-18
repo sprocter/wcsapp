@@ -3,14 +3,14 @@ package com.mthatcher.starcraft2wcs;
 import java.util.StringTokenizer;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class WcsDBHelper extends SQLiteOpenHelper {
 	public static final int DATABASE_VERSION = 1;
 	public static final String DATABASE_NAME = "sc2wcs.sqlite";
-	private String DELETE_SQL = "DROP TABLE IF EXISTS matches; DROP TABLE IF EXISTS games; DROP TABLE IF EXISTS schedule;";
+	private String DELETE_SQL = "DROP TABLE IF EXISTS matches; DROP TABLE IF EXISTS games;" +
+			" DROP TABLE IF EXISTS schedule; DROP TABLE IF EXISTS participants";
 	
 	public WcsDBHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -23,10 +23,8 @@ public class WcsDBHelper extends SQLiteOpenHelper {
 
 	private void splitAndRunQueries(SQLiteDatabase db, String batchSQL) {
 		StringTokenizer tok = new StringTokenizer(batchSQL, ";");
-		String temp;
 		while(tok.hasMoreTokens()){
-			temp = tok.nextToken();
-			db.execSQL(temp);
+			db.execSQL(tok.nextToken());
 		}
 	}
 
