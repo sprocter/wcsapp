@@ -7,37 +7,34 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
 import java.util.zip.GZIPInputStream;
 
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.AsyncTask;
-import android.os.Bundle;
 import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
+import android.os.Bundle;
 import android.util.Log;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
-import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 
 public class LandingPage extends Activity {
 
 	private final String DATA_URL = "http://skorchedearth.com/sandbox/wcsapp/wcsapp/wcsapp-server/wcsapp.dump.gz";
 	private final String DEBUG_TAG = "LANDING PAGE";
+	public int startPos;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +65,7 @@ public class LandingPage extends Activity {
 		}
 		final ListView listView = (ListView) findViewById(R.id.mainListView);
 		listView.setAdapter(listAdapter);
+		listView.setSelection(startPos);
 	}
 
 	@Override
@@ -80,6 +78,16 @@ public class LandingPage extends Activity {
 	private class ScheduleAdapter extends BaseAdapter {
 
 		ArrayList<ScheduleEntry> items;
+
+		@Override
+		public boolean hasStableIds(){
+			return true;
+		}
+		
+		public int getStartingPosition() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
 
 		public ScheduleAdapter(ArrayList<ScheduleEntry> items) {
 			this.items = items;
@@ -102,116 +110,94 @@ public class LandingPage extends Activity {
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			View v = convertView;
-			if (v == null) {
+			ViewHolder holder;
+			if (convertView == null) {
 				LayoutInflater vi;
 				vi = LayoutInflater.from(getBaseContext());
-				v = vi.inflate(R.layout.group_stage_tbl, null);
+				convertView = vi.inflate(R.layout.group_stage_tbl, parent, false);
+				convertView.setPadding(15, 15, 15, 15);
+				holder = new ViewHolder();
+				holder.groupName = (TextView) convertView.findViewById(R.id.schedule_name);
+				holder.date = (TextView) convertView.findViewById(R.id.schedule_date);
+				holder.playerName[0] = (TextView) convertView.findViewById(R.id.player_1_name);
+				holder.playerName[1] = (TextView) convertView.findViewById(R.id.player_2_name);
+				holder.playerName[2] = (TextView) convertView.findViewById(R.id.player_3_name);
+				holder.playerName[3] = (TextView) convertView.findViewById(R.id.player_4_name);
+				holder.rank[0] = (TextView) convertView.findViewById(R.id.player_1_rank);
+				holder.rank[1] = (TextView) convertView.findViewById(R.id.player_2_rank);
+				holder.rank[2] = (TextView) convertView.findViewById(R.id.player_3_rank);
+				holder.rank[3] = (TextView) convertView.findViewById(R.id.player_4_rank);
+				holder.flag[0] = (TextView) convertView.findViewById(R.id.player_1_flag);
+				holder.flag[1] = (TextView) convertView.findViewById(R.id.player_2_flag);
+				holder.flag[2] = (TextView) convertView.findViewById(R.id.player_3_flag);
+				holder.flag[3] = (TextView) convertView.findViewById(R.id.player_4_flag);
+				holder.race[0] = (TextView) convertView.findViewById(R.id.player_1_race);
+				holder.race[1] = (TextView) convertView.findViewById(R.id.player_2_race);
+				holder.race[2] = (TextView) convertView.findViewById(R.id.player_3_race);
+				holder.race[3] = (TextView) convertView.findViewById(R.id.player_4_race);
+				holder.matchScore[0] = (TextView) convertView.findViewById(R.id.player_1_match_score);
+				holder.matchScore[1] = (TextView) convertView.findViewById(R.id.player_2_match_score);
+				holder.matchScore[2] = (TextView) convertView.findViewById(R.id.player_3_match_score);
+				holder.matchScore[3] = (TextView) convertView.findViewById(R.id.player_4_match_score);
+				holder.mapScore[0] = (TextView) convertView.findViewById(R.id.player_1_map_score);
+				holder.mapScore[1] = (TextView) convertView.findViewById(R.id.player_2_map_score);
+				holder.mapScore[2] = (TextView) convertView.findViewById(R.id.player_3_map_score);
+				holder.mapScore[3] = (TextView) convertView.findViewById(R.id.player_4_map_score);
+				convertView.setTag(holder);
+			} else {
+				holder = (ViewHolder) convertView.getTag();
 			}
 
 			ScheduleEntry item = items.get(position);
 
 			if (item != null) {
-				TextView scheduleNameView = (TextView) v
-						.findViewById(R.id.schedule_name);
-				TextView scheduleDateView = (TextView) v
-						.findViewById(R.id.schedule_date);
-
-				scheduleNameView.setText(item.getName());
-				scheduleDateView.setText(item.getTime());
-				if (item.getNumPlayers() > 0) {
-					TextView player1Rank = (TextView) v
-							.findViewById(R.id.player_1_rank);
-					TextView player1Flag = (TextView) v
-							.findViewById(R.id.player_1_flag);
-					TextView player1Race = (TextView) v
-							.findViewById(R.id.player_1_race);
-					TextView player1Name = (TextView) v
-							.findViewById(R.id.player_1_name);
-					TextView player1MatchScore = (TextView) v
-							.findViewById(R.id.player_1_match_score);
-					TextView player1MapScore = (TextView) v
-							.findViewById(R.id.player_1_map_score);
-					player1Rank.setText(Integer.toString(item.getPlayer(0).getPlace()));
-					player1Flag.setText(item.getPlayer(0).getCountry());
-					player1Race.setText(item.getPlayer(0).getRaceStr());
-					player1Name.setText(item.getPlayer(0).getName());
-					player1MatchScore.setText(Integer.toString(item.getPlayer(0).getMatchesWon())
-							+ "-" + Integer.toString(item.getPlayer(0).getMatchesLost()));
-					player1MapScore.setText(Integer.toString(item.getPlayer(0).getMapsWon())
-							+ "-" + Integer.toString(item.getPlayer(0).getMapsLost()));
-				} 
-				if (item.getNumPlayers() > 1) {
-					TextView player2Rank = (TextView) v
-							.findViewById(R.id.player_2_rank);
-					TextView player2Flag = (TextView) v
-							.findViewById(R.id.player_2_flag);
-					TextView player2Race = (TextView) v
-							.findViewById(R.id.player_2_race);
-					TextView player2Name = (TextView) v
-							.findViewById(R.id.player_2_name);
-					TextView player2MatchScore = (TextView) v
-							.findViewById(R.id.player_2_match_score);
-					TextView player2MapScore = (TextView) v
-							.findViewById(R.id.player_2_map_score);
-					player2Rank.setText(Integer.toString(item.getPlayer(1).getPlace()));
-					player2Flag.setText(item.getPlayer(1).getCountry());
-					player2Race.setText(item.getPlayer(1).getRaceStr());
-					player2Name.setText(item.getPlayer(1).getName());
-					player2MatchScore.setText(Integer.toString(item.getPlayer(1).getMatchesWon())
-							+ "-" + Integer.toString(item.getPlayer(1).getMatchesLost()));
-					player2MapScore.setText(Integer.toString(item.getPlayer(1).getMapsWon())
-							+ "-" + Integer.toString(item.getPlayer(1).getMapsLost()));
-				}
-				if (item.getNumPlayers() > 2) {
-					TextView player3Rank = (TextView) v
-							.findViewById(R.id.player_3_rank);
-					TextView player3Flag = (TextView) v
-							.findViewById(R.id.player_3_flag);
-					TextView player3Race = (TextView) v
-							.findViewById(R.id.player_3_race);
-					TextView player3Name = (TextView) v
-							.findViewById(R.id.player_3_name);
-					TextView player3MatchScore = (TextView) v
-							.findViewById(R.id.player_3_match_score);
-					TextView player3MapScore = (TextView) v
-							.findViewById(R.id.player_3_map_score);
-					player3Rank.setText(Integer.toString(item.getPlayer(2).getPlace()));
-					player3Flag.setText(item.getPlayer(2).getCountry());
-					player3Race.setText(item.getPlayer(2).getRaceStr());
-					player3Name.setText(item.getPlayer(2).getName());
-					player3MatchScore.setText(Integer.toString(item.getPlayer(2).getMatchesWon())
-							+ "-" + Integer.toString(item.getPlayer(2).getMatchesLost()));
-					player3MapScore.setText(Integer.toString(item.getPlayer(2).getMapsWon())
-							+ "-" + Integer.toString(item.getPlayer(2).getMapsLost()));
-				}
-					if (item.getNumPlayers() > 3) {
-					TextView player4Rank = (TextView) v
-							.findViewById(R.id.player_4_rank);
-					TextView player4Flag = (TextView) v
-							.findViewById(R.id.player_4_flag);
-					TextView player4Race = (TextView) v
-							.findViewById(R.id.player_4_race);
-					TextView player4Name = (TextView) v
-							.findViewById(R.id.player_4_name);
-					TextView player4MatchScore = (TextView) v
-							.findViewById(R.id.player_4_match_score);
-					TextView player4MapScore = (TextView) v
-							.findViewById(R.id.player_4_map_score);
-					player4Rank.setText(Integer.toString(item.getPlayer(3).getPlace()));
-					player4Flag.setText(item.getPlayer(3).getCountry());
-					player4Race.setText(item.getPlayer(3).getRaceStr());
-					player4Name.setText(item.getPlayer(3).getName());
-					player4MatchScore.setText(Integer.toString(item.getPlayer(3).getMatchesWon())
-							+ "-" + Integer.toString(item.getPlayer(3).getMatchesLost()));
-					player4MapScore.setText(Integer.toString(item.getPlayer(3).getMapsWon())
-							+ "-" + Integer.toString(item.getPlayer(3).getMapsLost()));
-//					tbl.addView(r);
-				}
+				getGroupView(holder, item);
 			}
-			return v;
+			return convertView;
 		}
 
+		private void getGroupView(ViewHolder holder, ScheduleEntry item) {
+			int bgColor = item.getColor();
+			int numPlayers = item.getNumPlayers();
+			holder.groupName.setText(item.getName());
+			holder.groupName.setCompoundDrawablesWithIntrinsicBounds(item.getTitleDrawable(), 0, 0, 0);
+			holder.groupName.setBackgroundColor(bgColor);
+			holder.date.setText(item.getTime());
+			for(int i = 0; i < numPlayers; i++){
+				GroupPlayerEntry player = item.getPlayer(i);
+				bgColor = player.getBackgroundColor();
+				holder.rank[i].setText(Integer.toString(player.getPlace()));
+				holder.rank[i].setBackgroundColor(bgColor);
+				holder.flag[i].setCompoundDrawablesWithIntrinsicBounds(player.getFlagDrawable(), 0, 0, 0);
+				holder.flag[i].setBackgroundColor(bgColor);
+				holder.race[i].setCompoundDrawablesWithIntrinsicBounds(player.getRaceDrawable(), 0, 0, 0);
+				holder.race[i].setBackgroundColor(bgColor);
+				holder.playerName[i].setText(player.getName());
+				holder.playerName[i].setBackgroundColor(bgColor);
+				holder.matchScore[i].setText(Integer.toString(player
+						.getMatchesWon())
+						+ "-"
+						+ Integer.toString(player.getMatchesLost()));
+				holder.matchScore[i].setBackgroundColor(bgColor);
+				holder.mapScore[i].setText(Integer.toString(player
+						.getMapsWon())
+						+ "-"
+						+ Integer.toString(player.getMapsLost()));
+				holder.mapScore[i].setBackgroundColor(bgColor);
+			}
+		}
+
+	}
+	
+	private static class ViewHolder{
+		TextView groupName;
+		TextView date;
+		TextView rank[] = new TextView[4];
+		TextView flag[] = new TextView[4];
+		TextView race[] = new TextView[4];
+		TextView playerName[] = new TextView[4];
+		TextView matchScore[] = new TextView[4];
+		TextView mapScore[] = new TextView[4];
 	}
 
 	private class DownloadDataAndUpdateDBTask extends
@@ -252,7 +238,13 @@ public class LandingPage extends Activity {
 					groupBy, having, orderBy);
 			publishProgress(60);
 			c.moveToFirst();
+			long currentTime = System.currentTimeMillis();
+			boolean startPosFound = false;
 			while (!c.isLast()) {
+				if(!startPosFound && Long.parseLong(c.getString(1)) > currentTime){
+					startPosFound = true;
+					startPos = entries.size() > 2 ? entries.size() - 2 : 0; 
+				}
 				entries.add(new ScheduleEntry(c.getString(0), c.getString(1), c
 						.getString(2), c.getString(3), c.getString(4)));
 				c.move(1);
@@ -282,8 +274,8 @@ public class LandingPage extends Activity {
 				}
 				entry.addPlayer(new GroupPlayerEntry(c.getString(1), c
 						.getString(2), c.getString(3), c.getString(4), c
-						.getInt(5), c.getInt(6), c.getInt(7), c.getInt(8),
-						c.getString(9)));
+						.getInt(5), c.getInt(6), c.getInt(7), c.getInt(8), c
+						.getString(9)));
 				c.close();
 			}
 			publishProgress(80);
@@ -364,45 +356,12 @@ public class LandingPage extends Activity {
 	};
 
 	private enum GroupResult {
-		UP, STAYDOWN
+		UP, STAYDOWN, NOTYET
 	};
 
 	private class GroupPlayerEntry {
 		private String name;
 		private String country;
-
-		public String getCountry() {
-			return country;
-		}
-
-		public Race getRace() {
-			return race;
-		}
-
-		public int getPlace() {
-			return place;
-		}
-
-		public int getMatchesWon() {
-			return matchesWon;
-		}
-
-		public int getMatchesLost() {
-			return matchesLost;
-		}
-
-		public int getMapsWon() {
-			return mapsWon;
-		}
-
-		public int getMapsLost() {
-			return mapsLost;
-		}
-
-		public GroupResult getResult() {
-			return result;
-		}
-
 		private Race race;
 		private int place;
 		private int matchesWon;
@@ -425,13 +384,41 @@ public class LandingPage extends Activity {
 			this.result = getResultFromString(result);
 		}
 
+		public int getBackgroundColor() {
+			switch (result) {
+			case UP:
+				return 0xFFCCFFCC;
+			case STAYDOWN:
+				return 0xFFFFDDAA;
+			default:
+				return 0xFFFFFFFF;
+			}
+		}
+
+		public int getFlagDrawable() {
+			return R.drawable.flags_kr;
+		}
+
+		public int getRaceDrawable() {
+			switch (race) {
+			case TERRAN:
+				return R.drawable.raceicons_terran;
+			case ZERG:
+				return R.drawable.raceicons_zerg;
+			case PROTOSS:
+				return R.drawable.raceicons_protoss;
+			default:
+				return R.drawable.raceicons_random;
+			}
+		}
+
 		private GroupResult getResultFromString(String result) {
 			if (result.equalsIgnoreCase("up"))
 				return GroupResult.UP;
 			else if (result.equalsIgnoreCase("staydown"))
 				return GroupResult.STAYDOWN;
 			else
-				return null;
+				return GroupResult.NOTYET;
 		}
 
 		public String getName() {
@@ -467,6 +454,38 @@ public class LandingPage extends Activity {
 			else
 				return null;
 		}
+
+		public String getCountry() {
+			return country;
+		}
+
+		public Race getRace() {
+			return race;
+		}
+
+		public int getPlace() {
+			return place;
+		}
+
+		public int getMatchesWon() {
+			return matchesWon;
+		}
+
+		public int getMatchesLost() {
+			return matchesLost;
+		}
+
+		public int getMapsWon() {
+			return mapsWon;
+		}
+
+		public int getMapsLost() {
+			return mapsLost;
+		}
+
+		public GroupResult getResult() {
+			return result;
+		}
 	}
 
 	private class ScheduleEntry {
@@ -487,6 +506,19 @@ public class LandingPage extends Activity {
 			players = new ArrayList<GroupPlayerEntry>();
 		}
 
+		public int getColor() {
+			switch(region){
+			case AMERICA:
+				return 0xFFFFC5DA;
+			case EUROPE:
+				return 0xFFF7FFAC;
+			case KOREA:
+				return 0xFFD1FDAB;
+			default:
+				return 0xFFFFFFFF;
+			}
+		}
+
 		public GroupPlayerEntry getPlayer(int n) {
 			return players.get(n);
 		}
@@ -504,34 +536,34 @@ public class LandingPage extends Activity {
 		}
 
 		public String getTime() {
-			return new Date(time).toString();
+			return DateFormat.getDateTimeInstance().format(new Date(time));
 		}
 
-		public int getIcon() {
+		public int getTitleDrawable() {
 			switch (region) {
 			case AMERICA:
 				if (division == Division.PREMIER)
-					return R.drawable.wcsam_logo_small_premier;
+					return R.drawable.wcs_logo_am_premier;
 				else if (division == Division.CHALLENGER)
-					return R.drawable.wcsam_logo_small_challenger;
+					return R.drawable.wcs_logo_am_challenger;
 				else
-					return R.drawable.wcsam_logo_small;
+					return R.drawable.wcs_logo_am_plain;
 			case EUROPE:
 				if (division == Division.PREMIER)
-					return R.drawable.wcseu_logo_small_premier;
+					return R.drawable.wcs_logo_eu_premier;
 				else if (division == Division.CHALLENGER)
-					return R.drawable.wcseu_logo_small_challenger;
+					return R.drawable.wcs_logo_eu_challenger;
 				else
-					return R.drawable.wcseu_logo_small;
+					return R.drawable.wcs_logo_eu_plain;
 			case KOREA:
 				if (division == Division.PREMIER)
-					return R.drawable.wcskr_logo_small_premier;
+					return R.drawable.wcs_logo_kr_premier;
 				else if (division == Division.CHALLENGER)
-					return R.drawable.wcskr_logo_small_challenger;
+					return R.drawable.wcs_logo_kr_challenger;
 				else
-					return R.drawable.wcskr_logo_small;
+					return R.drawable.wcs_logo_kr_plain;
 			default: // TODO: Add leagues to generic logo?
-				return R.drawable.wcs_logo_small;
+				return R.drawable.wcs_logo_nowhere_plain;
 			}
 		}
 
