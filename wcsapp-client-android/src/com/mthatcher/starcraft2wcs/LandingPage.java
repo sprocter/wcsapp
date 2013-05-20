@@ -28,7 +28,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
+
+import com.mthatcher.starcraft2wcs.entry.BracketEntry;
+import com.mthatcher.starcraft2wcs.entry.EntryUtil;
+import com.mthatcher.starcraft2wcs.entry.GroupEntry;
+import com.mthatcher.starcraft2wcs.entry.GroupOrBracketEntry;
+import com.mthatcher.starcraft2wcs.entry.ViewHolder;
 
 public class LandingPage extends Activity {
 
@@ -118,80 +123,90 @@ public class LandingPage extends Activity {
 		public long getItemId(int position) {
 			return position;
 		}
+		
+		@Override
+		public int getViewTypeCount(){
+			// 0: Group
+			// 1: Bracket
+			return 2;
+		}
+		
+		@Override
+		public int getItemViewType(int position){
+			if(items.get(position).isGroupEntry)
+				return 0;
+			else
+				return 1;
+		}
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			ViewHolder holder;
+			ScheduleEntry item = items.get(position);
+			
 			if (convertView == null) {
 				LayoutInflater vi;
 				vi = LayoutInflater.from(getBaseContext());
-				convertView = vi.inflate(R.layout.group_stage_tbl, parent, false);
-				convertView.setPadding(15, 15, 15, 15);
-				holder = new ViewHolder();
-				holder.groupName = (TextView) convertView.findViewById(R.id.schedule_name);
-				holder.date = (TextView) convertView.findViewById(R.id.schedule_date);
-				holder.playerName[0] = (TextView) convertView.findViewById(R.id.player_1_name);
-				holder.playerName[1] = (TextView) convertView.findViewById(R.id.player_2_name);
-				holder.playerName[2] = (TextView) convertView.findViewById(R.id.player_3_name);
-				holder.playerName[3] = (TextView) convertView.findViewById(R.id.player_4_name);
-				holder.rank[0] = (TextView) convertView.findViewById(R.id.player_1_rank);
-				holder.rank[1] = (TextView) convertView.findViewById(R.id.player_2_rank);
-				holder.rank[2] = (TextView) convertView.findViewById(R.id.player_3_rank);
-				holder.rank[3] = (TextView) convertView.findViewById(R.id.player_4_rank);
-				holder.flag[0] = (TextView) convertView.findViewById(R.id.player_1_flag);
-				holder.flag[1] = (TextView) convertView.findViewById(R.id.player_2_flag);
-				holder.flag[2] = (TextView) convertView.findViewById(R.id.player_3_flag);
-				holder.flag[3] = (TextView) convertView.findViewById(R.id.player_4_flag);
-				holder.race[0] = (TextView) convertView.findViewById(R.id.player_1_race);
-				holder.race[1] = (TextView) convertView.findViewById(R.id.player_2_race);
-				holder.race[2] = (TextView) convertView.findViewById(R.id.player_3_race);
-				holder.race[3] = (TextView) convertView.findViewById(R.id.player_4_race);
-				holder.matchScore[0] = (TextView) convertView.findViewById(R.id.player_1_match_score);
-				holder.matchScore[1] = (TextView) convertView.findViewById(R.id.player_2_match_score);
-				holder.matchScore[2] = (TextView) convertView.findViewById(R.id.player_3_match_score);
-				holder.matchScore[3] = (TextView) convertView.findViewById(R.id.player_4_match_score);
-				holder.mapScore[0] = (TextView) convertView.findViewById(R.id.player_1_map_score);
-				holder.mapScore[1] = (TextView) convertView.findViewById(R.id.player_2_map_score);
-				holder.mapScore[2] = (TextView) convertView.findViewById(R.id.player_3_map_score);
-				holder.mapScore[3] = (TextView) convertView.findViewById(R.id.player_4_map_score);
+				if(item.isGroupEntry){
+					convertView = vi.inflate(R.layout.group_stage_tbl, parent, false);
+					holder = GroupEntry.getHolder(convertView);
+				} else {
+					convertView = vi.inflate(R.layout.bracket_stage_tbl, parent, false);
+					holder = BracketEntry.getHolder(convertView);
+				}
 				convertView.setTag(holder);
 			} else {
 				holder = (ViewHolder) convertView.getTag();
 			}
 
-			ScheduleEntry item = items.get(position);
-
 			if (item != null) {
-				if(item.isGroupEntry())
+				if(item.isGroupEntry()){
 					getGroupView(holder, item);
-				else
-					getBracketView(holder, item);
+				} else {
+					getBracketView(holder, item, convertView);
+				}
 			}
 			return convertView;
 		}
 
-		private void getBracketView(ViewHolder holder, ScheduleEntry item) {
-			int bgColor = item.getColor();
+		private void getBracketView(ViewHolder holder, ScheduleEntry item, View convertView) {
+			int winnerColor = 0xFFCCFFCC;
+			int loserColor = 0xFFFFFFFF;
 			int numPlayers = item.getNumPlayers();
 			holder.groupName.setText(item.getName());
 			holder.groupName.setCompoundDrawablesWithIntrinsicBounds(item.getTitleDrawable(), 0, 0, 0);
-			holder.groupName.setBackgroundColor(bgColor);
+			holder.groupName.setBackgroundColor(winnerColor);
 			holder.date.setText(item.getTime());
+			int p1i, p2i; // Player 1 and Player 2 indices
 			for(int i = 0; i < numPlayers; i++){
 				BracketEntry player = (BracketEntry) item.getPlayer(i);
-				bgColor = player.getBackgroundColor();
-				holder.rank[i].setText("X");
-				holder.rank[i].setBackgroundColor(bgColor);
-				holder.flag[i].setCompoundDrawablesWithIntrinsicBounds(EntryUtil.getFlagDrawable(player), 0, 0, 0);
-				holder.flag[i].setBackgroundColor(bgColor);
-				holder.race[i].setCompoundDrawablesWithIntrinsicBounds(EntryUtil.getRaceDrawable(player), 0, 0, 0);
-				holder.race[i].setBackgroundColor(bgColor);
-				holder.playerName[i].setText(player.getP1Name());
-				holder.playerName[i].setBackgroundColor(bgColor);
-				holder.matchScore[i].setText("5-5");
-				holder.matchScore[i].setBackgroundColor(bgColor);
-				holder.mapScore[i].setText("1-1");
-				holder.mapScore[i].setBackgroundColor(bgColor);
+				p1i = i * 2;
+				p2i = i * 2 + 1;
+				
+				holder.playerName[p1i].setText(player.getP1Name());
+				holder.playerName[p2i].setText(player.getP2Name());
+				holder.race[p1i].setCompoundDrawablesWithIntrinsicBounds(EntryUtil.getRaceDrawable(player.getP1Race()), 0, 0, 0);
+				holder.race[p2i].setCompoundDrawablesWithIntrinsicBounds(EntryUtil.getRaceDrawable(player.getP2Race()), 0, 0, 0);
+				holder.flag[p1i].setCompoundDrawablesWithIntrinsicBounds(EntryUtil.getFlagDrawable(player), 0, 0, 0);
+				holder.flag[p2i].setCompoundDrawablesWithIntrinsicBounds(EntryUtil.getFlagDrawable(player), 0, 0, 0);
+				holder.mapScore[p1i].setText("1");
+				holder.mapScore[p2i].setText("1");
+				
+				if(player.getWinner() == 1){
+					holder.playerName[p1i].setBackgroundColor(winnerColor);
+					holder.race[p1i].setBackgroundColor(winnerColor);
+					holder.flag[p1i].setBackgroundColor(winnerColor);
+					holder.playerName[p2i].setBackgroundColor(loserColor);
+					holder.race[p2i].setBackgroundColor(loserColor);
+					holder.flag[p2i].setBackgroundColor(loserColor);		
+				} else if (player.getWinner() == 2){
+					holder.playerName[p1i].setBackgroundColor(loserColor);
+					holder.race[p1i].setBackgroundColor(loserColor);
+					holder.flag[p1i].setBackgroundColor(loserColor);
+					holder.playerName[p2i].setBackgroundColor(winnerColor);
+					holder.race[p2i].setBackgroundColor(winnerColor);
+					holder.flag[p2i].setBackgroundColor(winnerColor);					
+				}
 			}
 		}
 
@@ -209,7 +224,7 @@ public class LandingPage extends Activity {
 				holder.rank[i].setBackgroundColor(bgColor);
 				holder.flag[i].setCompoundDrawablesWithIntrinsicBounds(EntryUtil.getFlagDrawable(player), 0, 0, 0);
 				holder.flag[i].setBackgroundColor(bgColor);
-				holder.race[i].setCompoundDrawablesWithIntrinsicBounds(EntryUtil.getRaceDrawable(player), 0, 0, 0);
+				holder.race[i].setCompoundDrawablesWithIntrinsicBounds(EntryUtil.getRaceDrawable(player.getRace()), 0, 0, 0);
 				holder.race[i].setBackgroundColor(bgColor);
 				holder.playerName[i].setText(player.getName());
 				holder.playerName[i].setBackgroundColor(bgColor);
@@ -226,17 +241,6 @@ public class LandingPage extends Activity {
 			}
 		}
 
-	}
-	
-	private static class ViewHolder{
-		TextView groupName;
-		TextView date;
-		TextView rank[] = new TextView[4];
-		TextView flag[] = new TextView[4];
-		TextView race[] = new TextView[4];
-		TextView playerName[] = new TextView[4];
-		TextView matchScore[] = new TextView[4];
-		TextView mapScore[] = new TextView[4];
 	}
 
 	private class DownloadDataAndUpdateDBTask extends

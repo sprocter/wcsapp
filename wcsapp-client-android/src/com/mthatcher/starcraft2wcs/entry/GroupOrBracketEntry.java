@@ -1,4 +1,4 @@
-package com.mthatcher.starcraft2wcs;
+package com.mthatcher.starcraft2wcs.entry;
 
 import com.mthatcher.starcraft2wcs.LandingPage.Race;
 

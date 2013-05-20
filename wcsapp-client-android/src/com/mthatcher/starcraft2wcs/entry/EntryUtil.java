@@ -1,6 +1,7 @@
-package com.mthatcher.starcraft2wcs;
+package com.mthatcher.starcraft2wcs.entry;
 
 import com.mthatcher.starcraft2wcs.LandingPage.Race;
+import com.mthatcher.starcraft2wcs.R;
 
 public class EntryUtil {
 	public static Race getRaceFromString(String race) {
@@ -10,18 +11,16 @@ public class EntryUtil {
 			return Race.TERRAN;
 		else if (race.equalsIgnoreCase("p"))
 			return Race.PROTOSS;
-		else if (race.equalsIgnoreCase("r"))
-			return Race.RANDOM;
 		else
-			return null;
+			return Race.RANDOM;
 	}
 	
 	public static int getFlagDrawable(GroupOrBracketEntry player) {
 		return R.drawable.flags_kr;
 	}
 
-	public static int getRaceDrawable(GroupOrBracketEntry player) {
-		switch (player.getRace()) {
+	public static int getRaceDrawable(Race race) {
+		switch (race) {
 		case TERRAN:
 			return R.drawable.raceicons_terran;
 		case ZERG:

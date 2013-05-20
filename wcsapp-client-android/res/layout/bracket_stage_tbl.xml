@@ -3,8 +3,8 @@
     android:id="@+id/group_stage_tbl"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:shrinkColumns="*"
     android:padding="15dp"
+    android:shrinkColumns="*"
     android:stretchColumns="*" >
 
     <TableRow
@@ -16,9 +16,9 @@
             android:id="@+id/schedule_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_span="6"
-            android:textColor="#000"
+            android:layout_span="8"
             android:gravity="center"
+            android:textColor="#000"
             android:textSize="18sp" />
     </TableRow>
 
@@ -31,170 +31,224 @@
             android:id="@+id/schedule_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_span="6"
+            android:layout_span="8"
             android:background="#FFF2F2F2"
-            android:textColor="#000"
             android:gravity="center"
+            android:textColor="#000"
             android:textSize="12sp" />
     </TableRow>
 
     <TableRow
-        android:id="@+id/group_stage_participant"
+        android:id="@+id/bracket_stage_participant"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
         <TextView
-            android:id="@+id/group_player_1_rank"
+            android:id="@+id/bracket_player_1_name"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/group_player_1_flag"
+            android:id="@+id/bracket_player_1_race"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/group_player_1_race"
+            android:id="@+id/bracket_player_1_flag"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/group_player_1_name"
+            android:id="@+id/bracket_player_1_map_score"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/group_player_1_match_score"
+            android:id="@+id/bracket_player_2_map_score"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/group_player_1_map_score"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:textColor="#000000" />
-    </TableRow>
-
-    <TableRow>
-
-        <TextView
-            android:id="@+id/group_player_2_rank"
+            android:id="@+id/bracket_player_2_flag"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/group_player_2_flag"
+            android:id="@+id/bracket_player_2_race"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/group_player_2_race"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:textColor="#000000" />
-
-        <TextView
-            android:id="@+id/group_player_2_name"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:textColor="#000000" />
-
-        <TextView
-            android:id="@+id/group_player_2_match_score"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:textColor="#000000" />
-
-        <TextView
-            android:id="@+id/group_player_2_map_score"
+            android:id="@+id/bracket_player_2_name"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
     </TableRow>
 
     <TableRow
-        android:id="@+id/group_stage_participant"
+        android:id="@+id/bracket_stage_participant"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
         <TextView
-            android:id="@+id/group_player_3_rank"
+            android:id="@+id/bracket_player_3_name"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/group_player_3_flag"
+            android:id="@+id/bracket_player_3_race"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/group_player_3_race"
+            android:id="@+id/bracket_player_3_flag"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/group_player_3_name"
+            android:id="@+id/bracket_player_3_map_score"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/group_player_3_match_score"
+            android:id="@+id/bracket_player_4_map_score"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/group_player_3_map_score"
+            android:id="@+id/bracket_player_4_flag"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/bracket_player_4_race"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/bracket_player_4_name"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
     </TableRow>
 
-    <TableRow>
+    <TableRow
+        android:id="@+id/bracket_stage_participant"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
 
         <TextView
-            android:id="@+id/group_player_4_rank"
+            android:id="@+id/bracket_player_5_name"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/group_player_4_flag"
+            android:id="@+id/bracket_player_5_race"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/group_player_4_race"
+            android:id="@+id/bracket_player_5_flag"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/group_player_4_name"
+            android:id="@+id/bracket_player_5_map_score"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/group_player_4_match_score"
+            android:id="@+id/bracket_player_6_map_score"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/group_player_4_map_score"
+            android:id="@+id/bracket_player_6_flag"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/bracket_player_6_race"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/bracket_player_6_name"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="#000000" />
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/bracket_stage_participant"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/bracket_player_7_name"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/bracket_player_7_race"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/bracket_player_7_flag"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/bracket_player_7_map_score"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/bracket_player_8_map_score"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/bracket_player_8_flag"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/bracket_player_8_race"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/bracket_player_8_name"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
