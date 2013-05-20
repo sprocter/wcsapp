@@ -16,28 +16,49 @@
 		public $winner;
 		public $numgames;
 		
-		static function splitTitle($title){
-			$title_arr = explode('/', $title);
-			
-			if(strpos($title_arr[0], 'America') !== false)
-				$region = 'AM';
-			else if(strpos($title_arr[0], 'Europe') !== false)
-				$region = 'EU';
-			else if(strpos($title_arr[0], 'Korea') !== false)
-				$region = 'KR';
-			else
-				$region = 'XX';
-				
-			if(strpos($title_arr[1], 'Premier') !== false || strpos($title_arr[1], 'Code S') !== false)
-				$division = 'P';
-			else if(strpos($title_arr[1], 'Challenger') !== false || strpos($title_arr[1], 'Code A') !== false)
-				$division = 'C';
-			else
-				$region = 'X';
-				
-			$round = $title_arr[2];
-			
-			return array($region, $division, $round);
+		static function getTime($s){
+			if(strpos($s, '(') !== false){ 
+				$timestamp = strtotime(substr($s, 0, strpos($s, '(')));
+				return $timestamp * 1000; // Java uses milliseconds since the Unix epoch
+			} else {
+				return 0;
+			}
+		}
+		
+		static function getBracketSummaries($s){
+			$offset = 0;
+			$bmsPos = strpos($s, '{{BracketMatchSummary', $offset) + 21;
+			$summaries = array();
+			while($bmsPos > 21){
+				$offset = strpos($s, '}}', $offset);
+				$length = $offset - $bmsPos;
+				$summaries[] = substr($s, $bmsPos, $length);
+				$bmsPos = strpos($s, '{{BracketMatchSummary', $offset) + 21;
+				$offset++;
+			}
+			return $summaries;
+		}
+		
+		static function getBracketVals($mwStr, $nested){
+			$nameValPairs_arr = explode('|', $mwStr);
+			$summaries = Match::getBracketSummaries($mwStr);
+			$vals = array();
+			foreach($nameValPairs_arr as $nameValPair_str){
+				if(substr($nameValPair_str, 2, 10) == '<!-- Round' || trim($nameValPair_str) == '')
+					continue;
+				$nameAndValPair_arr = explode('=', $nameValPair_str);
+				if(count($nameAndValPair_arr) < 2){
+					continue;
+				}
+				if(substr($nameAndValPair_arr[1], 0, 2) == '{{')
+					$vals[$nameAndValPair_arr[0]] = Match::getBracketVals(array_shift($summaries), true);
+				else
+					if(count($nameAndValPair_arr) > 2)
+						$vals[$nameAndValPair_arr[0]] = trim($nameAndValPair_arr[1] . '=' . $nameAndValPair_arr[2]);
+					else
+						$vals[$nameAndValPair_arr[0]] = trim($nameAndValPair_arr[1]);
+			}
+			return $vals;
 		}
 		
 		static function getName($s){
@@ -48,19 +69,19 @@
 			return substr($s, 0, strpos($s, '='));
 		}
 		
-		static function getPlayerName($s, $num){
+		static function getGroupPlayerName($s, $num){
 			return Match::getValue($s, "player$num");
 		}
 		
-		static function getPlayerRace($s, $num){
+		static function getGroupPlayerRace($s, $num){
 			return Match::getValue($s, "player$num" . "race");
 		}
 		
-		static function getPlayerFlag($s, $num){
+		static function getGroupPlayerFlag($s, $num){
 			return Match::getValue($s, "player$num" . "flag");
 		}
 		
-		static function getWinner($s){
+		static function getGroupWinner($s){
 			return Match::getValue($s, 'winner');
 		}
 		
@@ -226,9 +247,36 @@
 			return trim(substr($s, $keyPos, $valLength));
 		}
 	}
+	
+	function splitTitle($title){
+		$title_arr = explode('/', $title);
+		
+		if(strpos($title_arr[0], 'America') !== false)
+			$region = 'AM';
+		else if(strpos($title_arr[0], 'Europe') !== false)
+			$region = 'EU';
+		else if(strpos($title_arr[0], 'Korea') !== false)
+			$region = 'KR';
+		else
+			$region = 'XX';
+			
+		if(strpos($title_arr[1], 'Premier') !== false || strpos($title_arr[1], 'Code S') !== false)
+			$division = 'P';
+		else if(strpos($title_arr[1], 'Challenger') !== false || strpos($title_arr[1], 'Code A') !== false)
+			$division = 'C';
+		else
+			$region = 'X';
+		
+		if(count($title_arr) > 2)
+			$round = $title_arr[2];
+		else
+			$round = 'N/A';
+		
+		return array($region, $division, $round);
+	}
 
 	function parseSchedule($mwtext_str){
-		global $db, $scheduleIdMap;
+		global $db, $scheduleIdMap, $scheduleDateMap;
 		$mwsched_arr = explode('Countdown',$mwtext_str);
 		$st = $db->prepare('INSERT INTO schedule (id, time, division, region, name, round) values (:id, :time, :division, :region, :name, :round)');
 		$sched = new Schedule();
@@ -245,30 +293,15 @@
 			$sched->name = Schedule::getName($roundAndName);
 			$sched->round = Schedule::getRound($roundAndName);
 			$scheduleIdMap[$sched->region][$sched->division][$sched->round][$sched->name] = $id;
+			$scheduleDateMap[$sched->time] = $id;
 			$st->execute((array)$sched);
 		}
 	}
-	
-	function parseMatches($title, $mwtext_str){
-		global $db, $scheduleIdMap, $matchId;
-		list($region, $division, $round) = Match::splitTitle($title);
-		$fields[] = "id";
-		$fields[] = "winner";
-		$fields[] = "player1name";
-		$fields[] = "player2name";
-		$fields[] = "player1race";
-		$fields[] = "player2race";
-		$fields[] = "player1flag";
-		$fields[] = "player2flag";
-		$fields[] = "numgames";
-		$fields[] = "matchname";
-		$fields[] = "scheduleid";
-		$fields[] = "matchnum";
-		$colNames = implode (', ', $fields);
-		$valNames = ':' . implode (', :', $fields);
-		$st = $db->prepare("INSERT INTO matches ($colNames) values ($valNames)");
+
+	function parseMatchesFromGroup($m, $title, $mwtext_str, $st){
+		global $scheduleIdMap, $matchId;
 		$group_arr = explode('{{HiddenSort|', $mwtext_str);
-		$m = new Match();
+		list($region, $division, $round) = splitTitle($title);
 		foreach($group_arr as $group_str){
 			if(substr($group_str, 0, 5) != 'Group')
 				continue;
@@ -290,49 +323,135 @@
 				$m->matchname = $scheduleName;
 				$m->matchnum = Match::getNum($match_str);
 				$m->scheduleid = $scheduleId;
-				$m->player1name = Match::getPlayerName($match_str, 1);
-				$m->player2name = Match::getPlayerName($match_str, 2);
-				$m->player1race = Match::getPlayerRace($match_str, 1);
-				$m->player2race = Match::getPlayerRace($match_str, 2);
-				$m->player1flag = Match::getPlayerFlag($match_str, 1);
-				$m->player2flag = Match::getPlayerFlag($match_str, 2);
-				$m->winner = Match::getWinner($match_str);
+				$m->player1name = Match::getGroupPlayerName($match_str, 1);
+				$m->player2name = Match::getGroupPlayerName($match_str, 2);
+				$m->player1race = Match::getGroupPlayerRace($match_str, 1);
+				$m->player2race = Match::getGroupPlayerRace($match_str, 2);
+				$m->player1flag = Match::getGroupPlayerFlag($match_str, 1);
+				$m->player2flag = Match::getGroupPlayerFlag($match_str, 2);
+				$m->winner = Match::getGroupWinner($match_str);
 				$m->numgames = Match::getNumGames($match_str);
 				$st->execute((array)$m);
 				$gamesToParse[] = array($match_str, $m->numgames, $matchId);
 			}
 		}
 		
-		$fields = array();
-		$fields[] = "mapname";
-		$fields[] = "mapwinner";
-		$fields[] = "vodlink";
-		$fields[] = "matchid";
-		$colNames = implode (', ', $fields);
-		$valNames = ':' . implode (', :', $fields);
-		$st = $db->prepare("INSERT INTO games ($colNames) values ($valNames)");
+		$g = new Game();
+		$st = getInsertQuery('games', 'mapname', 'mapwinner', 'vodlink', 'matchid');
 		foreach($gamesToParse as $unparsedGame){
-			$parsedGames = parseGames($unparsedGame[0], $unparsedGame[1], $unparsedGame[2], $st);
+			$parsedGames = parseGames($unparsedGame[0], $unparsedGame[1], $unparsedGame[2], $st, $g);
 		}
 	}
 	
-	function parseParticipants($title, $mwtext_str){
-		global $db, $scheduleIdMap;
-		list($region, $division, $round) = Match::splitTitle($title);
-		//TODO: Refactor this query generation into a function?
-		$fields[] = "name";
-		$fields[] = "flag";
-		$fields[] = "race";
-		$fields[] = "place";
-		$fields[] = "matcheswon";
-		$fields[] = "matcheslost";
-		$fields[] = "mapswon";
-		$fields[] = "mapslost";
-		$fields[] = "result";
-		$fields[] = "scheduleid";
+	function parseMatchesFromBracket($m, $title, $mwtext_str, $st){
+		global $matchId, $scheduleDateMap;
+		$scheduleDateMap[0] = 0;
+		$bracket_arr = explode('{{WCSChallengerBracket', $mwtext_str);
+		foreach($bracket_arr as $bracket_str){
+			if(substr($bracket_str, 2, 10) != '<!-- Round')
+				continue;
+			$bracketVals_arr = Match::getBracketVals($bracket_str, false);
+			$matchId++;
+			$m->id = $matchId;
+			$m->player1name = $bracketVals_arr['R1D1'];
+			$m->player2name = $bracketVals_arr['R1D2'];
+			$m->player1race = $bracketVals_arr['R1D1race'];
+			$m->player2race = $bracketVals_arr['R1D2race'];
+			$m->player1flag = $bracketVals_arr['R1D1flag'];
+			$m->player2flag = $bracketVals_arr['R1D2flag'];
+			$m->scheduleid = $scheduleDateMap[Match::getTime($bracketVals_arr['R1G1details']['date'])];
+			if(isset($bracketVals_arr['R1D1win']) && $bracketVals_arr['R1D1win'] == '1')
+				$m->winner = '1';
+			else if(isset($bracketVals_arr['R1D2win']))
+				$m->winner = '2';
+			$i = 1;
+			while(isset($bracketVals_arr['R1G1details']["map$i"]))
+				$i++;
+			$m->numgames = $i - 1;
+			$st->execute((array)$m);
+			
+			$matchId++;
+			$m->id = $matchId;
+			$m->player1name = $bracketVals_arr['R1D3'];
+			$m->player2name = $bracketVals_arr['R1D4'];
+			$m->player1race = $bracketVals_arr['R1D3race'];
+			$m->player2race = $bracketVals_arr['R1D4race'];
+			$m->player1flag = $bracketVals_arr['R1D3flag'];
+			$m->player2flag = $bracketVals_arr['R1D4flag'];
+			$m->scheduleid = $scheduleDateMap[Match::getTime($bracketVals_arr['R1G2details']['date'])];
+			if(isset($bracketVals_arr['R1D3win']) && $bracketVals_arr['R1D3win'] == '1')
+				$m->winner = '1';
+			else if(isset($bracketVals_arr['R1D4win']))
+				$m->winner = '2';
+			$i = 1;
+			while(isset($bracketVals_arr['R1G2details']["map$i"]))
+				$i++;
+			$m->numgames = $i - 1;
+			$st->execute((array)$m);
+			
+			$matchId++;
+			$m->id = $matchId;
+			$m->player1name = $bracketVals_arr['R2W1'];
+			$m->player2name = $bracketVals_arr['R2W2'];
+			$m->player1race = $bracketVals_arr['R2W1race'];
+			$m->player2race = $bracketVals_arr['R2W2race'];
+			$m->player1flag = $bracketVals_arr['R2W1flag'];
+			$m->player2flag = $bracketVals_arr['R2W2flag'];
+			$m->scheduleid = $scheduleDateMap[Match::getTime($bracketVals_arr['R2G1details']['date'])];
+			if(isset($bracketVals_arr['R2W1win']) && $bracketVals_arr['R2W1win'] == '1')
+				$m->winner = '1';
+			else if(isset($bracketVals_arr['R2W2win']))
+				$m->winner = '2';
+			$i = 1;
+			while(isset($bracketVals_arr['R2G1details']["map$i"]))
+				$i++;
+			$m->numgames = $i - 1;
+			$st->execute((array)$m);
+
+			$matchId++;
+			$m->id = $matchId;
+			$m->player1name = $bracketVals_arr['R3W1'];
+			$m->player2name = $bracketVals_arr['R3D1'];
+			$m->player1race = $bracketVals_arr['R3W1race'];
+			$m->player2race = $bracketVals_arr['R3D1race'];
+			$m->player1flag = $bracketVals_arr['R3W1flag'];
+			$m->player2flag = $bracketVals_arr['R3D1flag'];
+			$m->scheduleid = $scheduleDateMap[Match::getTime($bracketVals_arr['R3G1details']['date'])];
+			if(isset($bracketVals_arr['R3W1win']) && $bracketVals_arr['R3W1win'] == '1')
+				$m->winner = '1';
+			else if(isset($bracketVals_arr['R3D1win']))
+				$m->winner = '2';
+			$i = 1;
+			while(isset($bracketVals_arr['R3G1details']["map$i"]))
+				$i++;
+			$m->numgames = $i - 1;
+			$st->execute((array)$m);
+		}
+	}
+	
+	function parseMatches($title, $mwtext_str, $bracketType){
+		$st = getInsertQuery('matches', 'id', 'winner', 'player1name', 'player2name', 'player1race', 'player2race', 'player1flag', 'player2flag', 'numgames', 'matchname', 'scheduleid', 'matchnum');
+		$m = new Match();
+		
+		if($bracketType == 'group')
+			parseMatchesFromGroup($m, $title, $mwtext_str, $st);
+		else if($bracketType == 'bracket')
+			parseMatchesFromBracket($m, $title, $mwtext_str, $st);
+	}
+	
+	function getInsertQuery($tableName){
+		global $db;
+		$fields = func_get_args();
+		array_shift($fields);
 		$colNames = implode (', ', $fields);
 		$valNames = ':' . implode (', :', $fields);
-		$st = $db->prepare("INSERT INTO participants ($colNames) values ($valNames)");
+		return $db->prepare("INSERT INTO $tableName ($colNames) values ($valNames)");
+	}
+	
+	function parseParticipants($title, $mwtext_str){
+		global $scheduleIdMap;
+		list($region, $division, $round) = splitTitle($title);
+		$st = getInsertQuery('participants', 'name', 'flag', 'race', 'place', 'matcheswon', 'matcheslost', 'mapswon', 'mapslost', 'result', 'scheduleid');
 		$group_arr = explode('{{HiddenSort|', $mwtext_str);
 		foreach ($group_arr as $group_str){
 			if(substr($group_str, 0, 5) != "Group")
@@ -364,8 +483,7 @@
 		}
 	}
 	
-	function parseGames($s, $numGames, $matchId, $st){
-		$g = new Game();
+	function parseGames($s, $numGames, $matchId, $st, $g){
 		for($i = 1; $i <= $numGames; $i++){
 			$g->mapname = Game::getMapName($s, $i);
 			$g->mapwinner = Game::getMapWinner($s, $i);
@@ -382,6 +500,10 @@
 	$titles[] = '2013_WCS_Season_1_Europe/Premier/Ro16';
 	$titles[] = '2013 WCS Season 1 Korea GSL/Code S/Ro32';
 	$titles[] = '2013 WCS Season 1 Korea GSL/Code S/Ro16';
+	$titles[] = '2013_WCS_Season_1_America/Challenger';
+	$titles[] = '2013_WCS_Season_1_Europe/Challenger';
+	$titles[] = '2013_WCS_Season_1_Korea_GSL/Challenger';
+	
 	$url = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&export&exportnowrap&titles=' . implode ('|', $titles);
 	
 	try{
@@ -397,10 +519,18 @@
 	 	$db->exec('CREATE TABLE "schedule" ("id" INTEGER PRIMARY KEY NOT NULL ,"time" INTEGER,"division" TEXT,"region" TEXT,"name" TEXT, "round" TEXT);');
 	 	$db->exec('CREATE TABLE "participants" ("id" INTEGER PRIMARY KEY NOT NULL, "name" TEXT, "flag" TEXT, "race" TEXT, "place" INTEGER, "matcheswon" INTEGER, "matcheslost" INTEGER, "mapswon" INTEGER, "mapslost" INTEGER, "result" TEXT, "scheduleid" INTEGER)');
 		parseSchedule($mediawiki_obj->page[0]->revision->text);
-		for($i = 1; $i <= 6; $i++){
-			parseMatches($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text);
-			parseParticipants($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text);
+		for($i = 1; $i < count($mediawiki_obj->page); $i++){
+			if(strpos($mediawiki_obj->page[$i]->title, 'Challenger') !== false)
+				parseMatches($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text, 'bracket');
+			else{
+				parseMatches($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text, 'group');
+				parseParticipants($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text, 'group');
+			}
 		}
+		/*for($i = 1; $i <=1; $i++){
+			parseMatches($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text, 'bracket');
+	//		parseParticipants($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text, 'bracket');
+		}*/
 		$db = null;
 		`echo '.dump' | sqlite3 wcsapp.sqlite | gzip -c > wcsapp.dump.gz`;
 	} catch (Exception $e){
