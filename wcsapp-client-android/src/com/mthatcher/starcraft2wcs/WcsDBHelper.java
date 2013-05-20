@@ -13,7 +13,8 @@ public class WcsDBHelper extends SQLiteOpenHelper {
 			" DROP TABLE IF EXISTS schedule; DROP TABLE IF EXISTS participants";
 	
 	public WcsDBHelper(Context context) {
-		super(context, DATABASE_NAME, null, DATABASE_VERSION);
+//		super(context, DATABASE_NAME, null, DATABASE_VERSION);
+		super(context, null, null, DATABASE_VERSION);
 	}
 	
 	public void updateDB(SQLiteDatabase db, String batchSQL){

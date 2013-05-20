@@ -35,6 +35,22 @@ public class LandingPage extends Activity {
 	private final String DATA_URL = "http://skorchedearth.com/sandbox/wcsapp/wcsapp/wcsapp-server/wcsapp.dump.gz";
 	private final String DEBUG_TAG = "LANDING PAGE";
 	public int startPos;
+	
+	public enum Division {
+		PREMIER, CHALLENGER
+	};
+
+	public enum Region {
+		AMERICA, EUROPE, KOREA
+	};
+
+	public enum Race {
+		TERRAN, PROTOSS, ZERG, RANDOM
+	};
+
+	public enum MatchResult {
+		WIN, LOSE, NOTYETPLAYED
+	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -84,11 +100,6 @@ public class LandingPage extends Activity {
 			return true;
 		}
 		
-		public int getStartingPosition() {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
 		public ScheduleAdapter(ArrayList<ScheduleEntry> items) {
 			this.items = items;
 		}
@@ -151,9 +162,37 @@ public class LandingPage extends Activity {
 			ScheduleEntry item = items.get(position);
 
 			if (item != null) {
-				getGroupView(holder, item);
+				if(item.isGroupEntry())
+					getGroupView(holder, item);
+				else
+					getBracketView(holder, item);
 			}
 			return convertView;
+		}
+
+		private void getBracketView(ViewHolder holder, ScheduleEntry item) {
+			int bgColor = item.getColor();
+			int numPlayers = item.getNumPlayers();
+			holder.groupName.setText(item.getName());
+			holder.groupName.setCompoundDrawablesWithIntrinsicBounds(item.getTitleDrawable(), 0, 0, 0);
+			holder.groupName.setBackgroundColor(bgColor);
+			holder.date.setText(item.getTime());
+			for(int i = 0; i < numPlayers; i++){
+				BracketEntry player = (BracketEntry) item.getPlayer(i);
+				bgColor = player.getBackgroundColor();
+				holder.rank[i].setText("X");
+				holder.rank[i].setBackgroundColor(bgColor);
+				holder.flag[i].setCompoundDrawablesWithIntrinsicBounds(EntryUtil.getFlagDrawable(player), 0, 0, 0);
+				holder.flag[i].setBackgroundColor(bgColor);
+				holder.race[i].setCompoundDrawablesWithIntrinsicBounds(EntryUtil.getRaceDrawable(player), 0, 0, 0);
+				holder.race[i].setBackgroundColor(bgColor);
+				holder.playerName[i].setText(player.getP1Name());
+				holder.playerName[i].setBackgroundColor(bgColor);
+				holder.matchScore[i].setText("5-5");
+				holder.matchScore[i].setBackgroundColor(bgColor);
+				holder.mapScore[i].setText("1-1");
+				holder.mapScore[i].setBackgroundColor(bgColor);
+			}
 		}
 
 		private void getGroupView(ViewHolder holder, ScheduleEntry item) {
@@ -164,13 +203,13 @@ public class LandingPage extends Activity {
 			holder.groupName.setBackgroundColor(bgColor);
 			holder.date.setText(item.getTime());
 			for(int i = 0; i < numPlayers; i++){
-				GroupPlayerEntry player = item.getPlayer(i);
+				GroupEntry player = (GroupEntry) item.getPlayer(i);
 				bgColor = player.getBackgroundColor();
 				holder.rank[i].setText(Integer.toString(player.getPlace()));
 				holder.rank[i].setBackgroundColor(bgColor);
-				holder.flag[i].setCompoundDrawablesWithIntrinsicBounds(player.getFlagDrawable(), 0, 0, 0);
+				holder.flag[i].setCompoundDrawablesWithIntrinsicBounds(EntryUtil.getFlagDrawable(player), 0, 0, 0);
 				holder.flag[i].setBackgroundColor(bgColor);
-				holder.race[i].setCompoundDrawablesWithIntrinsicBounds(player.getRaceDrawable(), 0, 0, 0);
+				holder.race[i].setCompoundDrawablesWithIntrinsicBounds(EntryUtil.getRaceDrawable(player), 0, 0, 0);
 				holder.race[i].setBackgroundColor(bgColor);
 				holder.playerName[i].setText(player.getName());
 				holder.playerName[i].setBackgroundColor(bgColor);
@@ -228,7 +267,7 @@ public class LandingPage extends Activity {
 			SQLiteDatabase db = dbHelper.getReadableDatabase();
 			String table = "schedule";
 			String[] columns = new String[] { "id", "time", "division",
-					"region", "name" };
+					"region", "round", "name"};
 			String selection = null;
 			String[] selectionArgs = null;
 			String groupBy = null;
@@ -246,7 +285,7 @@ public class LandingPage extends Activity {
 					startPos = entries.size() > 2 ? entries.size() - 2 : 0; 
 				}
 				entries.add(new ScheduleEntry(c.getString(0), c.getString(1), c
-						.getString(2), c.getString(3), c.getString(4)));
+						.getString(2), c.getString(3), c.getString(4) + ": " + c.getString(5)));
 				c.move(1);
 			}
 			c.close();
@@ -254,7 +293,7 @@ public class LandingPage extends Activity {
 			table = "participants";
 			columns = new String[] { "id", "name", "flag", "race", "place",
 					"matcheswon", "matcheslost", "mapswon", "mapslost",
-					"result", "scheduleid" };
+					"result"};
 			orderBy = null;
 			for (ScheduleEntry entry : entries) {
 				selection = "scheduleid = " + String.valueOf(entry.getId());
@@ -265,20 +304,49 @@ public class LandingPage extends Activity {
 					c.close();
 					continue;
 				}
+				entry.setIsGroupEntry(true);
 				while (!c.isLast()) {
-					entry.addPlayer(new GroupPlayerEntry(c.getString(1), c
+					entry.addPlayer(new GroupEntry(c.getString(1), c
 							.getString(2), c.getString(3), c.getString(4), c
 							.getInt(5), c.getInt(6), c.getInt(7), c.getInt(8),
 							c.getString(9)));
 					c.move(1);
 				}
-				entry.addPlayer(new GroupPlayerEntry(c.getString(1), c
+				entry.addPlayer(new GroupEntry(c.getString(1), c
 						.getString(2), c.getString(3), c.getString(4), c
 						.getInt(5), c.getInt(6), c.getInt(7), c.getInt(8), c
 						.getString(9)));
 				c.close();
 			}
 			publishProgress(80);
+			table = "matches";
+			columns = new String[] { "id", "winner", "player1name", "player2name", "player1race", "player2race",
+					"player1flag", "player2flag", "numgames"};
+			orderBy = null;
+			for (ScheduleEntry entry : entries) {
+				selection = "scheduleid = " + String.valueOf(entry.getId()) + " AND matchtype = \"bracket\"";
+				c = db.query(table, columns, selection, selectionArgs, groupBy,
+						having, orderBy);
+				c.moveToFirst();
+				if (c.getCount() == 0) {
+					c.close();
+					continue;
+				}
+				entry.setIsGroupEntry(false);
+				while (!c.isLast()) {
+					entry.addPlayer(new BracketEntry(c.getString(2), c
+							.getString(3), c.getString(4), c
+							.getString(5),c.getString(6), c
+							.getString(7), c.getString(1)));
+					c.move(1);
+				}
+				entry.addPlayer(new BracketEntry(c.getString(2), c
+						.getString(3), c.getString(4), c
+						.getString(5),c.getString(6), c
+						.getString(7), c.getString(1)));
+				c.close();
+			}
+			publishProgress(90);
 			return entries;
 		}
 
@@ -343,158 +411,14 @@ public class LandingPage extends Activity {
 		}
 	}
 
-	private enum Division {
-		PREMIER, CHALLENGER
-	};
-
-	private enum Region {
-		AMERICA, EUROPE, KOREA
-	};
-
-	private enum Race {
-		TERRAN, PROTOSS, ZERG, RANDOM
-	};
-
-	private enum GroupResult {
-		UP, STAYDOWN, NOTYET
-	};
-
-	private class GroupPlayerEntry {
-		private String name;
-		private String country;
-		private Race race;
-		private int place;
-		private int matchesWon;
-		private int matchesLost;
-		private int mapsWon;
-		private int mapsLost;
-		private GroupResult result;
-
-		public GroupPlayerEntry(String name, String country, String race,
-				String place, int matchesWon, int matchesLost, int mapsWon,
-				int mapsLost, String result) {
-			this.name = name;
-			this.country = country;
-			this.race = getRaceFromString(race);
-			this.place = place.length() > 0 ? Integer.parseInt(place) : -1;
-			this.matchesWon = matchesWon;
-			this.matchesLost = matchesLost;
-			this.mapsWon = mapsWon;
-			this.mapsLost = mapsLost;
-			this.result = getResultFromString(result);
-		}
-
-		public int getBackgroundColor() {
-			switch (result) {
-			case UP:
-				return 0xFFCCFFCC;
-			case STAYDOWN:
-				return 0xFFFFDDAA;
-			default:
-				return 0xFFFFFFFF;
-			}
-		}
-
-		public int getFlagDrawable() {
-			return R.drawable.flags_kr;
-		}
-
-		public int getRaceDrawable() {
-			switch (race) {
-			case TERRAN:
-				return R.drawable.raceicons_terran;
-			case ZERG:
-				return R.drawable.raceicons_zerg;
-			case PROTOSS:
-				return R.drawable.raceicons_protoss;
-			default:
-				return R.drawable.raceicons_random;
-			}
-		}
-
-		private GroupResult getResultFromString(String result) {
-			if (result.equalsIgnoreCase("up"))
-				return GroupResult.UP;
-			else if (result.equalsIgnoreCase("staydown"))
-				return GroupResult.STAYDOWN;
-			else
-				return GroupResult.NOTYET;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public String getRaceStr() {
-			if (race == null)
-				return "X";
-			switch (race) {
-			case ZERG:
-				return "Z";
-			case TERRAN:
-				return "T";
-			case PROTOSS:
-				return "P";
-			case RANDOM:
-				return "R";
-			default:
-				return "X";
-			}
-		}
-
-		private Race getRaceFromString(String race) {
-			if (race.equalsIgnoreCase("z"))
-				return Race.ZERG;
-			else if (race.equalsIgnoreCase("t"))
-				return Race.TERRAN;
-			else if (race.equalsIgnoreCase("p"))
-				return Race.PROTOSS;
-			else if (race.equalsIgnoreCase("r"))
-				return Race.RANDOM;
-			else
-				return null;
-		}
-
-		public String getCountry() {
-			return country;
-		}
-
-		public Race getRace() {
-			return race;
-		}
-
-		public int getPlace() {
-			return place;
-		}
-
-		public int getMatchesWon() {
-			return matchesWon;
-		}
-
-		public int getMatchesLost() {
-			return matchesLost;
-		}
-
-		public int getMapsWon() {
-			return mapsWon;
-		}
-
-		public int getMapsLost() {
-			return mapsLost;
-		}
-
-		public GroupResult getResult() {
-			return result;
-		}
-	}
-
 	private class ScheduleEntry {
 		private int id;
 		private long time;
 		private Division division;
 		private Region region;
 		private String name;
-		private ArrayList<GroupPlayerEntry> players;
+		private boolean isGroupEntry;
+		private ArrayList<GroupOrBracketEntry> players;
 
 		public ScheduleEntry(String id, String time, String division,
 				String region, String name) {
@@ -503,7 +427,8 @@ public class LandingPage extends Activity {
 			this.division = setDivisionFromString(division);
 			this.region = setRegionFromString(region);
 			this.name = name;
-			players = new ArrayList<GroupPlayerEntry>();
+			this.isGroupEntry = true;
+			players = new ArrayList<GroupOrBracketEntry>();
 		}
 
 		public int getColor() {
@@ -518,8 +443,16 @@ public class LandingPage extends Activity {
 				return 0xFFFFFFFF;
 			}
 		}
+		
+		public void setIsGroupEntry(boolean isGroupEntry){
+			this.isGroupEntry = isGroupEntry;
+		}
+		
+		public boolean isGroupEntry(){
+			return isGroupEntry;
+		}
 
-		public GroupPlayerEntry getPlayer(int n) {
+		public GroupOrBracketEntry getPlayer(int n) {
 			return players.get(n);
 		}
 
@@ -531,7 +464,7 @@ public class LandingPage extends Activity {
 			return id;
 		}
 
-		public void addPlayer(GroupPlayerEntry player) {
+		public void addPlayer(GroupOrBracketEntry player) {
 			players.add(player);
 		}
 
