@@ -6,6 +6,7 @@
 		public $id;
 		public $matchname;
 		public $matchnum;
+		public $matchtype;
 		public $scheduleid;
 		public $player1name;
 		public $player2name;
@@ -302,6 +303,7 @@
 		global $scheduleIdMap, $matchId;
 		$group_arr = explode('{{HiddenSort|', $mwtext_str);
 		list($region, $division, $round) = splitTitle($title);
+		$m->matchtype = 'group';
 		foreach($group_arr as $group_str){
 			if(substr($group_str, 0, 5) != 'Group')
 				continue;
@@ -347,6 +349,7 @@
 		global $matchId, $scheduleDateMap;
 		$scheduleDateMap[0] = 0;
 		$bracket_arr = explode('{{WCSChallengerBracket', $mwtext_str);
+		$m->matchtype = 'bracket';
 		foreach($bracket_arr as $bracket_str){
 			if(substr($bracket_str, 2, 10) != '<!-- Round')
 				continue;
@@ -430,7 +433,7 @@
 	}
 	
 	function parseMatches($title, $mwtext_str, $bracketType){
-		$st = getInsertQuery('matches', 'id', 'winner', 'player1name', 'player2name', 'player1race', 'player2race', 'player1flag', 'player2flag', 'numgames', 'matchname', 'scheduleid', 'matchnum');
+		$st = getInsertQuery('matches', 'id', 'winner', 'player1name', 'player2name', 'player1race', 'player2race', 'player1flag', 'player2flag', 'numgames', 'matchname', 'scheduleid', 'matchnum', 'matchtype');
 		$m = new Match();
 		
 		if($bracketType == 'group')
@@ -515,7 +518,7 @@
 	 	$db->exec('DROP TABLE IF EXISTS schedule');
 	 	$db->exec('DROP TABLE IF EXISTS participants');
 	 	$db->exec('CREATE TABLE "games" ("id" INTEGER PRIMARY KEY  NOT NULL ,"mapname" TEXT,"mapwinner" INTEGER DEFAULT (null) ,"vodlink" TEXT,"matchid" INTEGER NOT NULL  DEFAULT (null) );');
-	 	$db->exec('CREATE TABLE "matches" ("id" INTEGER PRIMARY KEY  NOT NULL ,"winner" TEXT,"player1name" TEXT,"player2name" TEXT,"player1race" TEXT,"player2race" TEXT,"player1flag" TEXT,"player2flag" TEXT,"numgames" INTEGER DEFAULT (null) ,"matchname" TEXT,"scheduleid" INTEGER NOT NULL  DEFAULT (null) , "matchnum" INTEGER);');
+	 	$db->exec('CREATE TABLE "matches" ("id" INTEGER PRIMARY KEY  NOT NULL ,"winner" TEXT,"player1name" TEXT,"player2name" TEXT,"player1race" TEXT,"player2race" TEXT,"player1flag" TEXT,"player2flag" TEXT,"numgames" INTEGER DEFAULT (null) ,"matchname" TEXT,"scheduleid" INTEGER NOT NULL  DEFAULT (null) , "matchnum" INTEGER, "matchtype" TEXT);');
 	 	$db->exec('CREATE TABLE "schedule" ("id" INTEGER PRIMARY KEY NOT NULL ,"time" INTEGER,"division" TEXT,"region" TEXT,"name" TEXT, "round" TEXT);');
 	 	$db->exec('CREATE TABLE "participants" ("id" INTEGER PRIMARY KEY NOT NULL, "name" TEXT, "flag" TEXT, "race" TEXT, "place" INTEGER, "matcheswon" INTEGER, "matcheslost" INTEGER, "mapswon" INTEGER, "mapslost" INTEGER, "result" TEXT, "scheduleid" INTEGER)');
 		parseSchedule($mediawiki_obj->page[0]->revision->text);
