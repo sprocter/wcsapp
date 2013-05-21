@@ -1,254 +1,12 @@
 <?php
+	require 'Match.php';
+	require 'Game.php';
+	require 'Schedule.php';
+	require 'Participant.php';
+
 	date_default_timezone_set('UTC');
 	$matchId = 0;
 
-	final class Match{
-		public $id;
-		public $matchname;
-		public $matchnum;
-		public $matchtype;
-		public $scheduleid;
-		public $player1name;
-		public $player2name;
-		public $player1race;
-		public $player2race;
-		public $player1flag;
-		public $player2flag;
-		public $winner;
-		public $numgames;
-		
-		static function getTime($s){
-			if(strpos($s, '(') !== false){ 
-				$timestamp = strtotime(substr($s, 0, strpos($s, '(')));
-				return $timestamp * 1000; // Java uses milliseconds since the Unix epoch
-			} else {
-				return 0;
-			}
-		}
-		
-		static function getBracketSummaries($s){
-			$offset = 0;
-			$bmsPos = strpos($s, '{{BracketMatchSummary', $offset) + 21;
-			$summaries = array();
-			while($bmsPos > 21){
-				$offset = strpos($s, '}}', $offset);
-				$length = $offset - $bmsPos;
-				$summaries[] = substr($s, $bmsPos, $length);
-				$bmsPos = strpos($s, '{{BracketMatchSummary', $offset) + 21;
-				$offset++;
-			}
-			return $summaries;
-		}
-		
-		static function getBracketVals($mwStr, $nested){
-			$nameValPairs_arr = explode('|', $mwStr);
-			$summaries = Match::getBracketSummaries($mwStr);
-			$vals = array();
-			foreach($nameValPairs_arr as $nameValPair_str){
-				if(substr($nameValPair_str, 2, 10) == '<!-- Round' || trim($nameValPair_str) == '')
-					continue;
-				$nameAndValPair_arr = explode('=', $nameValPair_str);
-				if(count($nameAndValPair_arr) < 2){
-					continue;
-				}
-				if(substr($nameAndValPair_arr[1], 0, 2) == '{{')
-					$vals[$nameAndValPair_arr[0]] = Match::getBracketVals(array_shift($summaries), true);
-				else
-					if(count($nameAndValPair_arr) > 2)
-						$vals[$nameAndValPair_arr[0]] = trim($nameAndValPair_arr[1] . '=' . $nameAndValPair_arr[2]);
-					else
-						$vals[$nameAndValPair_arr[0]] = trim($nameAndValPair_arr[1]);
-			}
-			return $vals;
-		}
-		
-		static function getName($s){
-			return substr($s, 0, 7);
-		}
-		
-		static function getNum($s){
-			return substr($s, 0, strpos($s, '='));
-		}
-		
-		static function getGroupPlayerName($s, $num){
-			return Match::getValue($s, "player$num");
-		}
-		
-		static function getGroupPlayerRace($s, $num){
-			return Match::getValue($s, "player$num" . "race");
-		}
-		
-		static function getGroupPlayerFlag($s, $num){
-			return Match::getValue($s, "player$num" . "flag");
-		}
-		
-		static function getGroupWinner($s){
-			return Match::getValue($s, 'winner');
-		}
-		
-		static function getNumGames($s){
-			// Note there are sometimes typos in liquipedia's info, so we
-			// count the number of vods.
-			return substr_count($s, 'vodgame');
-		}
-		
-		private static function getValue($s, $key){
-			$keyPos = strpos($s, "|$key=") + strlen($key) + 2;
-			$endPos = strpos($s, '|', $keyPos);
-			$valLength = $endPos - $keyPos;
-			return trim(substr($s, $keyPos, $valLength));
-		}
-	}
-	
-	final class Game{
-		public $mapname;
-		public $mapwinner;
-		public $vodlink;
-		public $matchid;
-		
-		public static function getMapName($s, $n){
-			$keyPos = strpos($s, "|map$n=") + strlen($n) + 5;
-			$endPos = strpos($s, "\n", $keyPos);
-			$valLength = $endPos - $keyPos;
-			return trim(substr($s, $keyPos, $valLength));
-		}
-		
-		public static function getMapWinner($s, $n){
-			$keyPos = strpos($s, "|map$n" . 'win=') + strlen($n) + 8;
-			$endPos = strpos($s, '|', $keyPos) - 1;
-			$valLength = $endPos - $keyPos;
-			return trim(substr($s, $keyPos, $valLength));
-		}
-		
-		public static function getVodLink($s, $n){
-			$keyPos = strpos($s, "|vodgame$n=") + strlen($n) + 9;
-			$endPos = strpos($s, "\n", $keyPos);
-			$valLength = $endPos - $keyPos;
-			return trim(substr($s, $keyPos, $valLength));
-		}
-	}
-	
-	final class Schedule{
-		public $id;
-		public $time;
-		public $division;
-		public $region;
-		public $round;
-		public $name;
-
-		static function getRegion($s){
-			if(stripos($s, 'korea') !== false)
-				return 'KR';
-			else if(stripos($s, 'europe') !== false)
-				return 'EU';
-			else if(stripos($s, 'america') !== false)
-				return 'AM';
-			else
-				return 'XX';
-		}
-		
-		static function getTime($s){
-			if(strpos($s, '(') !== false)
-				$timestamp = strtotime(substr($s, 9, strpos($s, '(') - 9));
-			else if(strpos($s, ' – ') !== false)
-				$timestamp = strtotime(substr($s, 9, strpos($s, ' – ') - 9));			
-			else
-				$timestamp = strtotime(substr($s, 9, strpos($s, '</small>') - 9));
-			if($timestamp !== false)
-				return $timestamp * 1000; // Java uses milliseconds since the Unix epoch
-			else
-				throw new Exception("TimeFormatException: Couldn't parse $s");
-		}
-	
-		static function getDivision($s){
-			if(stripos($s, 'premier') !== false || stripos($s, 'code_s') !== false)
-				return 'P';
-			else if(stripos($s, 'challenger') !== false || stripos($s, 'code_s') !== false) 
-				return 'C';
-			else
-				return 'X';
-		}
-	
-		static function getRoundAndName($s){
-			$dbl_curly_brace_pos = strpos($s, '}}');
-			$pipe_pos = strpos($s, '|', $dbl_curly_brace_pos) + 1;
-			$dbl_square_brace_pos = strpos($s, ']]', $pipe_pos);
-			$match_name_len = $dbl_square_brace_pos - $pipe_pos;
-			return substr($s, $pipe_pos, $match_name_len);
-		}
-	
-		static function getRound($s){
-			$roPos = strpos($s, 'Ro');
-			if($roPos !== false)
-				return substr($s, $roPos, 4);
-			else {
-				$colonPos = strpos($s, ': ');
-				if($colonPos !== false)
-					return substr($s, 0, $colonPos);
-				else
-					return $s;
-			}
-			
-		}
-		
-		static function getName($s){
-			$colonPos = strpos($s, ': ');
-			if($colonPos !== false)
-				return substr($s, $colonPos + 2);
-			else
-				return $s;
-		}
-	}
-
-	final class Participant{
-		public $name;
-		public $flag;
-		public $race;
-		public $place;
-		public $matcheswon;
-		public $matcheslost;
-		public $mapswon;
-		public $mapslost;
-		public $result;
-		public $scheduleid;
-		
-		public static function getGroupName($s){
-			return trim(substr($s, 0, strpos($s, "}}")));
-		}
-		
-		public static function getName($s){
-			$dblCurlyBracePos = strpos($s, "}}");
-			$pipePos = strrpos(substr($s, 0, $dblCurlyBracePos), '|') + 1;
-			$nameLength = $dblCurlyBracePos - $pipePos;
-			$name = trim(substr($s, $pipePos, $nameLength));
-			if(strpos($name, '=') !== false){
-				$equalsPos = strpos($name, '=') + 1;
-				$spacePos = strpos($name, ' ');
-				$nameLength = $spacePos - $equalsPos;
-				$name = substr($name, $equalsPos, $nameLength);
-			}
-			return $name;		
-		}
-		
-		public static function getResult($s){
-			if(strpos($s, '|bg=') !== false)
-				$key = 'bg';
-			else
-				$key = 'pbg';
-			$keyPos = strpos($s, "|$key=") + strlen($key) + 2;
-			$endPos = strpos($s, '}}', $keyPos);
-			$valLength = $endPos - $keyPos;
-			return trim(substr($s, $keyPos, $valLength));			
-		}
-		
-		public static function getValue($s, $key){
-			$keyPos = strpos($s, "|$key=") + strlen($key) + 2;
-			$endPos = strpos($s, '|', $keyPos);
-			$valLength = $endPos - $keyPos;
-			return trim(substr($s, $keyPos, $valLength));
-		}
-	}
-	
 	function splitTitle($title){
 		$title_arr = explode('/', $title);
 		
@@ -469,12 +227,14 @@
 				$p->flag = Participant::getValue($s, 'flag');
 				$p->race = Participant::getValue($s, 'race');
 				$p->place = Participant::getValue($s, 'place');
+				if($p->place <= 0)
+					echo $s;
 				$p->matcheswon = Participant::getValue($s, 'win_m');
 				$p->matcheslost = Participant::getValue($s, 'lose_m');
 				$p->mapswon = Participant::getValue($s, 'win_g');
 				$p->mapslost = Participant::getValue($s, 'lose_g');
 				$p->result = Participant::getResult($s);
-				//TODO: Put this in it's own method...
+				//TODO: Put this in its own method...
 				if(!array_key_exists($region, $scheduleIdMap) || 
 				!array_key_exists($division, $scheduleIdMap[$region]) ||
 				!array_key_exists($round, $scheduleIdMap[$region][$division]) ||
@@ -530,10 +290,6 @@
 				parseParticipants($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text, 'group');
 			}
 		}
-		/*for($i = 1; $i <=1; $i++){
-			parseMatches($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text, 'bracket');
-	//		parseParticipants($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text, 'bracket');
-		}*/
 		$db = null;
 		`echo '.dump' | sqlite3 wcsapp.sqlite | gzip -c > wcsapp.dump.gz`;
 	} catch (Exception $e){
