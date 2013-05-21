@@ -12,6 +12,8 @@
 		public $player2race;
 		public $player1flag;
 		public $player2flag;
+		public $player1wins;
+		public $player2wins;
 		public $winner;
 		public $numgames;
 		

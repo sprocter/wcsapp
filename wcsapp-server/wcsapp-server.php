@@ -120,6 +120,8 @@
 			$m->player2race = $bracketVals_arr['R1D2race'];
 			$m->player1flag = $bracketVals_arr['R1D1flag'];
 			$m->player2flag = $bracketVals_arr['R1D2flag'];
+			$m->player1wins = $bracketVals_arr['R1D1score'];
+			$m->player2wins = $bracketVals_arr['R1D2score'];
 			$m->scheduleid = $scheduleDateMap[Match::getTime($bracketVals_arr['R1G1details']['date'])];
 			if(isset($bracketVals_arr['R1D1win']) && $bracketVals_arr['R1D1win'] == '1')
 				$m->winner = '1';
@@ -139,6 +141,8 @@
 			$m->player2race = $bracketVals_arr['R1D4race'];
 			$m->player1flag = $bracketVals_arr['R1D3flag'];
 			$m->player2flag = $bracketVals_arr['R1D4flag'];
+			$m->player1wins = $bracketVals_arr['R1D3score'];
+			$m->player2wins = $bracketVals_arr['R1D4score'];
 			$m->scheduleid = $scheduleDateMap[Match::getTime($bracketVals_arr['R1G2details']['date'])];
 			if(isset($bracketVals_arr['R1D3win']) && $bracketVals_arr['R1D3win'] == '1')
 				$m->winner = '1';
@@ -158,6 +162,8 @@
 			$m->player2race = $bracketVals_arr['R2W2race'];
 			$m->player1flag = $bracketVals_arr['R2W1flag'];
 			$m->player2flag = $bracketVals_arr['R2W2flag'];
+			$m->player1wins = $bracketVals_arr['R2W1score'];
+			$m->player2wins = $bracketVals_arr['R2W2score'];
 			$m->scheduleid = $scheduleDateMap[Match::getTime($bracketVals_arr['R2G1details']['date'])];
 			if(isset($bracketVals_arr['R2W1win']) && $bracketVals_arr['R2W1win'] == '1')
 				$m->winner = '1';
@@ -177,6 +183,8 @@
 			$m->player2race = $bracketVals_arr['R3D1race'];
 			$m->player1flag = $bracketVals_arr['R3W1flag'];
 			$m->player2flag = $bracketVals_arr['R3D1flag'];
+			$m->player1wins = $bracketVals_arr['R3W1score'];
+			$m->player2wins = $bracketVals_arr['R3D1score'];
 			$m->scheduleid = $scheduleDateMap[Match::getTime($bracketVals_arr['R3G1details']['date'])];
 			if(isset($bracketVals_arr['R3W1win']) && $bracketVals_arr['R3W1win'] == '1')
 				$m->winner = '1';
@@ -191,13 +199,15 @@
 	}
 	
 	function parseMatches($title, $mwtext_str, $bracketType){
-		$st = getInsertQuery('matches', 'id', 'winner', 'player1name', 'player2name', 'player1race', 'player2race', 'player1flag', 'player2flag', 'numgames', 'matchname', 'scheduleid', 'matchnum', 'matchtype');
-		$m = new Match();
-		
-		if($bracketType == 'group')
+		if($bracketType == 'group'){
+			$st = getInsertQuery('matches', 'id', 'winner', 'player1name', 'player2name', 'player1race', 'player2race', 'player1flag', 'player2flag', 'numgames', 'matchname', 'scheduleid', 'matchnum', 'matchtype');
+			$m = new Match();
 			parseMatchesFromGroup($m, $title, $mwtext_str, $st);
-		else if($bracketType == 'bracket')
+		} else if($bracketType == 'bracket') {
+			$st = getInsertQuery('matches', 'id', 'winner', 'player1name', 'player2name', 'player1race', 'player2race', 'player1flag', 'player2flag', 'numgames', 'matchname', 'scheduleid', 'matchnum', 'matchtype', 'player1wins', 'player2wins');
+			$m = new Match();
 			parseMatchesFromBracket($m, $title, $mwtext_str, $st);
+		}
 	}
 	
 	function getInsertQuery($tableName){
@@ -227,8 +237,6 @@
 				$p->flag = Participant::getValue($s, 'flag');
 				$p->race = Participant::getValue($s, 'race');
 				$p->place = Participant::getValue($s, 'place');
-				if($p->place <= 0)
-					echo $s;
 				$p->matcheswon = Participant::getValue($s, 'win_m');
 				$p->matcheslost = Participant::getValue($s, 'lose_m');
 				$p->mapswon = Participant::getValue($s, 'win_g');
@@ -278,7 +286,7 @@
 	 	$db->exec('DROP TABLE IF EXISTS schedule');
 	 	$db->exec('DROP TABLE IF EXISTS participants');
 	 	$db->exec('CREATE TABLE "games" ("id" INTEGER PRIMARY KEY  NOT NULL ,"mapname" TEXT,"mapwinner" INTEGER DEFAULT (null) ,"vodlink" TEXT,"matchid" INTEGER NOT NULL  DEFAULT (null) );');
-	 	$db->exec('CREATE TABLE "matches" ("id" INTEGER PRIMARY KEY  NOT NULL ,"winner" TEXT,"player1name" TEXT,"player2name" TEXT,"player1race" TEXT,"player2race" TEXT,"player1flag" TEXT,"player2flag" TEXT,"numgames" INTEGER DEFAULT (null) ,"matchname" TEXT,"scheduleid" INTEGER NOT NULL  DEFAULT (null) , "matchnum" INTEGER, "matchtype" TEXT);');
+	 	$db->exec('CREATE TABLE "matches" ("id" INTEGER PRIMARY KEY  NOT NULL ,"winner" TEXT,"player1name" TEXT,"player2name" TEXT,"player1race" TEXT,"player2race" TEXT,"player1flag" TEXT,"player2flag" TEXT,"numgames" INTEGER DEFAULT (null) ,"matchname" TEXT,"scheduleid" INTEGER NOT NULL  DEFAULT (null) , "matchnum" INTEGER, "matchtype" TEXT, "player1wins" INTEGER, "player2wins" INTEGER);');
 	 	$db->exec('CREATE TABLE "schedule" ("id" INTEGER PRIMARY KEY NOT NULL ,"time" INTEGER,"division" TEXT,"region" TEXT,"name" TEXT, "round" TEXT);');
 	 	$db->exec('CREATE TABLE "participants" ("id" INTEGER PRIMARY KEY NOT NULL, "name" TEXT, "flag" TEXT, "race" TEXT, "place" INTEGER, "matcheswon" INTEGER, "matcheslost" INTEGER, "mapswon" INTEGER, "mapslost" INTEGER, "result" TEXT, "scheduleid" INTEGER)');
 		parseSchedule($mediawiki_obj->page[0]->revision->text);
