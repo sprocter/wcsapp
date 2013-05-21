@@ -141,4 +141,34 @@ public class EntryUtil {
 			return Country.UNKNOWN;
 		}
 	}
+
+	public static int getWinsFromString(String wins) {
+		if(wins.length() == 0)
+			return 0;
+		else if(wins.equalsIgnoreCase("w"))
+			return 1;
+		else if(wins.equalsIgnoreCase("-"))
+			return 0;
+		else
+			return Integer.parseInt(wins); // TODO: Handle this throwing an exception
+	}
+	
+	public static String getWinsStr(int playerNum, BracketEntry player){
+		if(player.isWalkover())
+			if(playerNum == 1)
+				if(player.getP1wins() == 1)
+					return "W";
+				else
+					return "-";
+			else
+				if(player.getP2wins() == 1)
+					return "W";
+				else
+					return "-";
+		else
+			if(playerNum == 1)
+				return Integer.toString(player.getP1wins());
+			else
+				return Integer.toString(player.getP2wins());
+	}
 }

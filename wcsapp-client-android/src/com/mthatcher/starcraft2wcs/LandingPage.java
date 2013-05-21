@@ -37,7 +37,7 @@ import com.mthatcher.starcraft2wcs.entry.ViewHolder;
 
 public class LandingPage extends Activity {
 
-	private final String DATA_URL = "http://objects.dreamhost.com/sc2wcsapp/data/sqlite.gz";
+	private final String DATA_URL = "http://skorchedearth.com/sandbox/wcsapp/wcsapp/wcsapp-server/wcsapp.dump.gz";
 	private final String DEBUG_TAG = "LANDING PAGE";
 	public int startPos;
 
@@ -203,8 +203,8 @@ public class LandingPage extends Activity {
 				holder.flag[p2i].setCompoundDrawablesWithIntrinsicBounds(
 						EntryUtil.getFlagDrawable(player.getP2Country()), 0, 0,
 						0);
-				holder.mapScore[p1i].setText("1");
-				holder.mapScore[p2i].setText("1");
+				holder.mapScore[p1i].setText(EntryUtil.getWinsStr(1, player));
+				holder.mapScore[p2i].setText(EntryUtil.getWinsStr(2, player));
 
 				if (player.getWinner() == 1) {
 					holder.playerName[p1i].setBackgroundColor(winnerColor);
@@ -351,7 +351,7 @@ public class LandingPage extends Activity {
 			table = "matches";
 			columns = new String[] { "id", "winner", "player1name",
 					"player2name", "player1race", "player2race", "player1flag",
-					"player2flag", "numgames" };
+					"player2flag", "numgames", "player1wins", "player2wins"};
 			orderBy = null;
 			for (ScheduleEntry entry : entries) {
 				selection = "scheduleid = " + String.valueOf(entry.getId())
@@ -367,12 +367,12 @@ public class LandingPage extends Activity {
 				while (!c.isLast()) {
 					entry.addPlayer(new BracketEntry(c.getString(2), c
 							.getString(3), c.getString(4), c.getString(5), c
-							.getString(6), c.getString(7), c.getString(1)));
+							.getString(6), c.getString(7), c.getString(1), c.getString(9), c.getString(10)));
 					c.move(1);
 				}
 				entry.addPlayer(new BracketEntry(c.getString(2),
 						c.getString(3), c.getString(4), c.getString(5), c
-								.getString(6), c.getString(7), c.getString(1)));
+								.getString(6), c.getString(7), c.getString(1), c.getString(9), c.getString(10)));
 				c.close();
 			}
 			publishProgress(90);
