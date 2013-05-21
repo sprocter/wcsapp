@@ -186,7 +186,8 @@ public class LandingPage extends Activity {
 			holder.groupName.setBackgroundColor(winnerColor);
 			holder.date.setText(item.getTime());
 			int p1i, p2i; // Player 1 and Player 2 indices
-			for (int i = 0; i < numPlayers; i++) {
+			int i, j = 0;
+			for (i = 0; i < numPlayers; i++) {
 				BracketEntry player = (BracketEntry) item.getPlayer(i);
 				p1i = i * 2;
 				p2i = i * 2 + 1;
@@ -222,6 +223,25 @@ public class LandingPage extends Activity {
 					holder.flag[p2i].setBackgroundColor(winnerColor);
 				}
 			}
+			
+			for(j = i; j < 4; j++){
+				p1i = j * 2;
+				p2i = j * 2 + 1;
+				holder.playerName[p1i].setText("-");
+				holder.playerName[p2i].setText("-");
+				holder.race[p1i].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+				holder.race[p2i].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+				holder.flag[p1i].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+				holder.flag[p2i].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+				holder.mapScore[p1i].setText("-");
+				holder.mapScore[p2i].setText("-");
+				holder.playerName[p1i].setBackgroundColor(0x00FFFFFF);
+				holder.race[p1i].setBackgroundColor(0x00FFFFFF);
+				holder.flag[p1i].setBackgroundColor(0x00FFFFFF);
+				holder.playerName[p2i].setBackgroundColor(0x00FFFFFF);
+				holder.race[p2i].setBackgroundColor(0x00FFFFFF);
+				holder.flag[p2i].setBackgroundColor(0x00FFFFFF);
+			}
 		}
 
 		private void getGroupView(ViewHolder holder, ScheduleEntry item) {
@@ -232,10 +252,11 @@ public class LandingPage extends Activity {
 					item.getTitleDrawable(), 0, 0, 0);
 			holder.groupName.setBackgroundColor(bgColor);
 			holder.date.setText(item.getTime());
-			for (int i = 0; i < numPlayers; i++) {
+			int i, j = 0;
+			for (i = 0; i < numPlayers; i++) {
 				GroupEntry player = (GroupEntry) item.getPlayer(i);
 				bgColor = player.getBackgroundColor();
-				if(player.getPlace() > 0)
+				if(player.getPlace() > 0) //TODO: Extract this to EntryUtil
 					holder.rank[i].setText(Integer.toString(player.getPlace()));
 				else{
 					holder.rank[i].setText("-");
@@ -261,6 +282,21 @@ public class LandingPage extends Activity {
 						.setText(Integer.toString(player.getMapsWon()) + "-"
 								+ Integer.toString(player.getMapsLost()));
 				holder.mapScore[i].setBackgroundColor(bgColor);
+			}
+			for(j = i; j < 4; j++){
+				bgColor = 0x00FFFFFF;
+				holder.rank[j].setText("-");
+				holder.rank[j].setBackgroundColor(bgColor);
+				holder.flag[j].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+				holder.flag[j].setBackgroundColor(bgColor);
+				holder.race[j].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+				holder.race[j].setBackgroundColor(bgColor);
+				holder.playerName[j].setText("-");
+				holder.playerName[j].setBackgroundColor(bgColor);
+				holder.matchScore[j].setText("-");
+				holder.matchScore[j].setBackgroundColor(bgColor);
+				holder.mapScore[j].setText("-");
+				holder.mapScore[j].setBackgroundColor(bgColor);
 			}
 		}
 
