@@ -3,13 +3,14 @@ package com.mthatcher.starcraft2wcs.entry;
 import android.view.View;
 import android.widget.TextView;
 
+import com.mthatcher.starcraft2wcs.LandingPage.Country;
 import com.mthatcher.starcraft2wcs.LandingPage.MatchResult;
 import com.mthatcher.starcraft2wcs.LandingPage.Race;
 import com.mthatcher.starcraft2wcs.R;
 
 public class GroupEntry implements GroupOrBracketEntry{
 	private String name;
-	private String country;
+	private Country country;
 	private Race race;
 	private int place;
 	private int matchesWon;
@@ -22,7 +23,7 @@ public class GroupEntry implements GroupOrBracketEntry{
 			String place, int matchesWon, int matchesLost, int mapsWon,
 			int mapsLost, String result) {
 		this.name = name;
-		this.country = country;
+		this.country = EntryUtil.getCountryFromString(country);
 		this.race = EntryUtil.getRaceFromString(race);
 		this.place = place.length() > 0 ? Integer.parseInt(place) : -1;
 		this.matchesWon = matchesWon;
@@ -32,6 +33,10 @@ public class GroupEntry implements GroupOrBracketEntry{
 		this.result = getResultFromString(result);
 	}
 
+	public Country getCountry(){
+		return country;
+	}
+	
 	public int getBackgroundColor() {
 		switch (result) {
 		case WIN:

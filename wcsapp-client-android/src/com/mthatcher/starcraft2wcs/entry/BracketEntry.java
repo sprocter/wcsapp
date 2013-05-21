@@ -3,14 +3,15 @@ package com.mthatcher.starcraft2wcs.entry;
 import android.view.View;
 import android.widget.TextView;
 
+import com.mthatcher.starcraft2wcs.LandingPage.Country;
 import com.mthatcher.starcraft2wcs.LandingPage.Race;
 import com.mthatcher.starcraft2wcs.R;
 
 public class BracketEntry implements GroupOrBracketEntry{
 	private String p1Name;
 	private String p2Name;
-	private String p1Country;
-	private String p2Country;
+	private Country p1Country;
+	private Country p2Country;
 	private Race p1Race;
 	private Race p2Race;
 	private int winner;
@@ -18,8 +19,8 @@ public class BracketEntry implements GroupOrBracketEntry{
 	public BracketEntry(String p1Name, String p2Name, String p1Race, String p2Race, String p1Country, String p2Country, String winner) {
 		this.p1Name = p1Name;
 		this.p2Name = p2Name;
-		this.p1Country = p1Country;
-		this.p2Country = p2Country;
+		this.p1Country = EntryUtil.getCountryFromString(p1Country);
+		this.p2Country = EntryUtil.getCountryFromString(p2Country);
 		this.p1Race = EntryUtil.getRaceFromString(p1Race);
 		this.p2Race = EntryUtil.getRaceFromString(p2Race);
 		this.winner = winner.equals("") ? 0 : Integer.parseInt(winner);
@@ -48,11 +49,11 @@ public class BracketEntry implements GroupOrBracketEntry{
 		return p2Name;
 	}
 
-	public String getP1Country() {
+	public Country getP1Country() {
 		return p1Country;
 	}
 
-	public String getP2Country() {
+	public Country getP2Country() {
 		return p2Country;
 	}
 
