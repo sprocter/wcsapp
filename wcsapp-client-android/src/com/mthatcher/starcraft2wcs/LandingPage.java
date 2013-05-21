@@ -54,7 +54,7 @@ public class LandingPage extends Activity {
 	}
 
 	public enum Country {
-		AR, AT, AU, BE, CA, CN, CL, DE, DK, ES, FI, FR, GB, KR, MX, NL, NO, NZ, PE, PL, RU, SE, TW, UA, US
+		AR, AT, AU, BE, CA, CN, CL, DE, DK, ES, FI, FR, GB, KR, MX, NL, NO, NZ, PE, PL, RU, SE, TW, UA, US, UNKNOWN
 	}
 
 	public enum MatchResult {
@@ -235,7 +235,12 @@ public class LandingPage extends Activity {
 			for (int i = 0; i < numPlayers; i++) {
 				GroupEntry player = (GroupEntry) item.getPlayer(i);
 				bgColor = player.getBackgroundColor();
-				holder.rank[i].setText(Integer.toString(player.getPlace()));
+				if(player.getPlace() > 0)
+					holder.rank[i].setText(Integer.toString(player.getPlace()));
+				else{
+					holder.rank[i].setText("-");
+					bgColor = 0x00FFFFFF;
+				}
 				holder.rank[i].setBackgroundColor(bgColor);
 				holder.flag[i]
 						.setCompoundDrawablesWithIntrinsicBounds(

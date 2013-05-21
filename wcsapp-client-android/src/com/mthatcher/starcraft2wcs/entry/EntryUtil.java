@@ -19,59 +19,58 @@ public class EntryUtil {
 	public static int getFlagDrawable(Country country) {
 		switch(country){
 		case AR:
-			break;
+			return R.drawable.flags_ar;
 		case AT:
-			break;
+			return R.drawable.flags_at;
 		case AU:
-			break;
+			return R.drawable.flags_au;
 		case BE:
-			break;
+			return R.drawable.flags_be;
 		case CA:
-			break;
+			return R.drawable.flags_ca;
 		case CL:
-			break;
+			return R.drawable.flags_cl;
 		case CN:
-			break;
+			return R.drawable.flags_cn;
 		case DE:
-			break;
+			return R.drawable.flags_de;
 		case DK:
-			break;
+			return R.drawable.flags_dk;
 		case ES:
-			break;
+			return R.drawable.flags_es;
 		case FI:
-			break;
+			return R.drawable.flags_fi;
 		case FR:
-			break;
+			return R.drawable.flags_fr;
 		case GB:
-			break;
+			return R.drawable.flags_gb;
 		case KR:
-			break;
-		case MX:
-			break;
-		case NL:
-			break;
-		case NO:
-			break;
-		case NZ:
-			break;
-		case PE:
-			break;
-		case PL:
-			break;
-		case RU:
-			break;
-		case SE:
-			break;
-		case TW:
-			break;
-		case UA:
-			break;
-		case US:
-			break;
-		default:
 			return R.drawable.flags_kr;
+		case MX:
+			return R.drawable.flags_mx;
+		case NL:
+			return R.drawable.flags_nl;
+		case NO:
+			return R.drawable.flags_no;
+		case NZ:
+			return R.drawable.flags_nz;
+		case PE:
+			return R.drawable.flags_pe;
+		case PL:
+			return R.drawable.flags_pl;
+		case RU:
+			return R.drawable.flags_ru;
+		case SE:
+			return R.drawable.flags_se;
+		case TW:
+			return R.drawable.flags_tw;
+		case UA:
+			return R.drawable.flags_ua;
+		case US:
+			return R.drawable.flags_us;
+		default:
+			return R.drawable.flags_fam; // A silly flag for those with no identifiable country.
 		}
-		return 0;
 	}
 
 	public static int getRaceDrawable(Race race) {
@@ -139,7 +138,7 @@ public class EntryUtil {
 		} else if (country.equalsIgnoreCase("us") || country.equalsIgnoreCase("usa")){
 			return Country.US;
 		} else {
-			return Country.KR;
+			return Country.UNKNOWN;
 		}
 	}
 }
