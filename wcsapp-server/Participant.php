@@ -16,6 +16,8 @@ final class Participant{
 		}
 		
 		public static function getName($s){
+			$s = str_replace('{{TA|2013_WCS_Season_1_America/Challenger#Bracket Stage}}', '',$s);
+			$s = str_replace('{{TA|2013_WCS_Season_1_Europe/Challenger#Bracket Stage}}', '',$s);
 			$dblCurlyBracePos = strpos($s, "}}");
 			$pipePos = strrpos(substr($s, 0, $dblCurlyBracePos), '|') + 1;
 			$nameLength = $dblCurlyBracePos - $pipePos;

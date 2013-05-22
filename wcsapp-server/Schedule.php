@@ -56,16 +56,16 @@ final class Schedule{
 			if($roPos !== false){
 				$roPos = strpos($s, 'Round of');
 				if ($roPos !== false) {
-					return 'Ro' . substr($s, $roPos + 9, 2);
+					return trim('Ro' . substr($s, $roPos + 9, 2));
 				} else {
-					return substr($s, $roPos+16, 4);
+					return trim(substr($s, $roPos+16, 4));
 				}
 			} else {
 				$colonPos = strpos($s, ': ');
 				if($colonPos !== false)
-					return substr($s, 0, $colonPos);
+					return trim(substr($s, 0, $colonPos));
 				else 
-					return $s;				
+					return trim($s);				
 			}
 			
 		}

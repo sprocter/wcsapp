@@ -25,16 +25,16 @@ function getScheduleID(){
 	} else {
 		$unixtime = func_get_arg(0);
 		if(!array_key_exists($unixtime, $scheduleDateMap)){
-			if(array_key_exists($unixtime - 3600, $scheduleDateMap)) {
-				file_put_contents('warnings.txt', date(DateTime::RFC1123) . ' Warning: Coerced start time of ' . $scheduleDateMap[$unixtime - 3600] . " backward 1 hour! \n", FILE_APPEND);
-				return $scheduleDateMap[$unixtime - 3600];
-			} else if(array_key_exists($unixtime + 3600, $scheduleDateMap)) {
-				file_put_contents('warnings.txt', date(DateTime::RFC1123) . ' Warning: Coerced start time of ' . $scheduleDateMap[$unixtime + 3600] . " forward 1 hour! \n", FILE_APPEND);
-				return $scheduleDateMap[$unixtime + 3600];
-			} else {
+// 			if(array_key_exists($unixtime - 3600, $scheduleDateMap)) {
+// 				file_put_contents('warnings.txt', date(DateTime::RFC1123) . ' Warning: Coerced start time of ' . $scheduleDateMap[$unixtime - 3600] . " backward 1 hour! \n", FILE_APPEND);
+// 				return $scheduleDateMap[$unixtime - 3600];
+// 			} else if(array_key_exists($unixtime + 3600, $scheduleDateMap)) {
+// 				file_put_contents('warnings.txt', date(DateTime::RFC1123) . ' Warning: Coerced start time of ' . $scheduleDateMap[$unixtime + 3600] . " forward 1 hour! \n", FILE_APPEND);
+// 				return $scheduleDateMap[$unixtime + 3600];
+// 			} else {
 				file_put_contents('warnings.txt', date(DateTime::RFC1123) . " No Schedule ID found for $unixtime \n", FILE_APPEND);
 				return false;
-			}
+// 			}
 		} else
 			return $scheduleDateMap[$unixtime];
 	}
