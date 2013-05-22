@@ -25,9 +25,12 @@ final class Schedule{
 				$timestamp = strtotime(substr($s, 9, strpos($s, ' – ') - 9));			
 			else
 				$timestamp = strtotime(substr($s, 9, strpos($s, '</small>') - 9));
-			if($timestamp !== false)
-				return $timestamp * 1000; // Java uses milliseconds since the Unix epoch
-			else
+			if($timestamp !== false){
+				if($timestamp < 0){
+					$wat = 8;
+				}
+				return $timestamp;
+			} else
 				throw new Exception("TimeFormatException: Couldn't parse $s");
 		}
 	
@@ -50,14 +53,19 @@ final class Schedule{
 	
 		static function getRound($s){
 			$roPos = strpos($s, 'Ro');
-			if($roPos !== false)
-				return substr($s, $roPos, 4);
-			else {
+			if($roPos !== false){
+				$roPos = strpos($s, 'Round of');
+				if ($roPos !== false) {
+					return 'Ro' . substr($s, $roPos + 9, 2);
+				} else {
+					return substr($s, $roPos, 4);
+				}
+			} else {
 				$colonPos = strpos($s, ': ');
 				if($colonPos !== false)
 					return substr($s, 0, $colonPos);
-				else
-					return $s;
+				else 
+					return $s;				
 			}
 			
 		}

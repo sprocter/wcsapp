@@ -20,7 +20,7 @@
 		static function getTime($s){
 			if(strpos($s, '(') !== false){ 
 				$timestamp = strtotime(substr($s, 0, strpos($s, '(')));
-				return $timestamp * 1000; // Java uses milliseconds since the Unix epoch
+				return $timestamp;
 			} else {
 				return 0;
 			}

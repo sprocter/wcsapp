@@ -6,6 +6,33 @@
 
 	date_default_timezone_set('UTC');
 	$matchId = 0;
+	
+	function getScheduleID($region, $division, $round, $scheduleName){
+		global $scheduleIdMap, $scheduleDateMap;
+		if(isset($division))
+			if(!array_key_exists($region, $scheduleIdMap) || 
+				!array_key_exists($division, $scheduleIdMap[$region]) ||
+				!array_key_exists($round, $scheduleIdMap[$region][$division]) ||
+				!array_key_exists($scheduleName, $scheduleIdMap[$region][$division][$round])){
+				file_put_contents('warnings.txt', date(DateTime::RFC1123) . " No Schedule ID found for $region - $division - $round - $scheduleName \n", FILE_APPEND);
+				return false;
+			} else 
+				return  $scheduleIdMap[$region][$division][$round][$scheduleName] * 1000;  // Java uses milliseconds since the Unix epoch
+		else
+			if(!array_key_exists($region, $scheduleDateMap)){
+				if(array_key_exists($region - 3600, $scheduleDateMap)) {
+					file_put_contents('warnings.txt', date(DateTime::RFC1123) . ' Warning: Coerced start time of ' . $scheduleDateMap[$region - 3600] . " backward 1 hour! \n", FILE_APPEND);
+					return $scheduleDateMap[$region - 3600];
+				} else if(array_key_exists($region + 3600, $scheduleDateMap)) {
+					file_put_contents('warnings.txt', date(DateTime::RFC1123) . ' Warning: Coerced start time of ' . $scheduleDateMap[$region + 3600] . " forward 1 hour! \n", FILE_APPEND);
+					return $scheduleDateMap[$region + 3600];
+				} else { 
+					file_put_contents('warnings.txt', date(DateTime::RFC1123) . " No Schedule ID found for $region \n", FILE_APPEND);
+					return false;
+				}
+			} else 
+				return $scheduleDateMap[$region] * 1000;  // Java uses milliseconds since the Unix epoch
+	}
 
 	function splitTitle($title){
 		$title_arr = explode('/', $title);
@@ -66,14 +93,9 @@
 			if(substr($group_str, 0, 5) != 'Group')
 				continue;
 			$scheduleName = Match::getName($group_str);
-			if(!array_key_exists($region, $scheduleIdMap) || 
-				!array_key_exists($division, $scheduleIdMap[$region]) ||
-				!array_key_exists($round, $scheduleIdMap[$region][$division]) ||
-				!array_key_exists($scheduleName, $scheduleIdMap[$region][$division][$round]))
+			$scheduleId = getScheduleId($region, $division, $round, $scheduleName);
+			if ($scheduleId === false)
 				continue;
-			$scheduleId = $scheduleIdMap[$region][$division][$round][$scheduleName];
-			//if($scheduleId == null || $scheduleId == '')
-				// Shouldn't happen...
 			$match_arr = explode('|match', $group_str);
 			foreach($match_arr as $match_str){
 				if(strpos($match_str, 'MatchMaps') === false)
@@ -109,6 +131,8 @@
 		global $matchId, $scheduleDateMap;
 		$scheduleDateMap[0] = 0;
 		$bracket_arr = explode('{{WCSChallengerBracket', $mwtext_str);
+		if(count($bracket_arr) == 1)
+			$bracket_arr = explode('{{CodeABracket', $mwtext_str);
 		$m->matchtype = 'bracket';
 		foreach($bracket_arr as $bracket_str){
 			if(substr($bracket_str, 2, 10) != '<!-- Round')
@@ -124,7 +148,7 @@
 			$m->player2flag = $bracketVals_arr['R1D2flag'];
 			$m->player1wins = $bracketVals_arr['R1D1score'];
 			$m->player2wins = $bracketVals_arr['R1D2score'];
-			$m->scheduleid = $scheduleDateMap[Match::getTime($bracketVals_arr['R1G1details']['date'])];
+			$m->scheduleid = getScheduleId(Match::getTime($bracketVals_arr['R1G1details']['date']));
 			if(isset($bracketVals_arr['R1D1win']) && $bracketVals_arr['R1D1win'] == '1')
 				$m->winner = '1';
 			else if(isset($bracketVals_arr['R1D2win']))
@@ -133,7 +157,8 @@
 			while(isset($bracketVals_arr['R1G1details']["map$i"]))
 				$i++;
 			$m->numgames = $i - 1;
-			$st->execute((array)$m);
+			if($m->scheduleid !== false)
+				$st->execute((array)$m);
 			
 			$matchId++;
 			$m->id = $matchId;
@@ -145,7 +170,7 @@
 			$m->player2flag = $bracketVals_arr['R1D4flag'];
 			$m->player1wins = $bracketVals_arr['R1D3score'];
 			$m->player2wins = $bracketVals_arr['R1D4score'];
-			$m->scheduleid = $scheduleDateMap[Match::getTime($bracketVals_arr['R1G2details']['date'])];
+			$m->scheduleid = getScheduleId(Match::getTime($bracketVals_arr['R1G2details']['date']));
 			if(isset($bracketVals_arr['R1D3win']) && $bracketVals_arr['R1D3win'] == '1')
 				$m->winner = '1';
 			else if(isset($bracketVals_arr['R1D4win']))
@@ -154,7 +179,8 @@
 			while(isset($bracketVals_arr['R1G2details']["map$i"]))
 				$i++;
 			$m->numgames = $i - 1;
-			$st->execute((array)$m);
+			if($m->scheduleid !== false)
+				$st->execute((array)$m);
 			
 			$matchId++;
 			$m->id = $matchId;
@@ -166,7 +192,7 @@
 			$m->player2flag = $bracketVals_arr['R2W2flag'];
 			$m->player1wins = $bracketVals_arr['R2W1score'];
 			$m->player2wins = $bracketVals_arr['R2W2score'];
-			$m->scheduleid = $scheduleDateMap[Match::getTime($bracketVals_arr['R2G1details']['date'])];
+			$m->scheduleid = getScheduleId(Match::getTime($bracketVals_arr['R2G1details']['date']));
 			if(isset($bracketVals_arr['R2W1win']) && $bracketVals_arr['R2W1win'] == '1')
 				$m->winner = '1';
 			else if(isset($bracketVals_arr['R2W2win']))
@@ -175,7 +201,8 @@
 			while(isset($bracketVals_arr['R2G1details']["map$i"]))
 				$i++;
 			$m->numgames = $i - 1;
-			$st->execute((array)$m);
+			if($m->scheduleid !== false)
+				$st->execute((array)$m);
 
 			$matchId++;
 			$m->id = $matchId;
@@ -187,7 +214,7 @@
 			$m->player2flag = $bracketVals_arr['R3D1flag'];
 			$m->player1wins = $bracketVals_arr['R3W1score'];
 			$m->player2wins = $bracketVals_arr['R3D1score'];
-			$m->scheduleid = $scheduleDateMap[Match::getTime($bracketVals_arr['R3G1details']['date'])];
+			$m->scheduleid = getScheduleId(Match::getTime($bracketVals_arr['R3G1details']['date']));
 			if(isset($bracketVals_arr['R3W1win']) && $bracketVals_arr['R3W1win'] == '1')
 				$m->winner = '1';
 			else if(isset($bracketVals_arr['R3D1win']))
@@ -196,7 +223,8 @@
 			while(isset($bracketVals_arr['R3G1details']["map$i"]))
 				$i++;
 			$m->numgames = $i - 1;
-			$st->execute((array)$m);
+			if($m->scheduleid !== false)
+				$st->execute((array)$m);
 		}
 	}
 	
@@ -231,7 +259,7 @@
 			$partipant_arr = explode('{{GroupTableSlot|', $group_str);
 			$p = new Participant();
 			foreach($partipant_arr as $s){
-				if(substr($s, 0, 9) != " {{player")
+				if(substr($s, 0, 9) != " {{player" || substr($s, 0, 9) != " {{TA|201")
 					continue;
 				$p->name = Participant::getName($s);
 				$p->flag = Participant::getValue($s, 'flag');
@@ -263,6 +291,8 @@
 			$st->execute((array)$g);
 		}
 	}
+	
+	unlink('warnings.txt');
 	
 	$titles[] = '2013_StarCraft_II_World_Championship_Series/Schedule';
 	$titles[] = '2013_WCS_Season_1_America/Premier/Ro32';
@@ -301,6 +331,6 @@
 		$db = null;
 		`echo '.dump' | sqlite3 wcsapp.sqlite | gzip -c > wcsapp.dump.gz`;
 	} catch (Exception $e){
-		file_put_contents('errors.txt', $e->getMessage() . "\n", FILE_APPEND);
+		file_put_contents('errors.txt', date(DateTime::RFC1123) . ' -- Line ' . $e->getLine() . ": " . $e->getMessage() . "\n", FILE_APPEND);
 	}
 ?>
