@@ -58,7 +58,7 @@ final class Schedule{
 				if ($roPos !== false) {
 					return 'Ro' . substr($s, $roPos + 9, 2);
 				} else {
-					return substr($s, $roPos, 4);
+					return substr($s, $roPos+16, 4);
 				}
 			} else {
 				$colonPos = strpos($s, ': ');
