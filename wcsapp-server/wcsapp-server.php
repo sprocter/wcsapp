@@ -21,22 +21,22 @@ function getScheduleID(){
 			file_put_contents('warnings.txt', date(DateTime::RFC1123) . " No Schedule ID found for $region - $division - $round - $scheduleName \n", FILE_APPEND);
 			return false;
 		} else
-			return  $scheduleIdMap[$region][$division][$round][$scheduleName] * 1000;  // Java uses milliseconds since the Unix epoch
+			return  $scheduleIdMap[$region][$division][$round][$scheduleName];
 	} else {
 		$unixtime = func_get_arg(0);
 		if(!array_key_exists($unixtime, $scheduleDateMap)){
 			if(array_key_exists($unixtime - 3600, $scheduleDateMap)) {
 				file_put_contents('warnings.txt', date(DateTime::RFC1123) . ' Warning: Coerced start time of ' . $scheduleDateMap[$unixtime - 3600] . " backward 1 hour! \n", FILE_APPEND);
-				return $scheduleDateMap[$unixtime - 3600] * 1000;
+				return $scheduleDateMap[$unixtime - 3600];
 			} else if(array_key_exists($unixtime + 3600, $scheduleDateMap)) {
 				file_put_contents('warnings.txt', date(DateTime::RFC1123) . ' Warning: Coerced start time of ' . $scheduleDateMap[$unixtime + 3600] . " forward 1 hour! \n", FILE_APPEND);
-				return $scheduleDateMap[$unixtime + 3600] * 1000;
+				return $scheduleDateMap[$unixtime + 3600];
 			} else {
 				file_put_contents('warnings.txt', date(DateTime::RFC1123) . " No Schedule ID found for $unixtime \n", FILE_APPEND);
 				return false;
 			}
 		} else
-			return $scheduleDateMap[$unixtime] * 1000;  // Java uses milliseconds since the Unix epoch
+			return $scheduleDateMap[$unixtime];
 	}
 }
 
@@ -79,13 +79,13 @@ function parseSchedule($mwtext_str){
 		$id++;
 		$sched->id = $id;
 		$sched->region = Schedule::getRegion($s);
-		$sched->time = Schedule::getTime($s);
+		$sched->time = Schedule::getTime($s) * 1000;
 		$sched->division = Schedule::getDivision($s);
 		$roundAndName = Schedule::getRoundAndName($s);
 		$sched->name = Schedule::getName($roundAndName);
 		$sched->round = Schedule::getRound($roundAndName);
 		$scheduleIdMap[$sched->region][$sched->division][$sched->round][$sched->name] = $id;
-		$scheduleDateMap[$sched->time] = $id;
+		$scheduleDateMap[($sched->time) / 1000] = $id;
 		$st->execute((array)$sched);
 	}
 }
@@ -265,7 +265,7 @@ function parseParticipants($title, $mwtext_str){
 		$partipant_arr = explode('{{GroupTableSlot|', $group_str);
 		$p = new Participant();
 		foreach($partipant_arr as $s){
-			if(substr($s, 0, 9) != " {{player" || substr($s, 0, 9) != " {{TA|201")
+			if(!(substr($s, 0, 9) == " {{player" || substr($s, 0, 9) == " {{TA|201"))
 				continue;
 			$p->name = Participant::getName($s);
 			$p->flag = Participant::getValue($s, 'flag');
@@ -276,13 +276,9 @@ function parseParticipants($title, $mwtext_str){
 			$p->mapswon = Participant::getValue($s, 'win_g');
 			$p->mapslost = Participant::getValue($s, 'lose_g');
 			$p->result = Participant::getResult($s);
-			//TODO: Put this in its own method...
-			if(!array_key_exists($region, $scheduleIdMap) ||
-			!array_key_exists($division, $scheduleIdMap[$region]) ||
-			!array_key_exists($round, $scheduleIdMap[$region][$division]) ||
-			!array_key_exists($scheduleName, $scheduleIdMap[$region][$division][$round]))
+			$p->scheduleid = getScheduleId($region, $division, $round, $scheduleName);
+			if ($p->scheduleid === false)
 				continue;
-			$p->scheduleid = $scheduleIdMap[$region][$division][$round][$scheduleName];
 			$st->execute((array)$p);
 		}
 	}

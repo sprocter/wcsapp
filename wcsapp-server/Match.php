@@ -88,8 +88,8 @@
 		
 		static function getNumGames($s){
 			// Note there are sometimes typos in liquipedia's info, so we
-			// count the number of vods.
-			return substr_count($s, 'vodgame');
+			// double check this and go with the lower
+			return substr_count($s, 'vodgame') <= (substr_count($s, 'map')/2) ? substr_count($s, 'vodgame') : (substr_count($s, 'map')/2);
 		}
 		
 		private static function getValue($s, $key){
