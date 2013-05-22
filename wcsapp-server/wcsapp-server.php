@@ -84,6 +84,11 @@ function parseSchedule($mwtext_str){
 		$roundAndName = Schedule::getRoundAndName($s);
 		$sched->name = Schedule::getName($roundAndName);
 		$sched->round = Schedule::getRound($roundAndName);
+		if(strpos($sched->name, 'Ro') !== false && strpos($sched->round, 'Day') !== false){
+			$temp = $sched->name;
+			$sched->name = $sched->round;
+			$sched->round = $temp;
+		}
 		$scheduleIdMap[$sched->region][$sched->division][$sched->round][$sched->name] = $id;
 		$scheduleDateMap[($sched->time) / 1000] = $id;
 		$st->execute((array)$sched);
@@ -141,7 +146,7 @@ function parseMatchesFromBracket($m, $title, $mwtext_str, $st){
 		$bracket_arr = explode('{{CodeABracket', $mwtext_str);
 	$m->matchtype = 'bracket';
 	foreach($bracket_arr as $bracket_str){
-		if(substr($bracket_str, 2, 10) != '<!-- Round')
+		if(strpos(substr($bracket_str, 0, 15), 'Round') === false)
 			continue;
 		$bracketVals_arr = Match::getBracketVals($bracket_str, false);
 		$matchId++;

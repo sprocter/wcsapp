@@ -54,11 +54,13 @@ final class Schedule{
 		static function getRound($s){
 			$roPos = strpos($s, 'Ro');
 			if($roPos !== false){
-				$roPos = strpos($s, 'Round of');
-				if ($roPos !== false) {
-					return trim('Ro' . substr($s, $roPos + 9, 2));
-				} else {
-					return trim(substr($s, $roPos+16, 4));
+				$roundPos = strpos($s, 'Round of');
+				if ($roundPos !== false) {
+					return trim('Ro' . substr($s, $roundPos + 9, 2));
+				} else if(strpos($s, '(') !== false && stripos($s, 'Bracket') !== false){
+					return trim(substr($s, strpos($s, ':') + 2, 6));
+				} else{
+					return trim(substr($s, $roPos, 4));
 				}
 			} else {
 				$colonPos = strpos($s, ': ');
@@ -72,9 +74,12 @@ final class Schedule{
 		
 		static function getName($s){
 			$colonPos = strpos($s, ': ');
-			if($colonPos !== false)
+			if($colonPos !== false){
+				if(strpos($s, '(') !== false && stripos($s, 'Bracket') !== false){
+					return substr($s, strpos($s, '(') + 1, 4);
+				}
 				return substr($s, $colonPos + 2);
-			else
+			} else
 				return $s;
 		}
 	}

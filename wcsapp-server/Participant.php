@@ -28,6 +28,8 @@ final class Participant{
 				$nameLength = $spacePos - $equalsPos;
 				$name = substr($name, $equalsPos, $nameLength);
 			}
+			if(strpos($name, '_') !== false) // Who writes "Shuttle_(Korean_Terran)"?  Seriously?
+				$name = substr($name, 0, strpos($name, '_'));
 			return $name;		
 		}
 		
