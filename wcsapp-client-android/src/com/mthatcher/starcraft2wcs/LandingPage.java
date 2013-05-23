@@ -28,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
+import android.widget.TableLayout;
 
 import com.mthatcher.starcraft2wcs.entry.BracketEntry;
 import com.mthatcher.starcraft2wcs.entry.EntryUtil;
@@ -37,7 +38,7 @@ import com.mthatcher.starcraft2wcs.entry.ViewHolder;
 
 public class LandingPage extends Activity {
 
-	private final String DATA_URL = "http://skorchedearth.com/sandbox/wcsapp/wcsapp/wcsapp-server/wcsapp.dump.gz";
+	private final String DATA_URL = "https://objects.dreamhost.com/sc2wcsapp/data/sqlite.gz";
 	private final String DEBUG_TAG = "LANDING PAGE";
 	public int startPos;
 
@@ -54,7 +55,7 @@ public class LandingPage extends Activity {
 	}
 
 	public enum Country {
-		AR, AT, AU, BE, CA, CN, CL, DE, DK, ES, FI, FR, GB, KR, MX, NL, NO, NZ, PE, PL, RU, SE, TW, UA, US, UNKNOWN
+		AR, AT, AU, BE, CA, CN, CL, DE, DK, ES, FI, FR, GB, KR, MX, NL, NO, NZ, PE, PL, RS, RU, SE, TW, UA, US, UNKNOWN
 	}
 
 	public enum MatchResult {
@@ -169,17 +170,17 @@ public class LandingPage extends Activity {
 				if (item.isGroupEntry()) {
 					getGroupView(holder, item);
 				} else {
-					getBracketView(holder, item, convertView);
+					getBracketView(holder, item, convertView, parent);
 				}
 			}
 			return convertView;
 		}
 
 		private void getBracketView(ViewHolder holder, ScheduleEntry item,
-				View convertView) {
+				View convertView, ViewGroup parent) {
 			int winnerColor = 0xFFCCFFCC;
-			int loserColor = 0xFFFFFFFF;
-			int numPlayers = item.getNumPlayers();
+			int loserColor = 0x00FFFFFF;
+			int numPlayers = item.getNumPlayers() >= 4 ? 4 : item.getNumPlayers();
 			holder.groupName.setText(item.getName());
 			holder.groupName.setCompoundDrawablesWithIntrinsicBounds(
 					item.getTitleDrawable(), 0, 0, 0);
@@ -187,6 +188,16 @@ public class LandingPage extends Activity {
 			holder.date.setText(item.getTime());
 			int p1i, p2i; // Player 1 and Player 2 indices
 			int i, j = 0;
+//			TableLayout tblV = (TableLayout)convertView;
+//			LayoutInflater vi = null;
+//			while(tblV.getChildCount() < (numPlayers + 2)){
+//				if(vi == null){
+//					vi = LayoutInflater.from(getBaseContext());
+//				}
+//				tblV.addView(vi.inflate(R.layout.bracket_stage_participant_2, parent,false));
+//			}
+//			
+			
 			for (i = 0; i < numPlayers; i++) {
 				BracketEntry player = (BracketEntry) item.getPlayer(i);
 				p1i = i * 2;
@@ -206,18 +217,19 @@ public class LandingPage extends Activity {
 						0);
 				holder.mapScore[p1i].setText(EntryUtil.getWinsStr(1, player));
 				holder.mapScore[p2i].setText(EntryUtil.getWinsStr(2, player));
+				
+				holder.playerName[p1i].setBackgroundColor(loserColor);
+				holder.race[p1i].setBackgroundColor(loserColor);
+				holder.flag[p1i].setBackgroundColor(loserColor);
+				holder.playerName[p2i].setBackgroundColor(loserColor);
+				holder.race[p2i].setBackgroundColor(loserColor);
+				holder.flag[p2i].setBackgroundColor(loserColor);
 
 				if (player.getWinner() == 1) {
 					holder.playerName[p1i].setBackgroundColor(winnerColor);
 					holder.race[p1i].setBackgroundColor(winnerColor);
 					holder.flag[p1i].setBackgroundColor(winnerColor);
-					holder.playerName[p2i].setBackgroundColor(loserColor);
-					holder.race[p2i].setBackgroundColor(loserColor);
-					holder.flag[p2i].setBackgroundColor(loserColor);
 				} else if (player.getWinner() == 2) {
-					holder.playerName[p1i].setBackgroundColor(loserColor);
-					holder.race[p1i].setBackgroundColor(loserColor);
-					holder.flag[p1i].setBackgroundColor(loserColor);
 					holder.playerName[p2i].setBackgroundColor(winnerColor);
 					holder.race[p2i].setBackgroundColor(winnerColor);
 					holder.flag[p2i].setBackgroundColor(winnerColor);

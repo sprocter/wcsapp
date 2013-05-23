@@ -3,6 +3,7 @@ require 'Match.php';
 require 'Game.php';
 require 'Schedule.php';
 require 'Participant.php';
+require 'S3Writer.php';
 
 date_default_timezone_set('UTC');
 $matchId = 0;
@@ -24,19 +25,18 @@ function getScheduleID(){
 			return  $scheduleIdMap[$region][$division][$round][$scheduleName];
 	} else {
 		$unixtime = func_get_arg(0);
-		if(!array_key_exists($unixtime, $scheduleDateMap)){
-// 			if(array_key_exists($unixtime - 3600, $scheduleDateMap)) {
-// 				file_put_contents('warnings.txt', date(DateTime::RFC1123) . ' Warning: Coerced start time of ' . $scheduleDateMap[$unixtime - 3600] . " backward 1 hour! \n", FILE_APPEND);
-// 				return $scheduleDateMap[$unixtime - 3600];
-// 			} else if(array_key_exists($unixtime + 3600, $scheduleDateMap)) {
-// 				file_put_contents('warnings.txt', date(DateTime::RFC1123) . ' Warning: Coerced start time of ' . $scheduleDateMap[$unixtime + 3600] . " forward 1 hour! \n", FILE_APPEND);
-// 				return $scheduleDateMap[$unixtime + 3600];
-// 			} else {
-				file_put_contents('warnings.txt', date(DateTime::RFC1123) . " No Schedule ID found for $unixtime \n", FILE_APPEND);
-				return false;
-// 			}
-		} else
-			return $scheduleDateMap[$unixtime];
+		$region = func_get_arg(1);
+		if(!array_key_exists($unixtime, $scheduleDateMap[$region])){
+			foreach(array_keys($scheduleDateMap[$region]) as $key){
+				if(($key > $unixtime - 43200) && ($key < $unixtime + 43200)){ // 43200 = 12 hrs in seconds
+					return $scheduleDateMap[$region][$key];
+				}
+			}
+			file_put_contents('warnings.txt', date(DateTime::RFC1123) . " No  $region Schedule ID found within a day of $unixtime \n", FILE_APPEND);
+			return false;
+		} else{
+			return $scheduleDateMap[$region][$unixtime];
+		}
 	}
 }
 
@@ -90,7 +90,7 @@ function parseSchedule($mwtext_str){
 			$sched->round = $temp;
 		}
 		$scheduleIdMap[$sched->region][$sched->division][$sched->round][$sched->name] = $id;
-		$scheduleDateMap[($sched->time) / 1000] = $id;
+		$scheduleDateMap[$sched->region][($sched->time) / 1000] = $id;
 		$st->execute((array)$sched);
 	}
 }
@@ -140,102 +140,74 @@ function parseMatchesFromGroup($m, $title, $mwtext_str, $st){
 
 function parseMatchesFromBracket($m, $title, $mwtext_str, $st){
 	global $matchId, $scheduleDateMap;
-	$scheduleDateMap[0] = 0;
+	list($region, $division, $round) = splitTitle($title);
+	$scheduleDateMap['AM'][0] = 0;
+	$scheduleDateMap['KR'][0] = 0;
+	$scheduleDateMap['EU'][0] = 0;
 	$bracket_arr = explode('{{WCSChallengerBracket', $mwtext_str);
 	if(count($bracket_arr) == 1)
 		$bracket_arr = explode('{{CodeABracket', $mwtext_str);
+	if(count($bracket_arr) == 1){
+		$bracket_arr = explode('{{8SEBracket', $mwtext_str);
+// 		$bracket_arr = array_merge($bracket_arr, explode('{{4SEBracket', $bracket_arr[1]));
+		$bracket_arr = explode('{{4SEBracket', $bracket_arr[1]);
+// 		var_dump($bracket_arr[1]);
+// 		var_dump($bracket_arr[2]);
+	}
+	
 	$m->matchtype = 'bracket';
 	foreach($bracket_arr as $bracket_str){
-		if(strpos(substr($bracket_str, 0, 15), 'Round') === false)
+		if((strpos(substr($bracket_str, 0, 15), 'Round') === false) && (strpos(substr($bracket_str, 0, 10), '|R1') === false))
 			continue;
 		$bracketVals_arr = Match::getBracketVals($bracket_str, false);
-		$matchId++;
-		$m->id = $matchId;
-		$m->player1name = $bracketVals_arr['R1D1'];
-		$m->player2name = $bracketVals_arr['R1D2'];
-		$m->player1race = $bracketVals_arr['R1D1race'];
-		$m->player2race = $bracketVals_arr['R1D2race'];
-		$m->player1flag = $bracketVals_arr['R1D1flag'];
-		$m->player2flag = $bracketVals_arr['R1D2flag'];
-		$m->player1wins = $bracketVals_arr['R1D1score'];
-		$m->player2wins = $bracketVals_arr['R1D2score'];
-		$m->scheduleid = getScheduleId(Match::getTime($bracketVals_arr['R1G1details']['date']));
-		if(isset($bracketVals_arr['R1D1win']) && $bracketVals_arr['R1D1win'] == '1')
-			$m->winner = '1';
-		else if(isset($bracketVals_arr['R1D2win']))
-			$m->winner = '2';
-		$i = 1;
-		while(isset($bracketVals_arr['R1G1details']["map$i"]))
-			$i++;
-		$m->numgames = $i - 1;
-		if($m->scheduleid !== false)
-			$st->execute((array)$m);
-			
-		$matchId++;
-		$m->id = $matchId;
-		$m->player1name = $bracketVals_arr['R1D3'];
-		$m->player2name = $bracketVals_arr['R1D4'];
-		$m->player1race = $bracketVals_arr['R1D3race'];
-		$m->player2race = $bracketVals_arr['R1D4race'];
-		$m->player1flag = $bracketVals_arr['R1D3flag'];
-		$m->player2flag = $bracketVals_arr['R1D4flag'];
-		$m->player1wins = $bracketVals_arr['R1D3score'];
-		$m->player2wins = $bracketVals_arr['R1D4score'];
-		$m->scheduleid = getScheduleId(Match::getTime($bracketVals_arr['R1G2details']['date']));
-		if(isset($bracketVals_arr['R1D3win']) && $bracketVals_arr['R1D3win'] == '1')
-			$m->winner = '1';
-		else if(isset($bracketVals_arr['R1D4win']))
-			$m->winner = '2';
-		$i = 1;
-		while(isset($bracketVals_arr['R1G2details']["map$i"]))
-			$i++;
-		$m->numgames = $i - 1;
-		if($m->scheduleid !== false)
-			$st->execute((array)$m);
-			
-		$matchId++;
-		$m->id = $matchId;
-		$m->player1name = $bracketVals_arr['R2W1'];
-		$m->player2name = $bracketVals_arr['R2W2'];
-		$m->player1race = $bracketVals_arr['R2W1race'];
-		$m->player2race = $bracketVals_arr['R2W2race'];
-		$m->player1flag = $bracketVals_arr['R2W1flag'];
-		$m->player2flag = $bracketVals_arr['R2W2flag'];
-		$m->player1wins = $bracketVals_arr['R2W1score'];
-		$m->player2wins = $bracketVals_arr['R2W2score'];
-		$m->scheduleid = getScheduleId(Match::getTime($bracketVals_arr['R2G1details']['date']));
-		if(isset($bracketVals_arr['R2W1win']) && $bracketVals_arr['R2W1win'] == '1')
-			$m->winner = '1';
-		else if(isset($bracketVals_arr['R2W2win']))
-			$m->winner = '2';
-		$i = 1;
-		while(isset($bracketVals_arr['R2G1details']["map$i"]))
-			$i++;
-		$m->numgames = $i - 1;
-		if($m->scheduleid !== false)
-			$st->execute((array)$m);
+		$keys = array();
+		$newMatch = false;
+		$prefixAndCount = array('init', 1);
+		foreach(array_keys($bracketVals_arr) as $key){
+			if(strlen($key) > 6)
+				continue;
+			if(preg_match('[R[\d][W|w|D|d][\d]]', $key) !== 1)
+				continue;
+			if($newMatch){
+				$prefix = preg_split('[[W|w|D|d][\d]]', $key);
+				if($prefix == $prefixAndCount[0]){
+					$prefixAndCount[1]++;
+				} else {
+					$prefixAndCount[0] = $prefix;
+					$prefixAndCount[1] = 1;
+				}
+				$keys[] = array($oldkey, $key, $prefix[0], $prefixAndCount[1]);
+			} else {
+				$oldkey = $key;
+			}
+			$newMatch = !$newMatch;
+		}
 
-		$matchId++;
-		$m->id = $matchId;
-		$m->player1name = $bracketVals_arr['R3W1'];
-		$m->player2name = $bracketVals_arr['R3D1'];
-		$m->player1race = $bracketVals_arr['R3W1race'];
-		$m->player2race = $bracketVals_arr['R3D1race'];
-		$m->player1flag = $bracketVals_arr['R3W1flag'];
-		$m->player2flag = $bracketVals_arr['R3D1flag'];
-		$m->player1wins = $bracketVals_arr['R3W1score'];
-		$m->player2wins = $bracketVals_arr['R3D1score'];
-		$m->scheduleid = getScheduleId(Match::getTime($bracketVals_arr['R3G1details']['date']));
-		if(isset($bracketVals_arr['R3W1win']) && $bracketVals_arr['R3W1win'] == '1')
-			$m->winner = '1';
-		else if(isset($bracketVals_arr['R3D1win']))
-			$m->winner = '2';
-		$i = 1;
-		while(isset($bracketVals_arr['R3G1details']["map$i"]))
-			$i++;
-		$m->numgames = $i - 1;
-		if($m->scheduleid !== false)
-			$st->execute((array)$m);
+		foreach($keys as $keypair){
+			$matchId++;
+			$m->id = $matchId;
+			$m->player1name = $bracketVals_arr[$keypair[0]];
+			$m->player2name = $bracketVals_arr[$keypair[1]];
+			$m->player1race = $bracketVals_arr[$keypair[0] . 'race'];
+			$m->player2race = $bracketVals_arr[$keypair[1] . 'race'];
+			$m->player1flag = $bracketVals_arr[$keypair[0] . 'flag'];
+			$m->player2flag = $bracketVals_arr[$keypair[1] . 'flag'];
+			$m->player1wins = $bracketVals_arr[$keypair[0] . 'score'];
+			$m->player2wins = $bracketVals_arr[$keypair[1] . 'score'];
+			if($m->player1wins == 'Q' || $m->player2wins == 'Q') // Listing qualified players, no match played.
+				continue;
+			$m->scheduleid = getScheduleId(Match::getTime($bracketVals_arr[$keypair[2] . 'G' . $keypair[3] . 'details']['date']), $region);
+			if(isset($bracketVals_arr[$keypair[0] . 'win']) && $bracketVals_arr[$keypair[0] . 'win'] == '1')
+				$m->winner = '1';
+			else if(isset($bracketVals_arr[$keypair[1] . 'win']))
+				$m->winner = '2';
+			$i = 1;
+			while(isset($bracketVals_arr[$keypair[0] . 'details']["map$i"]))
+				$i++;
+			$m->numgames = $i - 1;
+			if($m->scheduleid !== false)
+				$st->execute((array)$m);
+		}
 	}
 }
 
@@ -299,15 +271,20 @@ function parseGames($s, $numGames, $matchId, $st, $g){
 	}
 }
 
-unlink('warnings.txt');
+if(file_exists('warnings.txt'))
+	unlink('warnings.txt');
 
 $titles[] = '2013_StarCraft_II_World_Championship_Series/Schedule';
 $titles[] = '2013_WCS_Season_1_America/Premier/Ro32';
 $titles[] = '2013_WCS_Season_1_America/Premier/Ro16';
+$titles[] = '2013_WCS_Season_1_America/Premier';
 $titles[] = '2013_WCS_Season_1_Europe/Premier/Ro32';
 $titles[] = '2013_WCS_Season_1_Europe/Premier/Ro16';
+$titles[] = '2013_WCS_Season_1_Europe/Premier';
 $titles[] = '2013 WCS Season 1 Korea GSL/Code S/Ro32';
 $titles[] = '2013 WCS Season 1 Korea GSL/Code S/Ro16';
+$titles[] = '2013 WCS Season 1 Korea GSL/Code S';
+$titles[] = '2013_WCS_Season_1_America/Premier';
 $titles[] = '2013_WCS_Season_1_America/Challenger';
 $titles[] = '2013_WCS_Season_1_Europe/Challenger';
 $titles[] = '2013_WCS_Season_1_Korea_GSL/Challenger';
@@ -328,15 +305,16 @@ try{
 	$db->exec('CREATE TABLE "participants" ("id" INTEGER PRIMARY KEY NOT NULL, "name" TEXT, "flag" TEXT, "race" TEXT, "place" INTEGER, "matcheswon" INTEGER, "matcheslost" INTEGER, "mapswon" INTEGER, "mapslost" INTEGER, "result" TEXT, "scheduleid" INTEGER)');
 	parseSchedule($mediawiki_obj->page[0]->revision->text);
 	for($i = 1; $i < count($mediawiki_obj->page); $i++){
-		if(strpos($mediawiki_obj->page[$i]->title, 'Challenger') !== false)
-			parseMatches($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text, 'bracket');
-		else{
+		if(strpos($mediawiki_obj->page[$i]->title, 'Ro') !== false){
 			parseMatches($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text, 'group');
 			parseParticipants($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text, 'group');
+		} else {
+			parseMatches($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text, 'bracket');
 		}
 	}
 	$db = null;
-	`echo '.dump' | sqlite3 wcsapp.sqlite | gzip -c > wcsapp.dump.gz`;
+	`echo .dump | sqlite3 wcsapp.sqlite | gzip -c > wcsapp.dump.gz`;
+	uploadToS3();
 } catch (Exception $e){
 	file_put_contents('errors.txt', date(DateTime::RFC1123) . ' -- Line ' . $e->getLine() . ": " . $e->getMessage() . "\n", FILE_APPEND);
 }

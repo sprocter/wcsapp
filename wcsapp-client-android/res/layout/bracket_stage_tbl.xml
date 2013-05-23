@@ -39,7 +39,7 @@
     </TableRow>
 
     <TableRow
-        android:id="@+id/bracket_stage_participant"
+        android:id="@+id/bracket_stage_participant_1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
@@ -93,7 +93,7 @@
     </TableRow>
 
     <TableRow
-        android:id="@+id/bracket_stage_participant"
+        android:id="@+id/bracket_stage_participant_2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
@@ -147,7 +147,7 @@
     </TableRow>
 
     <TableRow
-        android:id="@+id/bracket_stage_participant"
+        android:id="@+id/bracket_stage_participant_3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
@@ -201,7 +201,7 @@
     </TableRow>
 
     <TableRow
-        android:id="@+id/bracket_stage_participant"
+        android:id="@+id/bracket_stage_participant_4"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 

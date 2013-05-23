@@ -18,7 +18,9 @@
 		public $numgames;
 		
 		static function getTime($s){
-			if(strpos($s, '(') !== false){ 
+			if(strpos($s, '(') !== false){
+				if(strpos($s, '-') !== false)
+					$s = substr_replace($s, '', strpos($s, '-'), 1);
 				$timestamp = strtotime(substr($s, 0, strpos($s, '(')));
 				return $timestamp;
 			} else {

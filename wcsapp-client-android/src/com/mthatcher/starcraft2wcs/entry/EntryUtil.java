@@ -58,6 +58,8 @@ public class EntryUtil {
 			return R.drawable.flags_pe;
 		case PL:
 			return R.drawable.flags_pl;
+		case RS:
+			return R.drawable.flags_rs;
 		case RU:
 			return R.drawable.flags_ru;
 		case SE:
@@ -127,6 +129,8 @@ public class EntryUtil {
 			return Country.PE;
 		} else if (country.equalsIgnoreCase("pl") || country.equalsIgnoreCase("poland")){
 			return Country.PL;
+		} else if (country.equalsIgnoreCase("rs") || country.equalsIgnoreCase("serbia")){
+			return Country.RS;
 		} else if (country.equalsIgnoreCase("ru") || country.equalsIgnoreCase("russia")){
 			return Country.RU;
 		} else if (country.equalsIgnoreCase("se") || country.equalsIgnoreCase("sweden")){
