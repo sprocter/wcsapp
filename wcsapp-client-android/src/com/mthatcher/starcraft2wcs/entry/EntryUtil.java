@@ -59,7 +59,7 @@ public class EntryUtil {
 		case PL:
 			return R.drawable.flags_pl;
 		case RS:
-			return R.drawable.flags_rs;
+			return R.drawable.flags_fam; // Change this back when rs flag gets checked into svn
 		case RU:
 			return R.drawable.flags_ru;
 		case SE:

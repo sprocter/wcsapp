@@ -3,11 +3,23 @@
     android:id="@+id/group_stage_tbl"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:shrinkColumns="*"
     android:padding="15dp"
+    android:shrinkColumns="*"
     android:stretchColumns="*" >
 
-    <TableRow
+    <include layout="@layout/schedule_entry_name_row" />
+
+    <include layout="@layout/schedule_entry_date_row" />
+
+    <include layout="@layout/group_stage_row" />
+
+    <include layout="@layout/group_stage_row" />
+
+    <include layout="@layout/group_stage_row" />
+
+    <include layout="@layout/group_stage_row" />
+    <!--
+    TableRow
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal" >
@@ -198,6 +210,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
-    </TableRow>
+    </TableRow
+    -->
 
 </TableLayout>

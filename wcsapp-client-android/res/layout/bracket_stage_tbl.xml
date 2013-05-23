@@ -7,7 +7,20 @@
     android:shrinkColumns="*"
     android:stretchColumns="*" >
 
-    <TableRow
+    <include layout="@layout/schedule_entry_name_row" />
+
+    <include layout="@layout/schedule_entry_date_row" />
+
+    <include android:id="@+id/bracket_row_1" layout="@layout/bracket_stage_row" />
+
+    <include android:id="@+id/bracket_row_2" layout="@layout/bracket_stage_row" />
+
+    <include android:id="@+id/bracket_row_3" layout="@layout/bracket_stage_row" />
+
+    <include android:id="@+id/bracket_row_4" layout="@layout/bracket_stage_row" />
+
+    <!--
+    TableRow
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal" >
@@ -252,6 +265,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#000000" />
-    </TableRow>
+    </TableRow
+    -->
 
 </TableLayout>

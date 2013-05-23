@@ -85,7 +85,7 @@ public class GroupEntry implements GroupOrBracketEntry{
 		return mapsLost;
 	}
 
-	public static ViewHolder getHolder(View convertView) {
+	public static ViewHolder getHolder(View convertView, int numEntrants) {
 		ViewHolder holder = new ViewHolder();
 		
 		holder.isGroupHolder = true;
@@ -93,35 +93,16 @@ public class GroupEntry implements GroupOrBracketEntry{
 		holder.groupName = (TextView) convertView.findViewById(R.id.schedule_name);
 		holder.date = (TextView) convertView.findViewById(R.id.schedule_date);
 		
-		holder.playerName[0] = (TextView) convertView.findViewById(R.id.group_player_1_name);
-		holder.playerName[1] = (TextView) convertView.findViewById(R.id.group_player_2_name);
-		holder.playerName[2] = (TextView) convertView.findViewById(R.id.group_player_3_name);
-		holder.playerName[3] = (TextView) convertView.findViewById(R.id.group_player_4_name);
+		holder.size = numEntrants;
 		
-		holder.rank[0] = (TextView) convertView.findViewById(R.id.group_player_1_rank);
-		holder.rank[1] = (TextView) convertView.findViewById(R.id.group_player_2_rank);
-		holder.rank[2] = (TextView) convertView.findViewById(R.id.group_player_3_rank);
-		holder.rank[3] = (TextView) convertView.findViewById(R.id.group_player_4_rank);
-		
-		holder.flag[0] = (TextView) convertView.findViewById(R.id.group_player_1_flag);
-		holder.flag[1] = (TextView) convertView.findViewById(R.id.group_player_2_flag);
-		holder.flag[2] = (TextView) convertView.findViewById(R.id.group_player_3_flag);
-		holder.flag[3] = (TextView) convertView.findViewById(R.id.group_player_4_flag);
-		
-		holder.race[0] = (TextView) convertView.findViewById(R.id.group_player_1_race);
-		holder.race[1] = (TextView) convertView.findViewById(R.id.group_player_2_race);
-		holder.race[2] = (TextView) convertView.findViewById(R.id.group_player_3_race);
-		holder.race[3] = (TextView) convertView.findViewById(R.id.group_player_4_race);
-		
-		holder.matchScore[0] = (TextView) convertView.findViewById(R.id.group_player_1_match_score);
-		holder.matchScore[1] = (TextView) convertView.findViewById(R.id.group_player_2_match_score);
-		holder.matchScore[2] = (TextView) convertView.findViewById(R.id.group_player_3_match_score);
-		holder.matchScore[3] = (TextView) convertView.findViewById(R.id.group_player_4_match_score);
-		
-		holder.mapScore[0] = (TextView) convertView.findViewById(R.id.group_player_1_map_score);
-		holder.mapScore[1] = (TextView) convertView.findViewById(R.id.group_player_2_map_score);
-		holder.mapScore[2] = (TextView) convertView.findViewById(R.id.group_player_3_map_score);
-		holder.mapScore[3] = (TextView) convertView.findViewById(R.id.group_player_4_map_score);
+		for(int i = 0; i < numEntrants; i++){
+			holder.playerName.add(i, (TextView) convertView.findViewById(R.id.group_player_name));
+			holder.rank.add(i, (TextView) convertView.findViewById(R.id.group_player_rank));
+			holder.flag.add(i, (TextView) convertView.findViewById(R.id.group_player_flag));
+			holder.matchScore.add(i, (TextView) convertView.findViewById(R.id.group_player_match_score));
+			holder.mapScore.add(i, (TextView) convertView.findViewById(R.id.group_player_map_score));
+				
+		}
 		
 		return holder;
 	}

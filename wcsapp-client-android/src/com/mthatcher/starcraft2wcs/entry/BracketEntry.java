@@ -1,13 +1,16 @@
 package com.mthatcher.starcraft2wcs.entry;
 
+import java.util.ArrayList;
+
 import android.view.View;
+import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.mthatcher.starcraft2wcs.LandingPage.Country;
 import com.mthatcher.starcraft2wcs.LandingPage.Race;
 import com.mthatcher.starcraft2wcs.R;
 
-public class BracketEntry implements GroupOrBracketEntry{
+public class BracketEntry implements GroupOrBracketEntry {
 	private String p1Name;
 	private String p2Name;
 	private Country p1Country;
@@ -18,23 +21,37 @@ public class BracketEntry implements GroupOrBracketEntry{
 	private int p1wins;
 	private int p2wins;
 	private boolean isWalkover;
+	private static int[] rowIds = { R.id.bracket_row_1, R.id.bracket_row_2,
+			R.id.bracket_row_3, R.id.bracket_row_4, R.id.bracket_row_5,
+			R.id.bracket_row_6, R.id.bracket_row_7, R.id.bracket_row_8,
+			R.id.bracket_row_9, R.id.bracket_row_10, R.id.bracket_row_11,
+			R.id.bracket_row_12, R.id.bracket_row_13, R.id.bracket_row_14,
+			R.id.bracket_row_15, R.id.bracket_row_16, R.id.bracket_row_17,
+			R.id.bracket_row_18, R.id.bracket_row_19, R.id.bracket_row_20,
+			R.id.bracket_row_21, R.id.bracket_row_22, R.id.bracket_row_23,
+			R.id.bracket_row_24, R.id.bracket_row_25, R.id.bracket_row_26,
+			R.id.bracket_row_27, R.id.bracket_row_28, R.id.bracket_row_29,
+			R.id.bracket_row_30, R.id.bracket_row_31, R.id.bracket_row_32 };
 
-	public BracketEntry(String p1Name, String p2Name, String p1Race, String p2Race, String p1Country, String p2Country, String winner, String p1wins, String p2wins) {
+	public BracketEntry(String p1Name, String p2Name, String p1Race,
+			String p2Race, String p1Country, String p2Country, String winner,
+			String p1wins, String p2wins) {
 		this.p1Name = p1Name.length() == 0 ? "TBD" : p1Name;
 		this.p2Name = p2Name.length() == 0 ? "TBD" : p2Name;
 		this.p1Country = EntryUtil.getCountryFromString(p1Country);
 		this.p2Country = EntryUtil.getCountryFromString(p2Country);
 		this.p1Race = EntryUtil.getRaceFromString(p1Race);
 		this.p2Race = EntryUtil.getRaceFromString(p2Race);
-		this.winner = winner == null ? 0 : winner.length() == 0 ? 0 : Integer.parseInt(winner);
+		this.winner = winner == null ? 0 : winner.length() == 0 ? 0 : Integer
+				.parseInt(winner);
 		this.p1wins = EntryUtil.getWinsFromString(p1wins);
 		this.p2wins = EntryUtil.getWinsFromString(p2wins);
-		if(p1wins.equalsIgnoreCase("w") || p2wins.equalsIgnoreCase("w"))
+		if (p1wins.equalsIgnoreCase("w") || p2wins.equalsIgnoreCase("w"))
 			isWalkover = true;
 		else
 			isWalkover = false;
 	}
-	
+
 	public int getP1wins() {
 		return p1wins;
 	}
@@ -47,10 +64,10 @@ public class BracketEntry implements GroupOrBracketEntry{
 		return isWalkover;
 	}
 
-	public int getWinner(){
+	public int getWinner() {
 		return winner;
 	}
-	
+
 	@Override
 	public int getBackgroundColor() {
 		// TODO Auto-generated method stub
@@ -86,50 +103,67 @@ public class BracketEntry implements GroupOrBracketEntry{
 		return p2Race;
 	}
 
-	public static ViewHolder getHolder(View convertView) {
+	public static ViewHolder getHolder(View convertView, int numEntrants) {
 		ViewHolder holder = new ViewHolder();
-		
+
 		holder.isGroupHolder = false;
-		
-		holder.groupName = (TextView) convertView.findViewById(R.id.schedule_name);
+
+		holder.groupName = (TextView) convertView
+				.findViewById(R.id.schedule_name);
 		holder.date = (TextView) convertView.findViewById(R.id.schedule_date);
-		
-		holder.playerName[0] = (TextView) convertView.findViewById(R.id.bracket_player_1_name);
-		holder.playerName[1] = (TextView) convertView.findViewById(R.id.bracket_player_2_name);
-		holder.playerName[2] = (TextView) convertView.findViewById(R.id.bracket_player_3_name);
-		holder.playerName[3] = (TextView) convertView.findViewById(R.id.bracket_player_4_name);
-		holder.playerName[4] = (TextView) convertView.findViewById(R.id.bracket_player_5_name);
-		holder.playerName[5] = (TextView) convertView.findViewById(R.id.bracket_player_6_name);
-		holder.playerName[6] = (TextView) convertView.findViewById(R.id.bracket_player_7_name);
-		holder.playerName[7] = (TextView) convertView.findViewById(R.id.bracket_player_8_name);
-		
-		holder.flag[0] = (TextView) convertView.findViewById(R.id.bracket_player_1_flag);
-		holder.flag[1] = (TextView) convertView.findViewById(R.id.bracket_player_2_flag);
-		holder.flag[2] = (TextView) convertView.findViewById(R.id.bracket_player_3_flag);
-		holder.flag[3] = (TextView) convertView.findViewById(R.id.bracket_player_4_flag);
-		holder.flag[4] = (TextView) convertView.findViewById(R.id.bracket_player_5_flag);
-		holder.flag[5] = (TextView) convertView.findViewById(R.id.bracket_player_6_flag);
-		holder.flag[6] = (TextView) convertView.findViewById(R.id.bracket_player_7_flag);
-		holder.flag[7] = (TextView) convertView.findViewById(R.id.bracket_player_8_flag);
-		
-		holder.race[0] = (TextView) convertView.findViewById(R.id.bracket_player_1_race);
-		holder.race[1] = (TextView) convertView.findViewById(R.id.bracket_player_2_race);
-		holder.race[2] = (TextView) convertView.findViewById(R.id.bracket_player_3_race);
-		holder.race[3] = (TextView) convertView.findViewById(R.id.bracket_player_4_race);
-		holder.race[4] = (TextView) convertView.findViewById(R.id.bracket_player_5_race);
-		holder.race[5] = (TextView) convertView.findViewById(R.id.bracket_player_6_race);
-		holder.race[6] = (TextView) convertView.findViewById(R.id.bracket_player_7_race);
-		holder.race[7] = (TextView) convertView.findViewById(R.id.bracket_player_8_race);
-		
-		holder.mapScore[0] = (TextView) convertView.findViewById(R.id.bracket_player_1_map_score);
-		holder.mapScore[1] = (TextView) convertView.findViewById(R.id.bracket_player_2_map_score);
-		holder.mapScore[2] = (TextView) convertView.findViewById(R.id.bracket_player_3_map_score);
-		holder.mapScore[3] = (TextView) convertView.findViewById(R.id.bracket_player_4_map_score);
-		holder.mapScore[4] = (TextView) convertView.findViewById(R.id.bracket_player_5_map_score);
-		holder.mapScore[5] = (TextView) convertView.findViewById(R.id.bracket_player_6_map_score);
-		holder.mapScore[6] = (TextView) convertView.findViewById(R.id.bracket_player_7_map_score);
-		holder.mapScore[7] = (TextView) convertView.findViewById(R.id.bracket_player_8_map_score);
-		
+
+		holder.size = numEntrants;
+
+		addRows(convertView, 0, numEntrants, holder);
+
 		return holder;
+	}
+
+	public static ArrayList<View> addRows(View convertView, int oldPlayerCount, int newPlayerCount, ViewHolder holder) {
+		ArrayList<View> currentRows = new ArrayList<View>();
+		View currentRow = null;
+		int p1i, p2i;
+		for (int i = oldPlayerCount; i < newPlayerCount; i++) {
+			if(convertView instanceof TableLayout)
+				currentRow = convertView.findViewById(rowIds[i]);
+			
+			
+			p1i = i * 2;
+			p2i = i * 2 + 1;
+			holder.playerName.add(p1i, (TextView) currentRow.findViewById(R.id.bracket_player_1_name));
+			holder.playerName.add(p2i, (TextView) currentRow
+					.findViewById(R.id.bracket_player_2_name));
+
+			holder.flag.add(p1i, (TextView) currentRow
+					.findViewById(R.id.bracket_player_1_flag));
+			holder.flag.add(p2i, (TextView) currentRow
+					.findViewById(R.id.bracket_player_2_flag));
+
+			holder.race.add(p1i, (TextView) currentRow
+					.findViewById(R.id.bracket_player_1_race));
+			holder.race.add(p2i, (TextView) currentRow
+					.findViewById(R.id.bracket_player_2_race));
+
+			holder.mapScore.add(p1i, (TextView) currentRow
+					.findViewById(R.id.bracket_player_1_map_score));
+			holder.mapScore.add(p2i, (TextView) currentRow
+					.findViewById(R.id.bracket_player_2_map_score));
+			currentRows.add(currentRow);
+		}
+		return currentRows;
+	}
+
+	public static void removeRow(ViewHolder holder) {
+		int p1i = holder.size - 1;
+		int p2i = holder.size - 2;
+		holder.playerName.remove(p1i);
+		holder.playerName.remove(p2i);
+		holder.flag.remove(p1i);
+		holder.flag.remove(p2i);
+		holder.race.remove(p1i);
+		holder.race.remove(p2i);
+		holder.mapScore.remove(p1i);
+		holder.mapScore.remove(p2i);
+		holder.size -= 2;
 	}
 }

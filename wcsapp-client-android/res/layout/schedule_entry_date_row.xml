@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/schedule_date_row"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal" >
+
+    <TextView
+        android:id="@+id/schedule_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_span="8"
+        android:background="#FFF2F2F2"
+        android:gravity="center"
+        android:textColor="#000"
+        android:textSize="12sp" />
+
+</TableRow>

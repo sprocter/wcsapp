@@ -155,11 +155,11 @@ public class LandingPage extends Activity {
 				if (item.isGroupEntry) {
 					convertView = vi.inflate(R.layout.group_stage_tbl, parent,
 							false);
-					holder = GroupEntry.getHolder(convertView);
+					holder = GroupEntry.getHolder(convertView, 4);
 				} else {
 					convertView = vi.inflate(R.layout.bracket_stage_tbl,
 							parent, false);
-					holder = BracketEntry.getHolder(convertView);
+					holder = BracketEntry.getHolder(convertView, 4);
 				}
 				convertView.setTag(holder);
 			} else {
@@ -168,7 +168,8 @@ public class LandingPage extends Activity {
 
 			if (item != null) {
 				if (item.isGroupEntry()) {
-					getGroupView(holder, item);
+//					getGroupView(holder, item);
+					return convertView;
 				} else {
 					getBracketView(holder, item, convertView, parent);
 				}
@@ -180,138 +181,155 @@ public class LandingPage extends Activity {
 				View convertView, ViewGroup parent) {
 			int winnerColor = 0xFFCCFFCC;
 			int loserColor = 0x00FFFFFF;
-			int numPlayers = item.getNumPlayers() >= 4 ? 4 : item.getNumPlayers();
+			int numPlayers = item.getNumPlayers();// >= 4 ? 4 :
+													// item.getNumPlayers();
 			holder.groupName.setText(item.getName());
 			holder.groupName.setCompoundDrawablesWithIntrinsicBounds(
 					item.getTitleDrawable(), 0, 0, 0);
 			holder.groupName.setBackgroundColor(winnerColor);
 			holder.date.setText(item.getTime());
 			int p1i, p2i; // Player 1 and Player 2 indices
-			int i, j = 0;
-//			TableLayout tblV = (TableLayout)convertView;
-//			LayoutInflater vi = null;
-//			while(tblV.getChildCount() < (numPlayers + 2)){
-//				if(vi == null){
-//					vi = LayoutInflater.from(getBaseContext());
-//				}
-//				tblV.addView(vi.inflate(R.layout.bracket_stage_participant_2, parent,false));
-//			}
-//			
-			
+			int i = holder.size;
+			TableLayout tblV = (TableLayout) convertView;
+			LayoutInflater vi = null;
+			while (holder.size < numPlayers) {
+				if (vi == null) {
+					vi = LayoutInflater.from(getBaseContext());
+				}
+//				BracketEntry.addRow(convertView, holder.size, numPlayers,
+//						holder);
+				//TODO: Start here, and make this so it adds one row at a time, and pass in the new inflated row.
+				ArrayList<View> newRows = BracketEntry.addRows(vi.inflate(R.layout.bracket_stage_row, null), holder.size, numPlayers, holder);
+				for(View v : newRows)
+					tblV.addView(v);
+			}
+			while (holder.size > numPlayers) {
+				BracketEntry.removeRow(holder);
+				tblV.removeViewAt(i--);
+			}
+
 			for (i = 0; i < numPlayers; i++) {
 				BracketEntry player = (BracketEntry) item.getPlayer(i);
 				p1i = i * 2;
 				p2i = i * 2 + 1;
 
-				holder.playerName[p1i].setText(player.getP1Name());
-				holder.playerName[p2i].setText(player.getP2Name());
-				holder.race[p1i].setCompoundDrawablesWithIntrinsicBounds(
+				holder.playerName.get(p1i).setText(player.getP1Name());
+				holder.playerName.get(p2i).setText(player.getP2Name());
+				holder.race.get(p1i).setCompoundDrawablesWithIntrinsicBounds(
 						EntryUtil.getRaceDrawable(player.getP1Race()), 0, 0, 0);
-				holder.race[p2i].setCompoundDrawablesWithIntrinsicBounds(
+				holder.race.get(p2i).setCompoundDrawablesWithIntrinsicBounds(
 						EntryUtil.getRaceDrawable(player.getP2Race()), 0, 0, 0);
-				holder.flag[p1i].setCompoundDrawablesWithIntrinsicBounds(
+				holder.flag.get(p1i).setCompoundDrawablesWithIntrinsicBounds(
 						EntryUtil.getFlagDrawable(player.getP1Country()), 0, 0,
 						0);
-				holder.flag[p2i].setCompoundDrawablesWithIntrinsicBounds(
+				holder.flag.get(p2i).setCompoundDrawablesWithIntrinsicBounds(
 						EntryUtil.getFlagDrawable(player.getP2Country()), 0, 0,
 						0);
-				holder.mapScore[p1i].setText(EntryUtil.getWinsStr(1, player));
-				holder.mapScore[p2i].setText(EntryUtil.getWinsStr(2, player));
-				
-				holder.playerName[p1i].setBackgroundColor(loserColor);
-				holder.race[p1i].setBackgroundColor(loserColor);
-				holder.flag[p1i].setBackgroundColor(loserColor);
-				holder.playerName[p2i].setBackgroundColor(loserColor);
-				holder.race[p2i].setBackgroundColor(loserColor);
-				holder.flag[p2i].setBackgroundColor(loserColor);
+				holder.mapScore.get(p1i).setText(
+						EntryUtil.getWinsStr(1, player));
+				holder.mapScore.get(p2i).setText(
+						EntryUtil.getWinsStr(2, player));
 
 				if (player.getWinner() == 1) {
-					holder.playerName[p1i].setBackgroundColor(winnerColor);
-					holder.race[p1i].setBackgroundColor(winnerColor);
-					holder.flag[p1i].setBackgroundColor(winnerColor);
+					holder.playerName.get(p1i).setBackgroundColor(winnerColor);
+					holder.race.get(p1i).setBackgroundColor(winnerColor);
+					holder.flag.get(p1i).setBackgroundColor(winnerColor);
+					holder.playerName.get(p2i).setBackgroundColor(loserColor);
+					holder.race.get(p2i).setBackgroundColor(loserColor);
+					holder.flag.get(p2i).setBackgroundColor(loserColor);
 				} else if (player.getWinner() == 2) {
-					holder.playerName[p2i].setBackgroundColor(winnerColor);
-					holder.race[p2i].setBackgroundColor(winnerColor);
-					holder.flag[p2i].setBackgroundColor(winnerColor);
+					holder.playerName.get(p1i).setBackgroundColor(loserColor);
+					holder.race.get(p1i).setBackgroundColor(loserColor);
+					holder.flag.get(p1i).setBackgroundColor(loserColor);
+					holder.playerName.get(p2i).setBackgroundColor(winnerColor);
+					holder.race.get(p2i).setBackgroundColor(winnerColor);
+					holder.flag.get(p2i).setBackgroundColor(winnerColor);
 				}
 			}
-			
-			for(j = i; j < 4; j++){
-				p1i = j * 2;
-				p2i = j * 2 + 1;
-				holder.playerName[p1i].setText("-");
-				holder.playerName[p2i].setText("-");
-				holder.race[p1i].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
-				holder.race[p2i].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
-				holder.flag[p1i].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
-				holder.flag[p2i].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
-				holder.mapScore[p1i].setText("-");
-				holder.mapScore[p2i].setText("-");
-				holder.playerName[p1i].setBackgroundColor(0x00FFFFFF);
-				holder.race[p1i].setBackgroundColor(0x00FFFFFF);
-				holder.flag[p1i].setBackgroundColor(0x00FFFFFF);
-				holder.playerName[p2i].setBackgroundColor(0x00FFFFFF);
-				holder.race[p2i].setBackgroundColor(0x00FFFFFF);
-				holder.flag[p2i].setBackgroundColor(0x00FFFFFF);
-			}
+
+			// for(j = i; j < 4; j++){
+			// // Set winner to 0
+			// p1i = j * 2;
+			// p2i = j * 2 + 1;
+			// holder.playerName[p1i].setText("-");
+			// holder.playerName[p2i].setText("-");
+			// holder.race[p1i].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0,
+			// 0);
+			// holder.race[p2i].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0,
+			// 0);
+			// holder.flag[p1i].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0,
+			// 0);
+			// holder.flag[p2i].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0,
+			// 0);
+			// holder.mapScore[p1i].setText("-");
+			// holder.mapScore[p2i].setText("-");
+			// holder.playerName[p1i].setBackgroundColor(0x00FFFFFF);
+			// holder.race[p1i].setBackgroundColor(0x00FFFFFF);
+			// holder.flag[p1i].setBackgroundColor(0x00FFFFFF);
+			// holder.playerName[p2i].setBackgroundColor(0x00FFFFFF);
+			// holder.race[p2i].setBackgroundColor(0x00FFFFFF);
+			// holder.flag[p2i].setBackgroundColor(0x00FFFFFF);
+			// }
 		}
 
-		private void getGroupView(ViewHolder holder, ScheduleEntry item) {
-			int bgColor = item.getColor();
-			int numPlayers = item.getNumPlayers();
-			holder.groupName.setText(item.getName());
-			holder.groupName.setCompoundDrawablesWithIntrinsicBounds(
-					item.getTitleDrawable(), 0, 0, 0);
-			holder.groupName.setBackgroundColor(bgColor);
-			holder.date.setText(item.getTime());
-			int i, j = 0;
-			for (i = 0; i < numPlayers; i++) {
-				GroupEntry player = (GroupEntry) item.getPlayer(i);
-				bgColor = player.getBackgroundColor();
-				if(player.getPlace() > 0) //TODO: Extract this to EntryUtil
-					holder.rank[i].setText(Integer.toString(player.getPlace()));
-				else{
-					holder.rank[i].setText("-");
-					bgColor = 0x00FFFFFF;
-				}
-				holder.rank[i].setBackgroundColor(bgColor);
-				holder.flag[i]
-						.setCompoundDrawablesWithIntrinsicBounds(
-								EntryUtil.getFlagDrawable(player.getCountry()),
-								0, 0, 0);
-				holder.flag[i].setBackgroundColor(bgColor);
-				holder.race[i].setCompoundDrawablesWithIntrinsicBounds(
-						EntryUtil.getRaceDrawable(player.getRace()), 0, 0, 0);
-				holder.race[i].setBackgroundColor(bgColor);
-				holder.playerName[i].setText(player.getName());
-				holder.playerName[i].setBackgroundColor(bgColor);
-				holder.matchScore[i].setText(Integer.toString(player
-						.getMatchesWon())
-						+ "-"
-						+ Integer.toString(player.getMatchesLost()));
-				holder.matchScore[i].setBackgroundColor(bgColor);
-				holder.mapScore[i]
-						.setText(Integer.toString(player.getMapsWon()) + "-"
-								+ Integer.toString(player.getMapsLost()));
-				holder.mapScore[i].setBackgroundColor(bgColor);
-			}
-			for(j = i; j < 4; j++){
-				bgColor = 0x00FFFFFF;
-				holder.rank[j].setText("-");
-				holder.rank[j].setBackgroundColor(bgColor);
-				holder.flag[j].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
-				holder.flag[j].setBackgroundColor(bgColor);
-				holder.race[j].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
-				holder.race[j].setBackgroundColor(bgColor);
-				holder.playerName[j].setText("-");
-				holder.playerName[j].setBackgroundColor(bgColor);
-				holder.matchScore[j].setText("-");
-				holder.matchScore[j].setBackgroundColor(bgColor);
-				holder.mapScore[j].setText("-");
-				holder.mapScore[j].setBackgroundColor(bgColor);
-			}
-		}
-
+//		private void getGroupView(ViewHolder holder, ScheduleEntry item) {
+//			int bgColor = item.getColor();
+//			int numPlayers = item.getNumPlayers();
+//			holder.groupName.setText(item.getName());
+//			holder.groupName.setCompoundDrawablesWithIntrinsicBounds(
+//					item.getTitleDrawable(), 0, 0, 0);
+//			holder.groupName.setBackgroundColor(bgColor);
+//			holder.date.setText(item.getTime());
+//			int i, j = 0;
+//			for (i = 0; i < numPlayers; i++) {
+//				GroupEntry player = (GroupEntry) item.getPlayer(i);
+//				bgColor = player.getBackgroundColor();
+//				if (player.getPlace() > 0) // TODO: Extract this to EntryUtil
+//					holder.rank[i].setText(Integer.toString(player.getPlace()));
+//				else {
+//					holder.rank[i].setText("-");
+//					bgColor = 0x00FFFFFF;
+//				}
+//				holder.rank[i].setBackgroundColor(bgColor);
+//				holder.flag[i]
+//						.setCompoundDrawablesWithIntrinsicBounds(
+//								EntryUtil.getFlagDrawable(player.getCountry()),
+//								0, 0, 0);
+//				holder.flag[i].setBackgroundColor(bgColor);
+//				holder.race[i].setCompoundDrawablesWithIntrinsicBounds(
+//						EntryUtil.getRaceDrawable(player.getRace()), 0, 0, 0);
+//				holder.race[i].setBackgroundColor(bgColor);
+//				holder.playerName[i].setText(player.getName());
+//				holder.playerName[i].setBackgroundColor(bgColor);
+//				holder.matchScore[i].setText(Integer.toString(player
+//						.getMatchesWon())
+//						+ "-"
+//						+ Integer.toString(player.getMatchesLost()));
+//				holder.matchScore[i].setBackgroundColor(bgColor);
+//				holder.mapScore[i]
+//						.setText(Integer.toString(player.getMapsWon()) + "-"
+//								+ Integer.toString(player.getMapsLost()));
+//				holder.mapScore[i].setBackgroundColor(bgColor);
+//			}
+//			for (j = i; j < 4; j++) {
+//				bgColor = 0x00FFFFFF;
+//				holder.rank[j].setText("-");
+//				holder.rank[j].setBackgroundColor(bgColor);
+//				holder.flag[j].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0,
+//						0);
+//				holder.flag[j].setBackgroundColor(bgColor);
+//				holder.race[j].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0,
+//						0);
+//				holder.race[j].setBackgroundColor(bgColor);
+//				holder.playerName[j].setText("-");
+//				holder.playerName[j].setBackgroundColor(bgColor);
+//				holder.matchScore[j].setText("-");
+//				holder.matchScore[j].setBackgroundColor(bgColor);
+//				holder.mapScore[j].setText("-");
+//				holder.mapScore[j].setBackgroundColor(bgColor);
+//			}
+//		}
+//
 	}
 
 	private class DownloadDataAndUpdateDBTask extends
@@ -399,7 +417,7 @@ public class LandingPage extends Activity {
 			table = "matches";
 			columns = new String[] { "id", "winner", "player1name",
 					"player2name", "player1race", "player2race", "player1flag",
-					"player2flag", "numgames", "player1wins", "player2wins"};
+					"player2flag", "numgames", "player1wins", "player2wins" };
 			orderBy = null;
 			for (ScheduleEntry entry : entries) {
 				selection = "scheduleid = " + String.valueOf(entry.getId())
@@ -415,12 +433,14 @@ public class LandingPage extends Activity {
 				while (!c.isLast()) {
 					entry.addPlayer(new BracketEntry(c.getString(2), c
 							.getString(3), c.getString(4), c.getString(5), c
-							.getString(6), c.getString(7), c.getString(1), c.getString(9), c.getString(10)));
+							.getString(6), c.getString(7), c.getString(1), c
+							.getString(9), c.getString(10)));
 					c.move(1);
 				}
 				entry.addPlayer(new BracketEntry(c.getString(2),
 						c.getString(3), c.getString(4), c.getString(5), c
-								.getString(6), c.getString(7), c.getString(1), c.getString(9), c.getString(10)));
+								.getString(6), c.getString(7), c.getString(1),
+						c.getString(9), c.getString(10)));
 				c.close();
 			}
 			publishProgress(90);
