@@ -11,13 +11,13 @@
 
     <include layout="@layout/schedule_entry_date_row" />
 
-    <include layout="@layout/group_stage_row" />
+    <include android:id="@+id/group_row_1" layout="@layout/group_stage_row" />
 
-    <include layout="@layout/group_stage_row" />
+    <include android:id="@+id/group_row_2" layout="@layout/group_stage_row" />
 
-    <include layout="@layout/group_stage_row" />
+    <include android:id="@+id/group_row_3" layout="@layout/group_stage_row" />
 
-    <include layout="@layout/group_stage_row" />
+    <include android:id="@+id/group_row_4" layout="@layout/group_stage_row" />
     <!--
     TableRow
         android:layout_width="fill_parent"

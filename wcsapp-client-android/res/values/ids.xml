@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- I have no idea how many to put here, 
+    	but this allows a full round of 64 to
+    	be played, so, I'm calling it good for
+    	now. -->
     <item name="bracket_row_5" type="id"/>
     <item name="bracket_row_6" type="id"/>
     <item name="bracket_row_7" type="id"/>
@@ -29,6 +33,34 @@
     <item name="bracket_row_30" type="id"/>
     <item name="bracket_row_31" type="id"/>
     <item name="bracket_row_32" type="id"/>
-    <!-- I have no idea how many to put here, but this allows a full round of 64 to be played, so, I'm calling it good for now. -->
+
+    <item name="group_row_5" type="id"/>
+    <item name="group_row_6" type="id"/>
+    <item name="group_row_7" type="id"/>
+    <item name="group_row_8" type="id"/>
+    <item name="group_row_9" type="id"/>
+    <item name="group_row_10" type="id"/>
+    <item name="group_row_11" type="id"/>
+    <item name="group_row_12" type="id"/>
+    <item name="group_row_13" type="id"/>
+    <item name="group_row_14" type="id"/>
+    <item name="group_row_15" type="id"/>
+    <item name="group_row_16" type="id"/>
+    <item name="group_row_17" type="id"/>
+    <item name="group_row_18" type="id"/>
+    <item name="group_row_19" type="id"/>
+    <item name="group_row_20" type="id"/>
+    <item name="group_row_21" type="id"/>
+    <item name="group_row_22" type="id"/>
+    <item name="group_row_23" type="id"/>
+    <item name="group_row_24" type="id"/>
+    <item name="group_row_25" type="id"/>
+    <item name="group_row_26" type="id"/>
+    <item name="group_row_27" type="id"/>
+    <item name="group_row_28" type="id"/>
+    <item name="group_row_29" type="id"/>
+    <item name="group_row_30" type="id"/>
+    <item name="group_row_31" type="id"/>
+    <item name="group_row_32" type="id"/>
 
 </resources>

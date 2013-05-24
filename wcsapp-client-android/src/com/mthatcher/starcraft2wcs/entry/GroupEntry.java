@@ -18,6 +18,17 @@ public class GroupEntry implements GroupOrBracketEntry{
 	private int mapsWon;
 	private int mapsLost;
 	private MatchResult result;
+	private static int[] rowIds = { R.id.group_row_1, R.id.group_row_2,
+		R.id.group_row_3, R.id.group_row_4, R.id.group_row_5,
+		R.id.group_row_6, R.id.group_row_7, R.id.group_row_8,
+		R.id.group_row_9, R.id.group_row_10, R.id.group_row_11,
+		R.id.group_row_12, R.id.group_row_13, R.id.group_row_14,
+		R.id.group_row_15, R.id.group_row_16, R.id.group_row_17,
+		R.id.group_row_18, R.id.group_row_19, R.id.group_row_20,
+		R.id.group_row_21, R.id.group_row_22, R.id.group_row_23,
+		R.id.group_row_24, R.id.group_row_25, R.id.group_row_26,
+		R.id.group_row_27, R.id.group_row_28, R.id.group_row_29,
+		R.id.group_row_30, R.id.group_row_31, R.id.group_row_32 };
 
 	public GroupEntry(String name, String country, String race,
 			String place, int matchesWon, int matchesLost, int mapsWon,
@@ -87,23 +98,33 @@ public class GroupEntry implements GroupOrBracketEntry{
 
 	public static ViewHolder getHolder(View convertView, int numEntrants) {
 		ViewHolder holder = new ViewHolder();
-		
 		holder.isGroupHolder = true;
-		
 		holder.groupName = (TextView) convertView.findViewById(R.id.schedule_name);
 		holder.date = (TextView) convertView.findViewById(R.id.schedule_date);
-		
-		holder.size = numEntrants;
-		
+		holder.size = 0;
 		for(int i = 0; i < numEntrants; i++){
-			holder.playerName.add(i, (TextView) convertView.findViewById(R.id.group_player_name));
-			holder.rank.add(i, (TextView) convertView.findViewById(R.id.group_player_rank));
-			holder.flag.add(i, (TextView) convertView.findViewById(R.id.group_player_flag));
-			holder.matchScore.add(i, (TextView) convertView.findViewById(R.id.group_player_match_score));
-			holder.mapScore.add(i, (TextView) convertView.findViewById(R.id.group_player_map_score));
-				
+			addRow(convertView.findViewById(rowIds[i]), i, holder);
 		}
-		
 		return holder;
+	}
+	
+	public static void addRow(View currentRow, int i, ViewHolder holder) {
+		holder.playerName.add(i, (TextView) currentRow.findViewById(R.id.group_player_name));
+		holder.rank.add(i, (TextView) currentRow.findViewById(R.id.group_player_rank));
+		holder.race.add(i, (TextView) currentRow.findViewById(R.id.group_player_race));
+		holder.flag.add(i, (TextView) currentRow.findViewById(R.id.group_player_flag));
+		holder.matchScore.add(i, (TextView) currentRow.findViewById(R.id.group_player_match_score));
+		holder.mapScore.add(i, (TextView) currentRow.findViewById(R.id.group_player_map_score));
+		holder.size++;
+	}
+	
+	public static void removeRow(ViewHolder holder){
+		int i = --holder.size;
+		holder.playerName.remove(i);
+		holder.rank.remove(i);
+		holder.flag.remove(i);
+		holder.race.remove(i);
+		holder.matchScore.remove(i);
+		holder.mapScore.remove(i);
 	}
 }

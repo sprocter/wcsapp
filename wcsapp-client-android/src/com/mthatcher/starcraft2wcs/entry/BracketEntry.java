@@ -105,57 +105,45 @@ public class BracketEntry implements GroupOrBracketEntry {
 
 	public static ViewHolder getHolder(View convertView, int numEntrants) {
 		ViewHolder holder = new ViewHolder();
-
 		holder.isGroupHolder = false;
-
-		holder.groupName = (TextView) convertView
-				.findViewById(R.id.schedule_name);
+		holder.groupName = (TextView) convertView.findViewById(R.id.schedule_name);
 		holder.date = (TextView) convertView.findViewById(R.id.schedule_date);
-
-		holder.size = numEntrants;
-
-		addRows(convertView, 0, numEntrants, holder);
-
+		holder.size = 0;
+		int p1i, p2i;
+		for (int i = 0; i < numEntrants; i++) {
+			p1i = i * 2;
+			p2i = i * 2 + 1;
+			addRow(convertView.findViewById(rowIds[i]), p1i, p2i, holder);
+		}
 		return holder;
 	}
 
-	public static ArrayList<View> addRows(View convertView, int oldPlayerCount, int newPlayerCount, ViewHolder holder) {
-		ArrayList<View> currentRows = new ArrayList<View>();
-		View currentRow = null;
-		int p1i, p2i;
-		for (int i = oldPlayerCount; i < newPlayerCount; i++) {
-			if(convertView instanceof TableLayout)
-				currentRow = convertView.findViewById(rowIds[i]);
-			
-			
-			p1i = i * 2;
-			p2i = i * 2 + 1;
-			holder.playerName.add(p1i, (TextView) currentRow.findViewById(R.id.bracket_player_1_name));
-			holder.playerName.add(p2i, (TextView) currentRow
-					.findViewById(R.id.bracket_player_2_name));
+	public static void addRow(View currentRow, int p1i, int p2i, ViewHolder holder) {
+		holder.playerName.add(p1i, (TextView) currentRow.findViewById(R.id.bracket_player_1_name));
+		holder.playerName.add(p2i, (TextView) currentRow
+				.findViewById(R.id.bracket_player_2_name));
 
-			holder.flag.add(p1i, (TextView) currentRow
-					.findViewById(R.id.bracket_player_1_flag));
-			holder.flag.add(p2i, (TextView) currentRow
-					.findViewById(R.id.bracket_player_2_flag));
+		holder.flag.add(p1i, (TextView) currentRow
+				.findViewById(R.id.bracket_player_1_flag));
+		holder.flag.add(p2i, (TextView) currentRow
+				.findViewById(R.id.bracket_player_2_flag));
 
-			holder.race.add(p1i, (TextView) currentRow
-					.findViewById(R.id.bracket_player_1_race));
-			holder.race.add(p2i, (TextView) currentRow
-					.findViewById(R.id.bracket_player_2_race));
+		holder.race.add(p1i, (TextView) currentRow
+				.findViewById(R.id.bracket_player_1_race));
+		holder.race.add(p2i, (TextView) currentRow
+				.findViewById(R.id.bracket_player_2_race));
 
-			holder.mapScore.add(p1i, (TextView) currentRow
-					.findViewById(R.id.bracket_player_1_map_score));
-			holder.mapScore.add(p2i, (TextView) currentRow
-					.findViewById(R.id.bracket_player_2_map_score));
-			currentRows.add(currentRow);
-		}
-		return currentRows;
+		holder.mapScore.add(p1i, (TextView) currentRow
+				.findViewById(R.id.bracket_player_1_map_score));
+		holder.mapScore.add(p2i, (TextView) currentRow
+				.findViewById(R.id.bracket_player_2_map_score));
+		
+		holder.size++;
 	}
 
 	public static void removeRow(ViewHolder holder) {
-		int p1i = holder.size - 1;
-		int p2i = holder.size - 2;
+		int p2i = --holder.size * 2;
+		int p1i = holder.size * 2 + 1;
 		holder.playerName.remove(p1i);
 		holder.playerName.remove(p2i);
 		holder.flag.remove(p1i);
@@ -164,6 +152,5 @@ public class BracketEntry implements GroupOrBracketEntry {
 		holder.race.remove(p2i);
 		holder.mapScore.remove(p1i);
 		holder.mapScore.remove(p2i);
-		holder.size -= 2;
 	}
 }

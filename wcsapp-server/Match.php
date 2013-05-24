@@ -33,6 +33,11 @@
 			$bmsPos = strpos($s, '{{BracketMatchSummary', $offset) + 21;
 			$summaries = array();
 			while($bmsPos > 21){
+				if(strpos($s, 'interview=*{{', $bmsPos) !== false){
+					$bracketedStart = strpos($s, 'interview=*{{', $bmsPos);
+					$bracketedEnd = strpos($s, '}}', $bracketedStart);
+					$s = substr_replace($s, '', $bracketedStart, $bracketedEnd - $bracketedStart); // remove string
+				}
 				$offset = strpos($s, '}}', $offset);
 				$length = $offset - $bmsPos;
 				$summaries[] = substr($s, $bmsPos, $length);

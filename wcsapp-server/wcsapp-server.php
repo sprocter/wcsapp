@@ -149,10 +149,7 @@ function parseMatchesFromBracket($m, $title, $mwtext_str, $st){
 		$bracket_arr = explode('{{CodeABracket', $mwtext_str);
 	if(count($bracket_arr) == 1){
 		$bracket_arr = explode('{{8SEBracket', $mwtext_str);
-// 		$bracket_arr = array_merge($bracket_arr, explode('{{4SEBracket', $bracket_arr[1]));
 		$bracket_arr = explode('{{4SEBracket', $bracket_arr[1]);
-// 		var_dump($bracket_arr[1]);
-// 		var_dump($bracket_arr[2]);
 	}
 	
 	$m->matchtype = 'bracket';
