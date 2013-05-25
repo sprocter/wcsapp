@@ -7,6 +7,7 @@ require 'S3Writer.php';
 
 date_default_timezone_set('UTC');
 $matchId = 0;
+$SCHEDULE_URL = '2013_StarCraft_II_World_Championship_Series/Schedule';
 
 function getScheduleID(){
 	global $scheduleIdMap, $scheduleDateMap;
@@ -28,7 +29,7 @@ function getScheduleID(){
 		$region = func_get_arg(1);
 		if(!array_key_exists($unixtime, $scheduleDateMap[$region])){
 			foreach(array_keys($scheduleDateMap[$region]) as $key){
-				if(($key > $unixtime - 43200) && ($key < $unixtime + 43200)){ // 43200 = 12 hrs in seconds
+				if(($key - 2 * 60 * 60 < $unixtime) && ($key + 16 * 60 * 60 > $unixtime)){ // 72000 = 20 hrs in seconds
 					return $scheduleDateMap[$region][$key];
 				}
 			}
@@ -79,7 +80,11 @@ function parseSchedule($mwtext_str){
 		$id++;
 		$sched->id = $id;
 		$sched->region = Schedule::getRegion($s);
-		$sched->time = Schedule::getTime($s) * 1000;
+		$time = Schedule::getTime($s);
+		if(!is_array($time))
+			$sched->time = $time * 1000;
+		else
+			$sched->time = $time[0] * 1000;
 		$sched->division = Schedule::getDivision($s);
 		$roundAndName = Schedule::getRoundAndName($s);
 		$sched->name = Schedule::getName($roundAndName);
@@ -91,6 +96,8 @@ function parseSchedule($mwtext_str){
 		}
 		$scheduleIdMap[$sched->region][$sched->division][$sched->round][$sched->name] = $id;
 		$scheduleDateMap[$sched->region][($sched->time) / 1000] = $id;
+		if(is_array($time))
+			$scheduleDateMap[$sched->region][($time[1])] = $id;
 		$st->execute((array)$sched);
 	}
 }
@@ -159,6 +166,7 @@ function parseMatchesFromBracket($m, $title, $mwtext_str, $st){
 		$bracketVals_arr = Match::getBracketVals($bracket_str, false);
 		$keys = array();
 		$newMatch = false;
+		$timeChain = array();
 		$prefixAndCount = array('init', 1);
 		foreach(array_keys($bracketVals_arr) as $key){
 			if(strlen($key) > 6)
@@ -193,10 +201,23 @@ function parseMatchesFromBracket($m, $title, $mwtext_str, $st){
 			$m->player2wins = $bracketVals_arr[$keypair[1] . 'score'];
 			if($m->player1wins == 'Q' || $m->player2wins == 'Q') // Listing qualified players, no match played.
 				continue;
-			$m->scheduleid = getScheduleId(Match::getTime($bracketVals_arr[$keypair[2] . 'G' . $keypair[3] . 'details']['date']), $region);
+			$time = Match::getTime($bracketVals_arr[$keypair[2] . 'G' . $keypair[3] . 'details']['date']);
+			$origTime = $time;
+			for($i = 0; $i < count($timeChain); $i++){
+				if(($timeChain[$i][0] - 1 * 60 * 60 <= $time) && ($timeChain[$i][1] + 2 * 60 * 60 >= $time)){
+					$timeChain[$i][0] = $timeChain[$i][0] < $time ? $timeChain[$i][0] : $time;
+					$timeChain[$i][1] = $timeChain[$i][1] > $time ? $timeChain[$i][1] : $time;
+					$time = $timeChain[$i][2];
+				}
+			}
+			if($time == $origTime){
+				$timeChain[] = array($time, $time, $time);
+			}
+			$m->scheduleid = getScheduleId($time, $region);
+			$m->winner = 0;
 			if(isset($bracketVals_arr[$keypair[0] . 'win']) && $bracketVals_arr[$keypair[0] . 'win'] == '1')
 				$m->winner = '1';
-			else if(isset($bracketVals_arr[$keypair[1] . 'win']))
+			else if(isset($bracketVals_arr[$keypair[1] . 'win']) && (($bracketVals_arr[$keypair[1] . 'win'] == '1') ||  ($bracketVals_arr[$keypair[1] . 'win'] == '2')))
 				$m->winner = '2';
 			$i = 1;
 			while(isset($bracketVals_arr[$keypair[0] . 'details']["map$i"]))
@@ -271,7 +292,7 @@ function parseGames($s, $numGames, $matchId, $st, $g){
 if(file_exists('warnings.txt'))
 	unlink('warnings.txt');
 
-$titles[] = '2013_StarCraft_II_World_Championship_Series/Schedule';
+$titles[] = $SCHEDULE_URL;
 $titles[] = '2013_WCS_Season_1_America/Premier/Ro32';
 $titles[] = '2013_WCS_Season_1_America/Premier/Ro16';
 $titles[] = '2013_WCS_Season_1_America/Premier';
@@ -286,10 +307,11 @@ $titles[] = '2013_WCS_Season_1_America/Challenger';
 $titles[] = '2013_WCS_Season_1_Europe/Challenger';
 $titles[] = '2013_WCS_Season_1_Korea_GSL/Challenger';
 
-$url = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&export&exportnowrap&titles=' . implode ('|', $titles);
+// $revisionURL = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&prop=revisions&rvprop=ids&format=xml&titles=' . implode ('|', $titles);
 
 try{
-	$mediawiki_obj = simplexml_load_file($url);
+// 	$mediawiki_obj = simplexml_load_file($revisionURL);
+	
 	$db = new PDO("sqlite:wcsapp.sqlite");
 	$db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 	$db->exec('DROP TABLE IF EXISTS games');
@@ -300,6 +322,24 @@ try{
 	$db->exec('CREATE TABLE "matches" ("id" INTEGER PRIMARY KEY  NOT NULL ,"winner" TEXT,"player1name" TEXT,"player2name" TEXT,"player1race" TEXT,"player2race" TEXT,"player1flag" TEXT,"player2flag" TEXT,"numgames" INTEGER DEFAULT (null) ,"matchname" TEXT,"scheduleid" INTEGER NOT NULL  DEFAULT (null) , "matchnum" INTEGER, "matchtype" TEXT, "player1wins" TEXT, "player2wins" TEXT);');
 	$db->exec('CREATE TABLE "schedule" ("id" INTEGER PRIMARY KEY NOT NULL ,"time" INTEGER,"division" TEXT,"region" TEXT,"name" TEXT, "round" TEXT);');
 	$db->exec('CREATE TABLE "participants" ("id" INTEGER PRIMARY KEY NOT NULL, "name" TEXT, "flag" TEXT, "race" TEXT, "place" INTEGER, "matcheswon" INTEGER, "matcheslost" INTEGER, "mapswon" INTEGER, "mapslost" INTEGER, "result" TEXT, "scheduleid" INTEGER)');
+	
+// 	foreach($mediawiki_obj->query->pages->page as $page){
+// 		$titleRevMap[$page->attributes()->title] = $page->revisions->rev[0]->attributes()->revid;
+// 	}
+// 	$result = $db->query('SELECT * FROM revisions');
+// 	$titlesToUpdate = array();
+// 	foreach($result as $row){
+// 		$newRev = $titleRevMap[$row['pagename']];
+// 		if($row['revid'] < $newRev)
+// 			$titlesToUpdate[] = $row['pagename'];
+// 	}
+// 	if(empty($titlesToUpdate))
+// 		die();
+// 	if(!empty($titlesToUpdate) && !in_array($SCHEDULE_URL))
+// 		array_unshift($titlesToUpdate, $SCHEDULE_URL);
+	$url = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&export&exportnowrap&titles=' . implode ('|', $titles);
+	$mediawiki_obj = simplexml_load_file($url);
+	
 	parseSchedule($mediawiki_obj->page[0]->revision->text);
 	for($i = 1; $i < count($mediawiki_obj->page); $i++){
 		if(strpos($mediawiki_obj->page[$i]->title, 'Ro') !== false){

@@ -16,7 +16,7 @@ final class Participant{
 		}
 		
 		public static function getName($s){
-			$s = str_replace('{{TA|2013_WCS_Season_1_America/Challenger#Bracket Stage}}', '',$s);
+			$s = strip_tags(str_replace('{{TA|2013_WCS_Season_1_America/Challenger#Bracket Stage}}', '',$s));
 			$s = str_replace('{{TA|2013_WCS_Season_1_Europe/Challenger#Bracket Stage}}', '',$s);
 			$dblCurlyBracePos = strpos($s, "}}");
 			$pipePos = strrpos(substr($s, 0, $dblCurlyBracePos), '|') + 1;
@@ -26,7 +26,10 @@ final class Participant{
 				$equalsPos = strpos($name, '=') + 1;
 				$spacePos = strpos($name, ' ');
 				$nameLength = $spacePos - $equalsPos;
-				$name = substr($name, $equalsPos, $nameLength);
+				if($spacePos === false)
+					$name = substr($name, $equalsPos);
+				else
+					$name = substr($name, $equalsPos, $nameLength);
 			}
 			if(strpos($name, '_') !== false) // Who writes "Shuttle_(Korean_Terran)"?  Seriously?
 				$name = substr($name, 0, strpos($name, '_'));

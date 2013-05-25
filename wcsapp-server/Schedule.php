@@ -21,14 +21,13 @@ final class Schedule{
 		static function getTime($s){
 			if(strpos($s, '(') !== false)
 				$timestamp = strtotime(substr($s, 9, strpos($s, '(') - 9));
-			else if(strpos($s, ' – ') !== false)
-				$timestamp = strtotime(substr($s, 9, strpos($s, ' – ') - 9));			
-			else
+			else if(strpos($s, ' – ') !== false){
+				$timestampChunks = explode(' – ', $s);
+				$timestamp[0] = strtotime(substr($timestampChunks[0], strrpos($timestampChunks[0], '>') + 1));
+				$timestamp[1] = strtotime(substr($timestampChunks[1], 0, strpos($timestampChunks[1], '<')));
+			} else
 				$timestamp = strtotime(substr($s, 9, strpos($s, '</small>') - 9));
 			if($timestamp !== false){
-				if($timestamp < 0){
-					$wat = 8;
-				}
 				return $timestamp;
 			} else
 				throw new Exception("TimeFormatException: Couldn't parse $s");

@@ -78,7 +78,7 @@
 		}
 		
 		static function getGroupPlayerName($s, $num){
-			return Match::getValue($s, "player$num");
+			return strip_tags(Match::getValue($s, "player$num"));
 		}
 		
 		static function getGroupPlayerRace($s, $num){

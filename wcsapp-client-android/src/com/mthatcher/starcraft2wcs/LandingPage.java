@@ -184,7 +184,7 @@ public class LandingPage extends Activity {
 			holder.groupName.setText(item.getName());
 			holder.groupName.setCompoundDrawablesWithIntrinsicBounds(
 					item.getTitleDrawable(), 0, 0, 0);
-			holder.groupName.setBackgroundColor(winnerColor);
+			holder.groupName.setBackgroundColor(item.getColor());
 			holder.date.setText(item.getTime());
 			int p1i, p2i; // Player 1 and Player 2 indices
 			int i = 0;
@@ -207,6 +207,8 @@ public class LandingPage extends Activity {
 			}
 
 			for (i = 0; i < numPlayers; i++) {
+				if(!(item.getPlayer(i) instanceof BracketEntry))
+					tblV = null;
 				BracketEntry player = (BracketEntry) item.getPlayer(i);
 				p1i = i * 2;
 				p2i = i * 2 + 1;
@@ -242,6 +244,13 @@ public class LandingPage extends Activity {
 					holder.playerName.get(p2i).setBackgroundColor(winnerColor);
 					holder.race.get(p2i).setBackgroundColor(winnerColor);
 					holder.flag.get(p2i).setBackgroundColor(winnerColor);
+				} else {
+					holder.playerName.get(p1i).setBackgroundColor(loserColor);
+					holder.race.get(p1i).setBackgroundColor(loserColor);
+					holder.flag.get(p1i).setBackgroundColor(loserColor);					
+					holder.playerName.get(p2i).setBackgroundColor(loserColor);
+					holder.race.get(p2i).setBackgroundColor(loserColor);
+					holder.flag.get(p2i).setBackgroundColor(loserColor);
 				}
 			}
 		}
