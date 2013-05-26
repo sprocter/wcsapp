@@ -62,9 +62,9 @@
 					$vals[$nameAndValPair_arr[0]] = Match::getBracketVals(array_shift($summaries), true);
 				else
 					if(count($nameAndValPair_arr) > 2)
-						$vals[$nameAndValPair_arr[0]] = trim($nameAndValPair_arr[1] . '=' . $nameAndValPair_arr[2]);
+						$vals[trim($nameAndValPair_arr[0])] = trim($nameAndValPair_arr[1] . '=' . $nameAndValPair_arr[2]);
 					else
-						$vals[$nameAndValPair_arr[0]] = trim($nameAndValPair_arr[1]);
+						$vals[trim($nameAndValPair_arr[0])] = trim($nameAndValPair_arr[1]);
 			}
 			return $vals;
 		}

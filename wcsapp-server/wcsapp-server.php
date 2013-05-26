@@ -8,6 +8,7 @@ require 'S3Writer.php';
 date_default_timezone_set('UTC');
 $matchId = 0;
 $SCHEDULE_URL = '2013_StarCraft_II_World_Championship_Series/Schedule';
+$FORCE_RESET = true;
 
 function getScheduleID(){
 	global $scheduleIdMap, $scheduleDateMap;
@@ -70,6 +71,8 @@ function splitTitle($title){
 
 function parseSchedule($mwtext_str){
 	global $db, $scheduleIdMap, $scheduleDateMap;
+	$scheduleIdMap = array();
+	$scheduleDateMap = array();
 	$mwsched_arr = explode('Countdown',$mwtext_str);
 	$st = $db->prepare('INSERT INTO schedule (id, time, division, region, name, round) values (:id, :time, :division, :region, :name, :round)');
 	$sched = new Schedule();
@@ -245,7 +248,7 @@ function getInsertQuery($tableName){
 	array_shift($fields);
 	$colNames = implode (', ', $fields);
 	$valNames = ':' . implode (', :', $fields);
-	return $db->prepare("INSERT INTO $tableName ($colNames) values ($valNames)");
+	return $db->prepare("INSERT OR REPLACE INTO $tableName ($colNames) values ($valNames)");
 }
 
 function parseParticipants($title, $mwtext_str){
@@ -289,31 +292,75 @@ function parseGames($s, $numGames, $matchId, $st, $g){
 	}
 }
 
+function getPagesToUpdate($forceUpdate = false){
+	global $SCHEDULE_URL, $db;
+	$titles[] = $SCHEDULE_URL;
+	$titles[] = '2013_WCS_Season_1_America/Premier/Ro32';
+	$titles[] = '2013_WCS_Season_1_America/Premier/Ro16';
+	$titles[] = '2013_WCS_Season_1_America/Premier';
+	$titles[] = '2013_WCS_Season_1_Europe/Premier/Ro32';
+	$titles[] = '2013_WCS_Season_1_Europe/Premier/Ro16';
+	$titles[] = '2013_WCS_Season_1_Europe/Premier';
+	$titles[] = '2013 WCS Season 1 Korea GSL/Code S/Ro32';
+	$titles[] = '2013 WCS Season 1 Korea GSL/Code S/Ro16';
+	$titles[] = '2013 WCS Season 1 Korea GSL/Code S';
+	$titles[] = '2013_WCS_Season_1_America/Premier';
+	$titles[] = '2013_WCS_Season_1_America/Challenger';
+	$titles[] = '2013_WCS_Season_1_Europe/Challenger';
+	$titles[] = '2013_WCS_Season_1_Korea_GSL/Challenger';
+	
+	$revisionURL = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&prop=revisions&rvprop=ids&format=xml&titles=' . implode ('|', $titles);
+	$mediawiki_obj = simplexml_load_file($revisionURL);
+	foreach($mediawiki_obj->query->pages->page as $page){
+		$titleRevMap[(string) $page->attributes()->title] = (int)$page->revisions->rev[0]->attributes()->revid;
+	}
+	$result = $db->query('SELECT * FROM revisions');
+	$titlesToUpdate = array();
+	foreach($result as $row){
+		$newRev = $titleRevMap[$row['pagename']];
+		if($row['revid'] < $newRev){
+			$titlesToUpdate[$row['pagename']] = $newRev;
+		}
+	}
+	if(empty($titlesToUpdate) && !$forceUpdate)
+		die();
+	
+	// Update this now so if something goes wrong the program doesn't keep running and crashing;
+	// that is, we'll only attempt to update once per revision.
+	foreach(array_keys($titlesToUpdate) as $key){
+		$db->exec("UPDATE revisions SET revid = " . $titlesToUpdate[$key] . " WHERE pagename = '" . $key . "'");
+	}
+	
+	// If the schedule has changed, it invalidates our saved mappings, so we have to do a a full
+	// reparse
+// 	if($forceUpdate || in_array($SCHEDULE_URL, array_keys($titlesToUpdate)))
+	return $titles;
+// 	return array_keys($titlesToUpdate);
+}
+
+// function readGlobals(){
+// 	global $scheduleIdMap, $scheduleDateMap;
+// 	$scheduleIdMap = unserialize(file_get_contents('scheduleIdMap.txt'));
+// 	$scheduleDateMap = unserialize(file_get_contents('scheduleDateMap.txt'));
+// }
+
+// function writeGlobals(){
+// 	global $scheduleIdMap, $scheduleDateMap;
+// 	file_put_contents('scheduleIdMap.txt', serialize($scheduleIdMap));
+// 	file_put_contents('scheduleDateMap.txt', serialize($scheduleDateMap));
+// }
+
 if(file_exists('warnings.txt'))
 	unlink('warnings.txt');
 
-$titles[] = $SCHEDULE_URL;
-$titles[] = '2013_WCS_Season_1_America/Premier/Ro32';
-$titles[] = '2013_WCS_Season_1_America/Premier/Ro16';
-$titles[] = '2013_WCS_Season_1_America/Premier';
-$titles[] = '2013_WCS_Season_1_Europe/Premier/Ro32';
-$titles[] = '2013_WCS_Season_1_Europe/Premier/Ro16';
-$titles[] = '2013_WCS_Season_1_Europe/Premier';
-$titles[] = '2013 WCS Season 1 Korea GSL/Code S/Ro32';
-$titles[] = '2013 WCS Season 1 Korea GSL/Code S/Ro16';
-$titles[] = '2013 WCS Season 1 Korea GSL/Code S';
-$titles[] = '2013_WCS_Season_1_America/Premier';
-$titles[] = '2013_WCS_Season_1_America/Challenger';
-$titles[] = '2013_WCS_Season_1_Europe/Challenger';
-$titles[] = '2013_WCS_Season_1_Korea_GSL/Challenger';
-
-// $revisionURL = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&prop=revisions&rvprop=ids&format=xml&titles=' . implode ('|', $titles);
-
 try{
-// 	$mediawiki_obj = simplexml_load_file($revisionURL);
-	
-	$db = new PDO("sqlite:wcsapp.sqlite");
+ 	$db = new PDO("sqlite:wcsapp.sqlite");
 	$db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+
+	$titles = getPagesToUpdate();
+	$url = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&export&exportnowrap&titles=' . implode ('|', $titles);
+	$mediawiki_obj = simplexml_load_file($url);
+	
 	$db->exec('DROP TABLE IF EXISTS games');
 	$db->exec('DROP TABLE IF EXISTS matches');
 	$db->exec('DROP TABLE IF EXISTS schedule');
@@ -322,25 +369,9 @@ try{
 	$db->exec('CREATE TABLE "matches" ("id" INTEGER PRIMARY KEY  NOT NULL ,"winner" TEXT,"player1name" TEXT,"player2name" TEXT,"player1race" TEXT,"player2race" TEXT,"player1flag" TEXT,"player2flag" TEXT,"numgames" INTEGER DEFAULT (null) ,"matchname" TEXT,"scheduleid" INTEGER NOT NULL  DEFAULT (null) , "matchnum" INTEGER, "matchtype" TEXT, "player1wins" TEXT, "player2wins" TEXT);');
 	$db->exec('CREATE TABLE "schedule" ("id" INTEGER PRIMARY KEY NOT NULL ,"time" INTEGER,"division" TEXT,"region" TEXT,"name" TEXT, "round" TEXT);');
 	$db->exec('CREATE TABLE "participants" ("id" INTEGER PRIMARY KEY NOT NULL, "name" TEXT, "flag" TEXT, "race" TEXT, "place" INTEGER, "matcheswon" INTEGER, "matcheslost" INTEGER, "mapswon" INTEGER, "mapslost" INTEGER, "result" TEXT, "scheduleid" INTEGER)');
-	
-// 	foreach($mediawiki_obj->query->pages->page as $page){
-// 		$titleRevMap[$page->attributes()->title] = $page->revisions->rev[0]->attributes()->revid;
-// 	}
-// 	$result = $db->query('SELECT * FROM revisions');
-// 	$titlesToUpdate = array();
-// 	foreach($result as $row){
-// 		$newRev = $titleRevMap[$row['pagename']];
-// 		if($row['revid'] < $newRev)
-// 			$titlesToUpdate[] = $row['pagename'];
-// 	}
-// 	if(empty($titlesToUpdate))
-// 		die();
-// 	if(!empty($titlesToUpdate) && !in_array($SCHEDULE_URL))
-// 		array_unshift($titlesToUpdate, $SCHEDULE_URL);
-	$url = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&export&exportnowrap&titles=' . implode ('|', $titles);
-	$mediawiki_obj = simplexml_load_file($url);
-	
+
 	parseSchedule($mediawiki_obj->page[0]->revision->text);
+	
 	for($i = 1; $i < count($mediawiki_obj->page); $i++){
 		if(strpos($mediawiki_obj->page[$i]->title, 'Ro') !== false){
 			parseMatches($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text, 'group');
