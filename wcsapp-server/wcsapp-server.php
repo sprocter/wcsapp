@@ -110,6 +110,7 @@ function parseMatchesFromGroup($m, $title, $mwtext_str, $st){
 	$group_arr = explode('{{HiddenSort|', $mwtext_str);
 	list($region, $division, $round) = splitTitle($title);
 	$m->matchtype = 'group';
+	$gamesToParse = array();
 	foreach($group_arr as $group_str){
 		if(substr($group_str, 0, 5) != 'Group')
 			continue;
@@ -159,6 +160,8 @@ function parseMatchesFromBracket($m, $title, $mwtext_str, $st){
 		$bracket_arr = explode('{{CodeABracket', $mwtext_str);
 	if(count($bracket_arr) == 1){
 		$bracket_arr = explode('{{8SEBracket', $mwtext_str);
+		if(count($bracket_arr) == 1)
+			return;
 		$bracket_arr = explode('{{4SEBracket', $bracket_arr[1]);
 	}
 	
@@ -295,19 +298,21 @@ function parseGames($s, $numGames, $matchId, $st, $g){
 function getPagesToUpdate($forceUpdate = false){
 	global $SCHEDULE_URL, $db;
 	$titles[] = $SCHEDULE_URL;
-	$titles[] = '2013_WCS_Season_1_America/Premier/Ro32';
-	$titles[] = '2013_WCS_Season_1_America/Premier/Ro16';
-	$titles[] = '2013_WCS_Season_1_America/Premier';
-	$titles[] = '2013_WCS_Season_1_Europe/Premier/Ro32';
-	$titles[] = '2013_WCS_Season_1_Europe/Premier/Ro16';
-	$titles[] = '2013_WCS_Season_1_Europe/Premier';
+	$titles[] = '2013 WCS Season 1 America/Premier/Ro32';
+	$titles[] = '2013 WCS Season 1 America/Premier/Ro16';
+	$titles[] = '2013 WCS Season 1 America/Premier';
+	$titles[] = '2013 WCS Season 1 Europe/Premier/Ro32';
+	$titles[] = '2013 WCS Season 1 Europe/Premier/Ro16';
+	$titles[] = '2013 WCS Season 1 Europe/Premier';
 	$titles[] = '2013 WCS Season 1 Korea GSL/Code S/Ro32';
 	$titles[] = '2013 WCS Season 1 Korea GSL/Code S/Ro16';
 	$titles[] = '2013 WCS Season 1 Korea GSL/Code S';
-	$titles[] = '2013_WCS_Season_1_America/Premier';
-	$titles[] = '2013_WCS_Season_1_America/Challenger';
-	$titles[] = '2013_WCS_Season_1_Europe/Challenger';
-	$titles[] = '2013_WCS_Season_1_Korea_GSL/Challenger';
+	$titles[] = '2013 WCS Season 1 America/Premier';
+	$titles[] = '2013 WCS Season 1 America/Challenger';
+	$titles[] = '2013 WCS Season 1 Europe/Challenger';
+	$titles[] = '2013 WCS Season 1 Korea GSL/Challenger';
+	$titles[] = '2013 WCS Season 1 Europe/Challenger/Group Stage';
+	$titles[] = '2013 WCS Season 1 America/Challenger/Group Stage';
 	
 	$revisionURL = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&prop=revisions&rvprop=ids&format=xml&titles=' . implode ('|', $titles);
 	$mediawiki_obj = simplexml_load_file($revisionURL);
@@ -317,6 +322,8 @@ function getPagesToUpdate($forceUpdate = false){
 	$result = $db->query('SELECT * FROM revisions');
 	$titlesToUpdate = array();
 	foreach($result as $row){
+		if(!in_array($row['pagename'], array_keys($titleRevMap)))
+			continue;
 		$newRev = $titleRevMap[$row['pagename']];
 		if($row['revid'] < $newRev){
 			$titlesToUpdate[$row['pagename']] = $newRev;
@@ -328,7 +335,7 @@ function getPagesToUpdate($forceUpdate = false){
 	// Update this now so if something goes wrong the program doesn't keep running and crashing;
 	// that is, we'll only attempt to update once per revision.
 	foreach(array_keys($titlesToUpdate) as $key){
-		$db->exec("UPDATE revisions SET revid = " . $titlesToUpdate[$key] . " WHERE pagename = '" . $key . "'");
+// 		$db->exec("UPDATE revisions SET revid = " . $titlesToUpdate[$key] . " WHERE pagename = '" . $key . "'");
 	}
 	
 	// If the schedule has changed, it invalidates our saved mappings, so we have to do a a full
@@ -373,12 +380,12 @@ try{
 	parseSchedule($mediawiki_obj->page[0]->revision->text);
 	
 	for($i = 1; $i < count($mediawiki_obj->page); $i++){
-		if(strpos($mediawiki_obj->page[$i]->title, 'Ro') !== false){
+// 		if(strpos($mediawiki_obj->page[$i]->title, 'Ro') !== false){
 			parseMatches($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text, 'group');
 			parseParticipants($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text, 'group');
-		} else {
+// 		} else {
 			parseMatches($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text, 'bracket');
-		}
+// 		}
 	}
 	$db = null;
 	`echo .dump | sqlite3 wcsapp.sqlite | gzip -c > wcsapp.dump.gz`;
