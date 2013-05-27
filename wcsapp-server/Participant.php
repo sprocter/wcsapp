@@ -12,7 +12,10 @@ final class Participant{
 		public $scheduleid;
 		
 		public static function getGroupName($s){
-			return trim(substr($s, 0, strpos($s, "}}")));
+			if(strlen(trim(substr($s, 0, strpos($s, "}}")))) > 30){
+				return trim(substr($s, 0, strpos($s, "====")));
+			} else 
+				return trim(substr($s, 0, strpos($s, "}}")));
 		}
 		
 		public static function getName($s){

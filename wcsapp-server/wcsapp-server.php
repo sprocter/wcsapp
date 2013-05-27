@@ -118,6 +118,8 @@ function parseMatchesFromGroup($m, $title, $mwtext_str, $st){
 		if(substr($group_str, 0, 5) != 'Group')
 			continue;
 		$scheduleName = Match::getName($group_str);
+		if($round == 'N/A')
+			$round = 'Group Stage';
 		$scheduleId = getScheduleId($region, $division, $round, $scheduleName);
 		if ($scheduleId === false)
 			continue;
@@ -262,6 +264,9 @@ function parseParticipants($title, $mwtext_str){
 	list($region, $division, $round) = splitTitle($title);
 	$st = getInsertQuery('participants', 'name', 'flag', 'race', 'place', 'matcheswon', 'matcheslost', 'mapswon', 'mapslost', 'result', 'scheduleid');
 	$group_arr = explode('{{HiddenSort|', $mwtext_str);
+	if(count($group_arr) == 1){
+		$group_arr = explode('==== ', $mwtext_str);
+	}
 	foreach ($group_arr as $group_str){
 		if(substr($group_str, 0, 5) != "Group")
 			continue;
@@ -280,6 +285,8 @@ function parseParticipants($title, $mwtext_str){
 			$p->mapswon = Participant::getValue($s, 'win_g');
 			$p->mapslost = Participant::getValue($s, 'lose_g');
 			$p->result = Participant::getResult($s);
+			if($round == 'N/A')
+				$round = 'Group Stage';
 			$p->scheduleid = getScheduleId($region, $division, $round, $scheduleName);
 			if ($p->scheduleid === false)
 				continue;
@@ -367,7 +374,7 @@ try{
  	$db = new PDO("sqlite:wcsapp.sqlite");
 	$db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 
-	$titles = getPagesToUpdate();
+	$titles = getPagesToUpdate(true);
 	$url = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&export&exportnowrap&titles=' . implode ('|', $titles);
 	$mediawiki_obj = simplexml_load_file($url);
 	
