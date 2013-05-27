@@ -108,6 +108,9 @@ function parseSchedule($mwtext_str){
 function parseMatchesFromGroup($m, $title, $mwtext_str, $st){
 	global $scheduleIdMap, $matchId;
 	$group_arr = explode('{{HiddenSort|', $mwtext_str);
+	if(count($group_arr) == 1){
+		$group_arr = explode('==== ', $mwtext_str);
+	}
 	list($region, $division, $round) = splitTitle($title);
 	$m->matchtype = 'group';
 	$gamesToParse = array();
@@ -120,7 +123,7 @@ function parseMatchesFromGroup($m, $title, $mwtext_str, $st){
 			continue;
 		$match_arr = explode('|match', $group_str);
 		foreach($match_arr as $match_str){
-			if(strpos($match_str, 'MatchMaps') === false)
+			if(strpos($match_str, 'MatchMaps') === false && strpos($match_str, 'GameMaps') === false)
 				continue;
 			$matchId++;
 			$m->id = $matchId;
@@ -335,7 +338,7 @@ function getPagesToUpdate($forceUpdate = false){
 	// Update this now so if something goes wrong the program doesn't keep running and crashing;
 	// that is, we'll only attempt to update once per revision.
 	foreach(array_keys($titlesToUpdate) as $key){
-// 		$db->exec("UPDATE revisions SET revid = " . $titlesToUpdate[$key] . " WHERE pagename = '" . $key . "'");
+		$db->exec("UPDATE revisions SET revid = " . $titlesToUpdate[$key] . " WHERE pagename = '" . $key . "'");
 	}
 	
 	// If the schedule has changed, it invalidates our saved mappings, so we have to do a a full

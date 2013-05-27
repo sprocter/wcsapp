@@ -59,7 +59,7 @@ public class LandingPage extends Activity {
 	}
 
 	public enum MatchResult {
-		WIN, LOSE, NOTYETPLAYED
+		WIN, LOSE, STAY, NOTYETPLAYED
 	}
 
 	@Override

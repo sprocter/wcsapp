@@ -54,6 +54,8 @@ public class GroupEntry implements GroupOrBracketEntry{
 			return 0xFFCCFFCC;
 		case LOSE:
 			return 0xFFFFDDAA;
+		case STAY:
+			return 0xFFEEEE88;
 		default:
 			return 0xFFFFFFFF;
 		}
@@ -66,8 +68,10 @@ public class GroupEntry implements GroupOrBracketEntry{
 	private MatchResult getResultFromString(String result) {
 		if (result.equalsIgnoreCase("up"))
 			return MatchResult.WIN;
-		else if (result.equalsIgnoreCase("staydown"))
+		else if (result.equalsIgnoreCase("staydown") || result.equalsIgnoreCase("down"))
 			return MatchResult.LOSE;
+		else if (result.equalsIgnoreCase("stay"))
+			return MatchResult.STAY;
 		else
 			return MatchResult.NOTYETPLAYED;
 	}
