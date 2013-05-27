@@ -305,8 +305,8 @@ function parseGames($s, $numGames, $matchId, $st, $g){
 	}
 }
 
-function getPagesToUpdate($forceUpdate = false){
-	global $SCHEDULE_URL, $db;
+function getPagesToUpdate($forceUpdate = false, $dbd){
+	global $SCHEDULE_URL;
 	$titles[] = $SCHEDULE_URL;
 	$titles[] = '2013 WCS Season 1 America/Premier/Ro32';
 	$titles[] = '2013 WCS Season 1 America/Premier/Ro16';
@@ -329,7 +329,7 @@ function getPagesToUpdate($forceUpdate = false){
 	foreach($mediawiki_obj->query->pages->page as $page){
 		$titleRevMap[(string) $page->attributes()->title] = (int)$page->revisions->rev[0]->attributes()->revid;
 	}
-	$result = $db->query('SELECT * FROM revisions');
+	$result = $dbd->query('SELECT * FROM revisions');
 	$titlesToUpdate = array();
 	foreach($result as $row){
 		if(!in_array($row['pagename'], array_keys($titleRevMap)))
@@ -345,7 +345,7 @@ function getPagesToUpdate($forceUpdate = false){
 	// Update this now so if something goes wrong the program doesn't keep running and crashing;
 	// that is, we'll only attempt to update once per revision.
 	foreach(array_keys($titlesToUpdate) as $key){
-		$db->exec("UPDATE revisions SET revid = " . $titlesToUpdate[$key] . " WHERE pagename = '" . $key . "'");
+		$dbd->exec("UPDATE revisions SET revid = " . $titlesToUpdate[$key] . " WHERE pagename = '" . $key . "'");
 	}
 	
 	// If the schedule has changed, it invalidates our saved mappings, so we have to do a a full
@@ -374,7 +374,7 @@ try{
  	$db = new PDO("sqlite:wcsapp.sqlite");
 	$db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 
-	$titles = getPagesToUpdate();
+	$titles = getPagesToUpdate(true, $db);
 	$url = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&export&exportnowrap&titles=' . implode ('|', $titles);
 	$mediawiki_obj = simplexml_load_file($url);
 	
@@ -386,7 +386,8 @@ try{
 	$db->exec('CREATE TABLE "matches" ("id" INTEGER PRIMARY KEY  NOT NULL ,"winner" TEXT,"player1name" TEXT,"player2name" TEXT,"player1race" TEXT,"player2race" TEXT,"player1flag" TEXT,"player2flag" TEXT,"numgames" INTEGER DEFAULT (null) ,"matchname" TEXT,"scheduleid" INTEGER NOT NULL  DEFAULT (null) , "matchnum" INTEGER, "matchtype" TEXT, "player1wins" TEXT, "player2wins" TEXT);');
 	$db->exec('CREATE TABLE "schedule" ("id" INTEGER PRIMARY KEY NOT NULL ,"time" INTEGER,"division" TEXT,"region" TEXT,"name" TEXT, "round" TEXT);');
 	$db->exec('CREATE TABLE "participants" ("id" INTEGER PRIMARY KEY NOT NULL, "name" TEXT, "flag" TEXT, "race" TEXT, "place" INTEGER, "matcheswon" INTEGER, "matcheslost" INTEGER, "mapswon" INTEGER, "mapslost" INTEGER, "result" TEXT, "scheduleid" INTEGER)');
-
+	
+	$db->beginTransaction(); 
 	parseSchedule($mediawiki_obj->page[0]->revision->text);
 	
 	for($i = 1; $i < count($mediawiki_obj->page); $i++){
@@ -397,8 +398,9 @@ try{
 			parseMatches($mediawiki_obj->page[$i]->title, $mediawiki_obj->page[$i]->revision->text, 'bracket');
 // 		}
 	}
-	$db = null;
+	$db->commit();
 	`echo .dump | sqlite3 wcsapp.sqlite | gzip -c > wcsapp.dump.gz`;
+	$db = null;
 	uploadToS3();
 } catch (Exception $e){
 	file_put_contents('errors.txt', date(DateTime::RFC1123) . ' -- Line ' . $e->getLine() . ": " . $e->getMessage() . "\n", FILE_APPEND);
