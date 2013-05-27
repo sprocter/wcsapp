@@ -374,7 +374,7 @@ try{
  	$db = new PDO("sqlite:wcsapp.sqlite");
 	$db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 
-	$titles = getPagesToUpdate(true, $db);
+	$titles = getPagesToUpdate(false, $db);
 	$url = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&export&exportnowrap&titles=' . implode ('|', $titles);
 	$mediawiki_obj = simplexml_load_file($url);
 	
