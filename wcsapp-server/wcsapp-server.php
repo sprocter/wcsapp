@@ -56,7 +56,7 @@ function splitTitle($title){
 
 	if(strpos($title_arr[1], 'Premier') !== false || strpos($title_arr[1], 'Code S') !== false)
 		$division = 'P';
-	else if(strpos($title_arr[1], 'Challenger') !== false || strpos($title_arr[1], 'Code A') !== false)
+	else if(strpos($title_arr[1], 'Challenger') !== false || strpos($title_arr[1], 'Code A') !== false || strpos($title_arr[1], 'Up and Down') !== false)
 		$division = 'C';
 	else
 		$region = 'X';
@@ -323,6 +323,7 @@ function getPagesToUpdate($forceUpdate = false, $dbd){
 	$titles[] = '2013 WCS Season 1 Korea GSL/Challenger';
 	$titles[] = '2013 WCS Season 1 Europe/Challenger/Group Stage';
 	$titles[] = '2013 WCS Season 1 America/Challenger/Group Stage';
+	$titles[] = '2013 WCS Season 2 Korea OSL/Up and Down';
 	
 	$revisionURL = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&prop=revisions&rvprop=ids&format=xml&titles=' . implode ('|', $titles);
 	$mediawiki_obj = simplexml_load_file($revisionURL);
@@ -374,7 +375,7 @@ try{
  	$db = new PDO("sqlite:wcsapp.sqlite");
 	$db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 
-	$titles = getPagesToUpdate(false, $db);
+	$titles = getPagesToUpdate(true, $db);
 	$url = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&export&exportnowrap&titles=' . implode ('|', $titles);
 	$mediawiki_obj = simplexml_load_file($url);
 	
