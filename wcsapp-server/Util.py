@@ -7,7 +7,6 @@ class DB:
     conn = None
     
     def initDB(self):
-        #self.conn = sqlite3.connect(':memory:')
         self.conn = sqlite3.connect('wcsapp.sqlite')
         cursor = self.conn.cursor()
         cursor.execute('DROP TABLE IF EXISTS games')
@@ -28,8 +27,15 @@ class DB:
         cursor.executemany(query, (vars(match).values() for match in objs))
         self.conn.commit()
 
-    def dump(self):
-        return "\n".join(list(self.conn.iterdump()))
+    def getDB(self):
+        self.close()
+        out = StringIO.StringIO()
+        f_in = open('wcsapp.sqlite', 'rb')
+        f_out = gzip.GzipFile(fileobj=out, mode='wb')
+        f_out.writelines(f_in)
+        f_out.close()
+        f_in.close()
+        return out.getvalue()
     
     def close(self):
         self.conn.close()
@@ -51,11 +57,7 @@ class S3:
     def uploadData(self, db):
         self.initS3Conn()
         bucket = self.conn.create_bucket('sc2wcsapp')
-        key = bucket.get_key('data/sqlite.gz')
-        out = StringIO.StringIO()
-        f = gzip.GzipFile(fileobj=out, mode='w')
-        f.write(db.dump())
-        f.close()
-        key.set_contents_from_string(out.getvalue())
+        key = bucket.get_key('data/sqlite.db.gz')
+        key.set_contents_from_string(db.getDB())
         key.set_acl('public-read')
         print key.generate_url(0, query_auth=False, force_http=True)
