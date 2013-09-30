@@ -143,22 +143,10 @@ for page_xml in root_xml.iter(MW_XML_PREFIX + "page"):
     handlePage(wikicode)
     
 DB = DB()
+S3 = S3()
+
 DB.initDB()
 DB.insert(matches, "matches")
 DB.insert(participants, "participants")
-S3 = S3()
 S3.uploadData(DB)
 DB.close()
-
-"""
-Version checking stuff...
-
-url_str = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&prop=revisions&rvprop=ids&format=xml&titles=' + ('|'.join(map(urllib.quote_plus, pageNames)))
-url = urllib2.urlopen(url_str)
-root_xml = ET.fromstring(url.read())
-
-for page_xml in root_xml.iter("page"):
-    pageNames.append(page_xml.get("title"))
-    page_xml.find("revisions").find("rev").get("revid")
-"""
-#print wikicode

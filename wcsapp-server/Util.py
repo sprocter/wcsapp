@@ -3,7 +3,6 @@ import gzip
 import StringIO
 import boto
 
-
 class DB:
     conn = None
     
@@ -36,7 +35,6 @@ class DB:
         self.conn.close()
         
 class S3:
-    
     conn = None
     
     def initS3Conn(self):
@@ -48,8 +46,7 @@ class S3:
         self.conn = boto.connect_s3(
             aws_access_key_id = access_key,
             aws_secret_access_key = secret_key,
-            host = 'objects.dreamhost.com',
-            )
+            host = 'objects.dreamhost.com')
     
     def uploadData(self, db):
         self.initS3Conn()
