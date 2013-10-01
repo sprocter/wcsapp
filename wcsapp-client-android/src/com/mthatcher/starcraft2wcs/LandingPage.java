@@ -38,7 +38,7 @@ import com.mthatcher.starcraft2wcs.entry.ViewHolder;
 
 public class LandingPage extends Activity {
 
-	private final String DATA_URL = "https://objects.dreamhost.com/sc2wcsapp/data/sqlite.gz";
+	private final String DATA_URL = "https://objects.dreamhost.com/sc2wcsapp/data/sqlite.db.gz";
 	private final String DEBUG_TAG = "LANDING PAGE";
 	public int startPos;
 
@@ -463,8 +463,7 @@ public class LandingPage extends Activity {
 
 			try {
 				URL url = new URL(urlAsStr);
-				HttpURLConnection conn = (HttpURLConnection) url
-						.openConnection();
+				HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 				// Timeouts are in ms..
 				conn.setReadTimeout(10000);
 				conn.setConnectTimeout(15000);
