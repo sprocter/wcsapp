@@ -189,21 +189,33 @@ def handleScheduleEntry(entry, title, name):
     newSchedule.region = getRegionFromTitle(title)
     newSchedule.round = getRoundFromTitle(title)
     schedule.append(newSchedule)
+    
+def getStr(entry, tag):
+    if entry.has(tag):
+        return unicode(entry.get(tag).value).strip()
+    else:
+        return None
+
+def getInt(entry, tag):
+    if entry.has(tag):
+        return int(unicode(entry.get(tag).value))
+    else:
+        return None
 
 def handleGroupEntry(entry):
     newParticipant = DBEntry()
     for param in entry.params:
         for template in param.value.filter_templates():
             if unicode(template.name) == 'player':
-                newParticipant.name = unicode(template.get('1').value).strip()
-                newParticipant.flag = unicode(template.get('flag').value).strip()
-                newParticipant.race = unicode(template.get('race').value).strip()
-    newParticipant.place = int(unicode(entry.get('place').value))
-    newParticipant.matcheswon = int(unicode(entry.get('win_m').value))
-    newParticipant.matcheslost = int(unicode(entry.get('lose_m').value))
-    newParticipant.mapswon = int(unicode(entry.get('win_g').value))
-    newParticipant.mapslost = int(unicode(entry.get('lose_g').value))
-    newParticipant.result = unicode(entry.get('bg').value).strip()
+                newParticipant.name = getStr(template, '1')
+                newParticipant.flag = getStr(template, 'flag')
+                newParticipant.race = getStr(template, 'race')
+    newParticipant.place = getInt(entry, 'place')
+    newParticipant.matcheswon = getInt(entry, 'win_m')
+    newParticipant.matcheslost = getInt(entry, 'lose_m')
+    newParticipant.mapswon = getInt(entry, 'win_g')
+    newParticipant.mapslost = getInt(entry, 'lose_g')
+    newParticipant.result = getStr(entry, 'bg')
     newParticipant.scheduleid = len(schedule)
     participants.append(newParticipant)
         
@@ -226,18 +238,20 @@ def handleBracketEntry(entry, prefix1, prefix2, prefixg, title):
     newMatch = DBEntry()
     newMatch.matchtype = 'bracket'
     newMatch.scheduleid = len(schedule)
-    newMatch.player1name = unicode(entry.get(prefix1).value).strip()
-    newMatch.player2name = unicode(entry.get(prefix2).value).strip()
-    newMatch.player1race = unicode(entry.get(prefix1 + 'race').value).strip()
-    newMatch.player2race = unicode(entry.get(prefix2 + 'race').value).strip()
-    newMatch.player1flag = unicode(entry.get(prefix1 + 'flag').value).strip()
-    newMatch.player2flag = unicode(entry.get(prefix2 + 'flag').value).strip()
-    newMatch.player1wins = unicode(entry.get(prefix1 + 'score').value).strip()
-    newMatch.player2wins = unicode(entry.get(prefix2 + 'score').value).strip()
-    if entry.has(prefix1 + 'win') and int(unicode(entry.get(prefix1 + 'win').value)) > 0:
+    newMatch.player1name = getStr(entry, prefix1)
+    newMatch.player2name = getStr(entry, prefix2)
+    newMatch.player1race = getStr(entry, prefix1 + 'race')
+    newMatch.player2race = getStr(entry, prefix2 + 'race')
+    newMatch.player1flag = getStr(entry, prefix1 + 'flag')
+    newMatch.player2flag = getStr(entry, prefix2 + 'flag')
+    newMatch.player1wins = getStr(entry, prefix1 + 'score')
+    newMatch.player2wins = getStr(entry, prefix2 + 'score')
+    if entry.has(prefix1 + 'win') and getInt(entry, prefix1 + 'win') > 0:
         newMatch.winner = 1
-    elif entry.has(prefix2 + 'win') and int(unicode(entry.get(prefix2 + 'win').value)) > 0:
+    elif entry.has(prefix2 + 'win') and getInt(entry, prefix2 + 'win') > 0:
         newMatch.winner = 2
+    else:
+        newMatch.winner = None
     matches.append(newMatch)
 
 url_str = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&export&exportnowrap&titles=' + ('|'.join(map(urllib.quote_plus, pageNames)))

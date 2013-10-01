@@ -13,10 +13,13 @@ class DB:
         cursor.execute('DROP TABLE IF EXISTS matches')
         cursor.execute('DROP TABLE IF EXISTS schedule')
         cursor.execute('DROP TABLE IF EXISTS participants')
+        cursor.execute('DROP TABLE IF EXISTS android_metadata')
+        #cursor.execute('CREATE TABLE "android_metadata" ("locale" TEXT DEFAULT "en_US")')
         cursor.execute('CREATE TABLE "games" ("id" INTEGER PRIMARY KEY  NOT NULL ,"mapname" TEXT,"mapwinner" INTEGER DEFAULT (null) ,"vodlink" TEXT,"matchid" INTEGER NOT NULL  DEFAULT (null) )')
         cursor.execute('CREATE TABLE "matches" ("id" INTEGER PRIMARY KEY  NOT NULL ,"winner" TEXT,"player1name" TEXT,"player2name" TEXT,"player1race" TEXT,"player2race" TEXT,"player1flag" TEXT,"player2flag" TEXT,"numgames" INTEGER DEFAULT (null) ,"matchname" TEXT,"scheduleid" INTEGER NOT NULL  DEFAULT (null) , "matchnum" INTEGER, "matchtype" TEXT, "player1wins" TEXT, "player2wins" TEXT)')
         cursor.execute('CREATE TABLE "schedule" ("id" INTEGER PRIMARY KEY NOT NULL ,"time" INTEGER,"division" TEXT,"region" TEXT,"name" TEXT, "round" TEXT)')
         cursor.execute('CREATE TABLE "participants" ("id" INTEGER PRIMARY KEY NOT NULL, "name" TEXT, "flag" TEXT, "race" TEXT, "place" INTEGER, "matcheswon" INTEGER, "matcheslost" INTEGER, "mapswon" INTEGER, "mapslost" INTEGER, "result" TEXT, "scheduleid" INTEGER)')
+        #cursor.execute('INSERT INTO "android_metadata" VALUES ("en_US")')
         self.conn.commit()
         
     def insert(self, objs, tableName):
