@@ -72,6 +72,8 @@ public class EntryUtil {
 			return R.drawable.flags_se;
 		case TW:
 			return R.drawable.flags_tw;
+		case SI:
+			return R.drawable.flags_si;
 		case UA:
 			return R.drawable.flags_ua;
 		case US:
@@ -147,6 +149,8 @@ public class EntryUtil {
 			return Country.RU;
 		} else if (country.equalsIgnoreCase("se") || country.equalsIgnoreCase("sweden")){
 			return Country.SE;
+		} else if (country.equalsIgnoreCase("si") || country.equalsIgnoreCase("slovenia")){
+			return Country.SI;
 		} else if (country.equalsIgnoreCase("tw") || country.equalsIgnoreCase("taiwan")){
 			return Country.TW;
 		} else if (country.equalsIgnoreCase("ua") || country.equalsIgnoreCase("ukraine")){

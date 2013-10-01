@@ -55,7 +55,7 @@ public class LandingPage extends Activity {
 	}
 
 	public enum Country {
-		AR, AT, AU, BE, CA, CN, CL, DE, DK, ES, FI, FR, GB, IL, KR, MX, NL, NO, NZ, PE, PL, RO, RS, RU, SE, TW, UA, US, UNKNOWN
+		AR, AT, AU, BE, CA, CN, CL, DE, DK, ES, FI, FR, GB, IL, KR, MX, NL, NO, NZ, PE, PL, RO, RS, RU, SE, SI, TW, UA, US, UNKNOWN
 	}
 
 	public enum MatchResult {
