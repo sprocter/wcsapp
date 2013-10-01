@@ -43,11 +43,11 @@ public class LandingPage extends Activity {
 	public int startPos;
 
 	public enum Division {
-		PREMIER, CHALLENGER
+		PREMIER, CHALLENGER, CHAMPIONSHIPS
 	}
 
 	public enum Region {
-		AMERICA, EUROPE, KOREA
+		AMERICA, EUROPE, KOREA, WORLD
 	}
 
 	public enum Race {
@@ -463,7 +463,8 @@ public class LandingPage extends Activity {
 
 			try {
 				URL url = new URL(urlAsStr);
-				HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+				HttpURLConnection conn = (HttpURLConnection) url
+						.openConnection();
 				// Timeouts are in ms..
 				conn.setReadTimeout(10000);
 				conn.setConnectTimeout(15000);
@@ -589,18 +590,18 @@ public class LandingPage extends Activity {
 			else if (division.equalsIgnoreCase("C"))
 				return Division.CHALLENGER;
 			else
-				return null;
+				return Division.CHAMPIONSHIPS;
 		}
 
 		private Region setRegionFromString(String region) {
-			if (region.equalsIgnoreCase("AM"))
+			if (region.equalsIgnoreCase("a"))
 				return Region.AMERICA;
-			else if (region.equalsIgnoreCase("KR"))
+			else if (region.equalsIgnoreCase("k"))
 				return Region.KOREA;
-			else if (region.equalsIgnoreCase("EU"))
+			else if (region.equalsIgnoreCase("e"))
 				return Region.EUROPE;
 			else
-				return null;
+				return Region.WORLD;
 		}
 	}
 }

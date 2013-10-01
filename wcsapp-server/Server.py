@@ -67,22 +67,22 @@ prefixes['8'].append(('R2W1', 'R2W2', 'R2G1'))
 prefixes['8'].append(('R2W3', 'R2W4', 'R2G2'))
 prefixes['8'].append(('R3W1', 'R3W2', 'R3G1'))
 
-pageNames = ['2013 WCS Season 1',
-             '2013 WCS Season 1 America/Premier/Ro32',
-             '2013 WCS Season 1 America/Premier/Ro16',
-             '2013 WCS Season 1 America/Premier',
-             '2013 WCS Season 1 Europe/Premier/Ro32',
-             '2013 WCS Season 1 Europe/Premier/Ro16',
-             '2013 WCS Season 1 Europe/Premier',
-             '2013 WCS Season 1 Korea GSL/Code S/Ro32',
-             '2013 WCS Season 1 Korea GSL/Code S/Ro16',
-             '2013 WCS Season 1 Korea GSL/Code S',
-             '2013 WCS Season 1 America/Premier',
-             '2013 WCS Season 1 America/Challenger',
-             '2013 WCS Season 1 Europe/Challenger',
-             '2013 WCS Season 1 Korea GSL/Challenger',
-             '2013 WCS Season 1 Europe/Challenger/Group Stage',
-             '2013 WCS Season 1 America/Challenger/Group Stage']
+pageNames = ['2013 WCS Season 3',
+             '2013 WCS Season 3 America/Premier/Ro32',
+             '2013 WCS Season 3 America/Premier/Ro16',
+             '2013 WCS Season 3 America/Premier',
+             '2013 WCS Season 3 Europe/Premier/Ro32',
+             '2013 WCS Season 3 Europe/Premier/Ro16',
+             '2013 WCS Season 3 Europe/Premier',
+             '2013 WCS Season 3 Korea GSL/Code S/Ro32',
+             '2013 WCS Season 3 Korea GSL/Code S/Ro16',
+             '2013 WCS Season 3 Korea GSL/Code S',
+             '2013 WCS Season 3 America/Premier',
+             '2013 WCS Season 3 America/Challenger',
+             '2013 WCS Season 3 Europe/Challenger',
+             '2013 WCS Season 3 Korea GSL/Challenger',
+             '2013 WCS Season 3 Europe/Challenger/Group Stage',
+             '2013 WCS Season 3 America/Challenger/Group Stage']
 
 """
 Holy crap, dealing with time zones / parsing time is a huge pain compared to,
@@ -176,7 +176,7 @@ def getRoundFromTitle(title):
 
 def getTimestampFromDate(date):
     dt = parser.parse(date, tzinfos=tzd, fuzzy=True)
-    return calendar.timegm(dt.utctimetuple())
+    return calendar.timegm(dt.utctimetuple()) * 1000
 
 def handleGroupTable(entry, title):
     handleScheduleEntry(entry, title, unicode(entry.get('1')).strip())

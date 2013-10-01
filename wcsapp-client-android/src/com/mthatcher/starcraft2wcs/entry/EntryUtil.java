@@ -153,6 +153,8 @@ public class EntryUtil {
 			return 1;
 		else if(wins.equalsIgnoreCase("-"))
 			return 0;
+		else if(wins.equalsIgnoreCase("q"))
+			return 1;
 		else
 			return Integer.parseInt(wins); // TODO: Handle this throwing an exception
 	}

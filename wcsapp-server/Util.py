@@ -28,14 +28,20 @@ class DB:
         self.conn.commit()
 
     def getDB(self):
+        out = StringIO.StringIO()
+        with gzip.GzipFile(fileobj=out, mode='wb') as f:
+            for line in self.conn.iterdump():
+                f.write('%s\n' % line)
         self.close()
+        return out.getvalue()
+        """self.close()
         out = StringIO.StringIO()
         f_in = open('wcsapp.sqlite', 'rb')
         f_out = gzip.GzipFile(fileobj=out, mode='wb')
         f_out.writelines(f_in)
         f_out.close()
         f_in.close()
-        return out.getvalue()
+        return out.getvalue()"""
     
     def close(self):
         self.conn.close()
