@@ -6,7 +6,9 @@ import com.mthatcher.starcraft2wcs.R;
 
 public class EntryUtil {
 	public static Race getRaceFromString(String race) {
-		if (race.equalsIgnoreCase("z"))
+		if(race == null)
+			return Race.RANDOM;
+		else if (race.equalsIgnoreCase("z"))
 			return Race.ZERG;
 		else if (race.equalsIgnoreCase("t"))
 			return Race.TERRAN;
@@ -44,6 +46,8 @@ public class EntryUtil {
 			return R.drawable.flags_fr;
 		case GB:
 			return R.drawable.flags_gb;
+		case IL:
+			return R.drawable.flags_il;
 		case KR:
 			return R.drawable.flags_kr;
 		case MX:
@@ -58,6 +62,8 @@ public class EntryUtil {
 			return R.drawable.flags_pe;
 		case PL:
 			return R.drawable.flags_pl;
+		case RO:
+			return R.drawable.flags_ro;
 		case RS:
 			return R.drawable.flags_rs;
 		case RU:
@@ -89,7 +95,9 @@ public class EntryUtil {
 	}
 
 	public static Country getCountryFromString(String country) {
-		if(country.equalsIgnoreCase("ar") || country.equalsIgnoreCase("argentina")){
+		if (country == null){
+			return Country.UNKNOWN;
+		} else if(country.equalsIgnoreCase("ar") || country.equalsIgnoreCase("argentina")){
 			return Country.AR;
 		} else if (country.equalsIgnoreCase("at") || country.equalsIgnoreCase("austria")){
 			return Country.AT;
@@ -115,6 +123,8 @@ public class EntryUtil {
 			return Country.FR;
 		} else if (country.equalsIgnoreCase("gb") || country.equalsIgnoreCase("uk") || country.equalsIgnoreCase("great britain")){
 			return Country.GB;
+		} else if (country.equalsIgnoreCase("il") || country.equalsIgnoreCase("israel")){
+			return Country.IL;
 		} else if (country.equalsIgnoreCase("kr") || country.equalsIgnoreCase("korea")){
 			return Country.KR;
 		} else if (country.equalsIgnoreCase("mx") || country.equalsIgnoreCase("mexico")){
@@ -129,6 +139,8 @@ public class EntryUtil {
 			return Country.PE;
 		} else if (country.equalsIgnoreCase("pl") || country.equalsIgnoreCase("poland")){
 			return Country.PL;
+		} else if (country.equalsIgnoreCase("ro") || country.equalsIgnoreCase("romania")){
+			return Country.RO;
 		} else if (country.equalsIgnoreCase("rs") || country.equalsIgnoreCase("serbia")){
 			return Country.RS;
 		} else if (country.equalsIgnoreCase("ru") || country.equalsIgnoreCase("russia")){
@@ -147,7 +159,9 @@ public class EntryUtil {
 	}
 
 	public static int getWinsFromString(String wins) {
-		if(wins.length() == 0)
+		if(wins == null)
+			return 0;
+		else if(wins.length() == 0)
 			return 0;
 		else if(wins.equalsIgnoreCase("w"))
 			return 1;

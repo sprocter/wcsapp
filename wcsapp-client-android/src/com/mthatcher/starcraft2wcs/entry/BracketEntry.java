@@ -36,8 +36,8 @@ public class BracketEntry implements GroupOrBracketEntry {
 	public BracketEntry(String p1Name, String p2Name, String p1Race,
 			String p2Race, String p1Country, String p2Country, String winner,
 			String p1wins, String p2wins) {
-		this.p1Name = p1Name.length() == 0 ? "TBD" : p1Name;
-		this.p2Name = p2Name.length() == 0 ? "TBD" : p2Name;
+		this.p1Name = p1Name != null && p1Name.length() == 0 ? "TBD" : p1Name;
+		this.p2Name = p2Name != null && p2Name.length() == 0 ? "TBD" : p2Name;
 		this.p1Country = EntryUtil.getCountryFromString(p1Country);
 		this.p2Country = EntryUtil.getCountryFromString(p2Country);
 		this.p1Race = EntryUtil.getRaceFromString(p1Race);
@@ -46,7 +46,7 @@ public class BracketEntry implements GroupOrBracketEntry {
 				.parseInt(winner);
 		this.p1wins = EntryUtil.getWinsFromString(p1wins);
 		this.p2wins = EntryUtil.getWinsFromString(p2wins);
-		if (p1wins.equalsIgnoreCase("w") || p2wins.equalsIgnoreCase("w"))
+		if ((p1wins != null && p1wins.equalsIgnoreCase("w")) || (p2wins != null && p2wins.equalsIgnoreCase("w")))
 			isWalkover = true;
 		else
 			isWalkover = false;

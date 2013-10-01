@@ -36,7 +36,7 @@ public class GroupEntry implements GroupOrBracketEntry{
 		this.name = name;
 		this.country = EntryUtil.getCountryFromString(country);
 		this.race = EntryUtil.getRaceFromString(race);
-		this.place = place.length() > 0 ? Integer.parseInt(place) : -1;
+		this.place = place != null && place.length() > 0 ? Integer.parseInt(place) : -1;
 		this.matchesWon = matchesWon;
 		this.matchesLost = matchesLost;
 		this.mapsWon = mapsWon;
@@ -66,7 +66,9 @@ public class GroupEntry implements GroupOrBracketEntry{
 	}
 
 	private MatchResult getResultFromString(String result) {
-		if (result.equalsIgnoreCase("up"))
+		if (result == null)
+			return MatchResult.NOTYETPLAYED;
+		else if (result.equalsIgnoreCase("up"))
 			return MatchResult.WIN;
 		else if (result.equalsIgnoreCase("staydown") || result.equalsIgnoreCase("down"))
 			return MatchResult.LOSE;
