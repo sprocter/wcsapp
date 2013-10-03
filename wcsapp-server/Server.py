@@ -74,13 +74,14 @@ pageNames = ['2013 WCS Season 3',
              '2013 WCS Season 3 Europe/Premier/Ro32',
              '2013 WCS Season 3 Europe/Premier/Ro16',
              '2013 WCS Season 3 Europe/Premier',
-             '2013 WCS Season 3 Korea GSL/Code S/Ro32',
-             '2013 WCS Season 3 Korea GSL/Code S/Ro16',
-             '2013 WCS Season 3 Korea GSL/Code S',
+             '2013 WCS Season 3 Korea GSL/Premier/Ro32',
+             '2013 WCS Season 3 Korea GSL/Premier/Ro16',
+             '2013 WCS Season 3 Korea GSL/Premier',
              '2013 WCS Season 3 America/Premier',
              '2013 WCS Season 3 America/Challenger',
              '2013 WCS Season 3 Europe/Challenger',
              '2013 WCS Season 3 Korea GSL/Challenger',
+             '2013 WCS Season 3 Korea GSL/Up and Down Matches'
              '2013 WCS Season 3 Europe/Challenger/Group Stage',
              '2013 WCS Season 3 America/Challenger/Group Stage']
 
@@ -137,6 +138,7 @@ for tz_descr in map(str.split, tz_str.split('\n')):
 def handlePage(wikicode, title):
     handleGroup(wikicode.filter(True, r'GroupTableSlot|GroupTableStart'), title)
     handleBracket(wikicode.filter(True, r'WCSChallengerBracket'), 'c', title)
+    handleBracket(wikicode.filter(True, r'^ChallengerBracket'), 'c', title)
     handleBracket(wikicode.filter(True, r'8SEBracket'), '8', title)
     handleBracket(wikicode.filter(True, r'4SEBracket'), '4', title)
 
@@ -167,12 +169,17 @@ def getRegionFromTitle(title):
 
 def getRoundFromTitle(title):
     if "Ro16" in title:
-        return "16"
-    if "Ro32" in title:
-        return "32"
-    if "Group Stage" in title:
+        return "Ro16"
+    elif "Ro24" in title:
+        return "Ro24"
+    elif "Ro32" in title:
+        return "Ro32"
+    elif "Ro40" in title:
+        return "Ro40"
+    elif "Group Stage" in title:
         return "group"
-    return "x"
+    else:
+        return "x"
 
 def getTimestampFromDate(date):
     dt = parser.parse(date, tzinfos=tzd, fuzzy=True)
