@@ -3,6 +3,7 @@ import mwparserfromhell
 import urllib2
 import urllib
 import xml.etree.ElementTree as ET
+import sys
 from dateutil import parser
 from HTMLParser import HTMLParser
 from Util import DB
@@ -187,11 +188,14 @@ def getTimestampFromDate(date):
     return calendar.timegm(dt.utctimetuple()) * 1000
 
 def handleGroupTable(entry, title):
-    handleScheduleEntry(entry, title, unicode(entry.get('1')).strip())
+    handleScheduleEntry(entry, title, getStr(entry,'1'))
 
 def handleScheduleEntry(entry, title, name):
     newSchedule = DBEntry()
-    newSchedule.time = getTimestampFromDate(unicode(entry.get('date').value))
+    time = getStr(entry, 'date')
+    if time == None:
+        time = ''
+    newSchedule.time = getTimestampFromDate(time)
     newSchedule.name = name
     newSchedule.division = getDivisionFromTitle(title)
     newSchedule.region = getRegionFromTitle(title)
@@ -263,9 +267,12 @@ def handleBracketEntry(entry, prefix1, prefix2, prefixg, title):
     matches.append(newMatch)
 
 url_str = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&export&exportnowrap&titles=' + ('|'.join(map(urllib.quote_plus, pageNames)))
-url = urllib2.urlopen(url_str)
-MW_XML_PREFIX = "{http://www.mediawiki.org/xml/export-0.8/}"
-root_xml = ET.fromstring(url.read())
+try:
+    url = urllib2.urlopen(url_str)
+    MW_XML_PREFIX = "{http://www.mediawiki.org/xml/export-0.8/}"
+    root_xml = ET.fromstring(url.read())
+except (urllib2.URLError, httplib.IncompleteRead):
+    sys.exit()
 
 for page_xml in root_xml.iter(MW_XML_PREFIX + "page"):
     wikicode = mwparserfromhell.parse(strip_tags(page_xml.find(MW_XML_PREFIX + "revision").find(MW_XML_PREFIX + "text").text))
