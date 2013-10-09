@@ -80,6 +80,7 @@ pageNames = ['2013 WCS Season 3',
              '2013 WCS Season 3 America/Premier',
              '2013 WCS Season 3 America/Challenger',
              '2013 WCS Season 3 Europe/Challenger',
+             '2013 WCS Season 3 Europe/Challenger/Group Stage',
              '2013 WCS Season 3 Korea GSL/Challenger',
              '2013 WCS Season 3 Korea GSL/Up and Down Matches'
              '2013 WCS Season 3 Europe/Challenger/Group Stage',
