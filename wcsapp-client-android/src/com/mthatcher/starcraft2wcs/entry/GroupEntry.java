@@ -70,9 +70,9 @@ public class GroupEntry implements GroupOrBracketEntry{
 			return MatchResult.NOTYETPLAYED;
 		else if (result.equalsIgnoreCase("up"))
 			return MatchResult.WIN;
-		else if (result.equalsIgnoreCase("staydown") || result.equalsIgnoreCase("down"))
+		else if (result.equalsIgnoreCase("down"))
 			return MatchResult.LOSE;
-		else if (result.equalsIgnoreCase("stay"))
+		else if (result.equalsIgnoreCase("stay") || result.equalsIgnoreCase("staydown"))
 			return MatchResult.STAY;
 		else
 			return MatchResult.NOTYETPLAYED;
