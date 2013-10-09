@@ -166,6 +166,44 @@ class Constants:
              '2013 WCS Season 3 Europe/Challenger/Group Stage',
              '2013 WCS Season 3 America/Challenger/Group Stage']
     
+    Schedule = {}
+    Schedule['a'] = {}
+    Schedule['a']['c'] = {}
+    Schedule['a']['c']['Ro40'] = []
+    Schedule['a']['c']['Ro24'] = []
+    Schedule['a']['c']['group'] = []
+    Schedule['a']['p'] = {}
+    Schedule['a']['p']['Ro32'] = []
+    Schedule['a']['p']['Ro16'] = []
+    Schedule['a']['p']['group'] = []
+    Schedule['a']['x'] = {} 
+    Schedule['a']['x']['x'] = []
+    Schedule['e'] = {}
+    Schedule['e']['c'] = {}
+    Schedule['e']['c']['Ro40'] = []
+    Schedule['e']['c']['Ro24'] = []
+    Schedule['e']['c']['group'] = []
+    Schedule['e']['p'] = {}
+    Schedule['e']['p']['Ro32'] = []
+    Schedule['e']['p']['Ro16'] = []
+    Schedule['e']['p']['group'] = []
+    Schedule['e']['x'] = {}
+    Schedule['e']['x']['x'] = []
+    Schedule['k'] = {}
+    Schedule['k']['c'] = {}
+    Schedule['k']['c']['Ro40'] = []
+    Schedule['k']['c']['Ro24'] = []
+    Schedule['k']['c']['group'] = []
+    Schedule['k']['p'] = {}
+    Schedule['k']['p']['Ro32'] = []
+    Schedule['k']['p']['Ro16'] = []
+    Schedule['k']['p']['group'] = []
+    Schedule['k']['x'] = {}
+    Schedule['k']['x']['x'] = []
+    Schedule['x'] = {}
+    Schedule['x']['x'] = {}
+    Schedule['x']['x']['group'] = [] # Vin Diesel joke?
+    
 """
 I straight up do not understand this class, or the strip_tags function below
 it, which is not a good thing.  At some point I should probably have someone

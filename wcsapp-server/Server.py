@@ -16,16 +16,21 @@ def strip_tags(html):
     s.feed(html)
     return s.get_data()
 
+lastSchedule = DBEntry()
 matches = []
 participants = []
+scheduleId = 1
+scheduleMap = Constants.Schedule
 schedule = []
 DB = DB()
 S3 = S3()
         
 def handlePage(wikicode, title):
     handleGroup(wikicode.filter(True, r'GroupTableSlot|GroupTableStart'), title)
-    handleBracket(wikicode.filter(True, r'WCSChallengerBracket'), 'c', title)
-    handleBracket(wikicode.filter(True, r'^ChallengerBracket'), 'c', title)
+    if len(wikicode.filter(True, r'WCSChallengerBracket')) == 0:
+        handleBracket(wikicode.filter(True, r'ChallengerBracket'), 'c', title)
+    else:
+        handleBracket(wikicode.filter(True, r'WCSChallengerBracket'), 'c', title)
     handleBracket(wikicode.filter(True, r'8SEBracket'), '8', title)
     handleBracket(wikicode.filter(True, r'4SEBracket'), '4', title)
 
@@ -63,10 +68,8 @@ def getRoundFromTitle(title):
         return "Ro32"
     elif "Ro40" in title:
         return "Ro40"
-    elif "Group Stage" in title:
-        return "group"
     else:
-        return "x"
+        return "group"
 
 def getTimestampFromDate(date):
     dt = parser.parse(date, tzinfos=Constants.tzd, fuzzy=True)
@@ -76,16 +79,31 @@ def handleGroupTable(entry, title):
     handleScheduleEntry(entry, title, getStr(entry,'1'))
 
 def handleScheduleEntry(entry, title, name):
-    newSchedule = DBEntry()
+    global scheduleId
+    global lastSchedule
+    lastSchedule = DBEntry()
     time = getStr(entry, 'date')
     if time == None:
         time = ''
-    newSchedule.time = getTimestampFromDate(time)
-    newSchedule.name = name
-    newSchedule.division = getDivisionFromTitle(title)
-    newSchedule.region = getRegionFromTitle(title)
-    newSchedule.round = getRoundFromTitle(title)
-    schedule.append(newSchedule)
+    lastSchedule.time = getTimestampFromDate(time)
+    lastSchedule.name = name
+    lastSchedule.division = getDivisionFromTitle(title)
+    lastSchedule.region = getRegionFromTitle(title)
+    lastSchedule.round = getRoundFromTitle(title)
+    lastSchedule.id = scheduleId;
+    try:
+        mergedSchedule = False
+        for candidateSchedule in scheduleMap[lastSchedule.region][lastSchedule.division][lastSchedule.round]:
+            if ((candidateSchedule.time < lastSchedule.time + 2 * 60 * 60 * 1000) and
+                (candidateSchedule.time > lastSchedule.time - 6 * 60 * 60 * 1000)):
+                lastSchedule = candidateSchedule
+                mergedSchedule = True
+        if not mergedSchedule:
+            scheduleId += 1
+            scheduleMap[lastSchedule.region][lastSchedule.division][lastSchedule.round].append(lastSchedule)
+            schedule.append(lastSchedule)
+    except KeyError:
+        print "KeyError for " + lastSchedule.region + " - " + lastSchedule.division + " - " + lastSchedule.round
     
 def getStr(entry, tag):
     if entry.has(tag):
@@ -113,7 +131,7 @@ def handleGroupEntry(entry):
     newParticipant.mapswon = getInt(entry, 'win_g')
     newParticipant.mapslost = getInt(entry, 'lose_g')
     newParticipant.result = getStr(entry, 'bg')
-    newParticipant.scheduleid = len(schedule)
+    newParticipant.scheduleid = lastSchedule.id
     participants.append(newParticipant)
         
 def handleBracket(wikicode, bracketType, title):
@@ -139,7 +157,7 @@ def handleBracketEntry(entry, prefix1, prefix2, prefixg, title):
                             unicode(entry.get(prefix1[:2]).value).strip() if entry.has(prefix1[:2]) else unicode(entry.name).strip())
     newMatch = DBEntry()
     newMatch.matchtype = 'bracket'
-    newMatch.scheduleid = len(schedule)
+    newMatch.scheduleid = lastSchedule.id
     newMatch.player1name = getStr(entry, prefix1)
     newMatch.player2name = getStr(entry, prefix2)
     newMatch.player1race = getStr(entry, prefix1 + 'race')
