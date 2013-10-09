@@ -2,36 +2,14 @@ import calendar
 import mwparserfromhell
 import urllib2
 import urllib
-import xml.etree.ElementTree as ET
 import sys
+import xml.etree.ElementTree as ET
 from dateutil import parser
-from HTMLParser import HTMLParser
 from Util import DB
 from Util import S3
-
-"""
-This... may be incorrect.  Basically every time an object needs to be put
-into the database, this class is instantiated and then fields are added. As
-long as those fields' names exactly match the column names in the database,
-then the DB.insert(...) method in Util.py will make it all work.
-"""
-class DBEntry:
-    pass
-
-"""
-I straight up do not understand this class, or the strip_tags function below
-it, which is not a good thing.  At some point I should probably have someone
-explain it to me, or step through it with a debugger or something.  It comes
-from Peter Mortensen at http://stackoverflow.com/a/925630
-"""
-class MLStripper(HTMLParser):
-    def __init__(self):
-        self.reset()
-        self.fed = []
-    def handle_data(self, d):
-        self.fed.append(d)
-    def get_data(self):
-        return ''.join(self.fed)
+from Util import Constants
+from Util import MLStripper
+from Util import DBEntry
 
 def strip_tags(html):
     s = MLStripper()
@@ -43,99 +21,6 @@ participants = []
 schedule = []
 DB = DB()
 S3 = S3()
-
-"""
-I struggled for a while on how to represent the prefixes for match-specific
-player ids in a way that wasn't super redundant.  Hard-coding maps isn't often
-correct, but I think it fits here.
-"""
-prefixes = {}
-prefixes['c'] = []
-prefixes['c'].append(('R1D1', 'R1D2', 'R1G1'))
-prefixes['c'].append(('R1D3', 'R1D4', 'R1G2'))
-prefixes['c'].append(('R2W1', 'R2W2', 'R2G1'))
-prefixes['c'].append(('R3D1', 'R3W1', 'R3G1'))
-prefixes['4'] = []
-prefixes['4'].append(('R1D1', 'R1D2', 'R1G1'))
-prefixes['4'].append(('R1D3', 'R1D4', 'R1G2'))
-prefixes['4'].append(('R2W1', 'R2W2', 'R2G1'))
-prefixes['8'] = []
-prefixes['8'].append(('R1D1', 'R1D2', 'R1G1'))
-prefixes['8'].append(('R1D3', 'R1D4', 'R1G2'))
-prefixes['8'].append(('R1D5', 'R1D6', 'R1G3'))
-prefixes['8'].append(('R1D7', 'R1D8', 'R1G4'))
-prefixes['8'].append(('R2W1', 'R2W2', 'R2G1'))
-prefixes['8'].append(('R2W3', 'R2W4', 'R2G2'))
-prefixes['8'].append(('R3W1', 'R3W2', 'R3G1'))
-
-pageNames = ['2013 WCS Season 3',
-             '2013 WCS Season 3 America/Premier/Ro32',
-             '2013 WCS Season 3 America/Premier/Ro16',
-             '2013 WCS Season 3 America/Premier',
-             '2013 WCS Season 3 Europe/Premier/Ro32',
-             '2013 WCS Season 3 Europe/Premier/Ro16',
-             '2013 WCS Season 3 Europe/Premier',
-             '2013 WCS Season 3 Korea GSL/Premier/Ro32',
-             '2013 WCS Season 3 Korea GSL/Premier/Ro16',
-             '2013 WCS Season 3 Korea GSL/Premier',
-             '2013 WCS Season 3 America/Premier',
-             '2013 WCS Season 3 America/Challenger',
-             '2013 WCS Season 3 Europe/Challenger',
-             '2013 WCS Season 3 Europe/Challenger/Group Stage',
-             '2013 WCS Season 3 Korea GSL/Challenger',
-             '2013 WCS Season 3 Korea GSL/Up and Down Matches'
-             '2013 WCS Season 3 Europe/Challenger/Group Stage',
-             '2013 WCS Season 3 America/Challenger/Group Stage']
-
-"""
-Holy crap, dealing with time zones / parsing time is a huge pain compared to,
-say, PHP.  Here's an only sort of hackish solution from Nas Banov, at
-http://stackoverflow.com/a/4766400
-"""
-tz_str = '''-12 Y
--11 X NUT SST
--10 W CKT HAST HST TAHT TKT
--9 V AKST GAMT GIT HADT HNY
--8 U AKDT CIST HAY HNP PST PT
--7 T HAP HNR MST PDT
--6 S CST EAST GALT HAR HNC MDT
--5 R CDT COT EASST ECT EST ET HAC HNE PET
--4 Q AST BOT CLT COST EDT FKT GYT HAE HNA PYT
--3 P ADT ART BRT CLST FKST GFT HAA PMST PYST SRT UYT WGT
--2 O BRST FNT PMDT UYST WGST
--1 N AZOT CVT EGT
-0 Z EGST GMT UTC WET WT
-1 A CET DFT WAT WEDT WEST
-2 B CAT CEDT CEST EET SAST WAST
-3 C EAT EEDT EEST IDT MSK
-4 D AMT AZT GET GST KUYT MSD MUT RET SAMT SCT
-5 E AMST AQTT AZST HMT MAWT MVT PKT TFT TJT TMT UZT YEKT
-6 F ALMT BIOT BTT IOT KGT NOVT OMST YEKST
-7 G CXT DAVT HOVT ICT KRAT NOVST OMSST THA WIB
-8 H ACT AWST BDT BNT CAST HKT IRKT KRAST MYT PHT SGT ULAT WITA WST
-9 I AWDT IRKST JST KST PWT TLT WDT WIT YAKT
-10 K AEST ChST PGT VLAT YAKST YAPT
-11 L AEDT LHDT MAGT NCT PONT SBT VLAST VUT
-12 M ANAST ANAT FJT GILT MAGST MHT NZST PETST PETT TVT WFT
-13 FJST NZDT
-11.5 NFT
-10.5 ACDT LHST
-9.5 ACST
-6.5 CCT MMT
-5.75 NPT
-5.5 SLT
-4.5 AFT IRDT
-3.5 IRST
--2.5 HAT NDT
--3.5 HNT NST NT
--4.5 HLV VET
--9.5 MART MIT'''
-
-tzd = {}
-for tz_descr in map(str.split, tz_str.split('\n')):
-    tz_offset = int(float(tz_descr[0]) * 3600)
-    for tz_code in tz_descr[1:]:
-        tzd[tz_code] = tz_offset
         
 def handlePage(wikicode, title):
     handleGroup(wikicode.filter(True, r'GroupTableSlot|GroupTableStart'), title)
@@ -184,7 +69,7 @@ def getRoundFromTitle(title):
         return "x"
 
 def getTimestampFromDate(date):
-    dt = parser.parse(date, tzinfos=tzd, fuzzy=True)
+    dt = parser.parse(date, tzinfos=Constants.tzd, fuzzy=True)
     return calendar.timegm(dt.utctimetuple()) * 1000
 
 def handleGroupTable(entry, title):
@@ -240,13 +125,18 @@ def handleBracket(wikicode, bracketType, title):
         if type(entry) != mwparserfromhell.nodes.template.Template:
             continue;
         for matchNum in range(bracketSize):
-            handleBracketEntry(entry, prefixes[bracketType][matchNum][0], prefixes[bracketType][matchNum][1], prefixes[bracketType][matchNum][2], title)
+            handleBracketEntry(entry, 
+                               Constants.prefixes[bracketType][matchNum][0], 
+                               Constants.prefixes[bracketType][matchNum][1], 
+                               Constants.prefixes[bracketType][matchNum][2],
+                               title)
     
 def handleBracketEntry(entry, prefix1, prefix2, prefixg, title):
     # This somewhat ugly block of code will be replaced when game parsing is implemented
     if entry.has(prefixg + 'details'):
         handleScheduleEntry(entry.get(prefixg + 'details').value.filter_templates(matches=r'BracketMatchSummary')[0],
-                            title, unicode(entry.get(prefix1[:2]).value).strip() if entry.has(prefix1[:2]) else unicode(entry.name).strip())
+                            title, 
+                            unicode(entry.get(prefix1[:2]).value).strip() if entry.has(prefix1[:2]) else unicode(entry.name).strip())
     newMatch = DBEntry()
     newMatch.matchtype = 'bracket'
     newMatch.scheduleid = len(schedule)
@@ -266,7 +156,7 @@ def handleBracketEntry(entry, prefix1, prefix2, prefixg, title):
         newMatch.winner = None
     matches.append(newMatch)
 
-url_str = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&export&exportnowrap&titles=' + ('|'.join(map(urllib.quote_plus, pageNames)))
+url_str = 'http://wiki.teamliquid.net/starcraft2/api.php?action=query&export&exportnowrap&titles=' + ('|'.join(map(urllib.quote_plus, Constants.pageNames)))
 try:
     url = urllib2.urlopen(url_str)
     MW_XML_PREFIX = "{http://www.mediawiki.org/xml/export-0.8/}"
