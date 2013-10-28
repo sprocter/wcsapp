@@ -4,5 +4,6 @@
     <string name="app_name">Starcraft 2 WCS</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    <string name="title_activity_view_group_detail">ViewGroupDetail</string>
 
 </resources>

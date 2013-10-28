@@ -15,6 +15,7 @@ import java.util.zip.GZIPInputStream;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
@@ -38,6 +39,7 @@ import com.mthatcher.starcraft2wcs.entry.ViewHolder;
 
 public class LandingPage extends Activity {
 
+	private final static String GROUP_ID = "com.mthatcher.starcraft2wcs.GROUPID";
 	private final String DATA_URL = "https://objects.dreamhost.com/sc2wcsapp/data/sqlite.db.gz";
 	private final String DEBUG_TAG = "LANDING PAGE";
 	public int startPos;
@@ -94,6 +96,12 @@ public class LandingPage extends Activity {
 		listView.setSelection(startPos);
 	}
 
+	public void loadGroupDetail(View view){
+		Intent intent = new Intent(this, ViewGroupDetail.class);
+		intent.putExtra(GROUP_ID, 7);
+		startActivity(intent);
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
