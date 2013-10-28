@@ -19,6 +19,7 @@ def strip_tags(html):
 lastSchedule = DBEntry()
 matches = []
 participants = []
+games = []
 scheduleId = 1
 scheduleMap = Constants.Schedule
 schedule = []
@@ -26,7 +27,7 @@ DB = DB()
 S3 = S3()
         
 def handlePage(wikicode, title):
-    handleGroup(wikicode.filter(True, r'GroupTableSlot|GroupTableStart'), title)
+    handleGroup(wikicode.filter(True, r'GroupTableSlot|GroupTableStart|MatchList'), title)
     if len(wikicode.filter(True, r'WCSChallengerBracket')) == 0:
         handleBracket(wikicode.filter(True, r'ChallengerBracket'), 'c', title)
     else:
@@ -40,8 +41,53 @@ def handleGroup(wikicode, title):
             continue;
         if unicode(entry.name) == "GroupTableStart":
             handleGroupTable(entry, title)
-        else:
+        elif unicode(entry.name) == "GroupTableSlot":
             handleGroupEntry(entry)
+        elif unicode(entry.name.strip()) == "MatchList":
+            handleMatchList(entry)
+        else:
+            print "Got garbage while handling group: " + entry.name
+
+def handleMatchList(entry):
+    for param in entry.params:
+        if param.name == "title":
+            matchTitle = param.value
+        elif param.name[:5] == "match": 
+            handleMatch(param.value.filter(True, r'MatchMaps')[0], matchTitle)
+
+def handleMatch(match, matchTitle):
+    matchid = len(matches) + 1
+    newMatch = DBEntry()
+    newMatch.matchtype = "group"
+    newMatch.scheduleid = lastSchedule.id
+    newMatch.player1name = getStr(match, "player1")
+    newMatch.player2name = getStr(match, "player2")
+    newMatch.player1race = getStr(match, "player1race")
+    newMatch.player2race = getStr(match, "player2race")
+    newMatch.player1flag = "-"
+    newMatch.player2flag = "-"
+    
+    i = 1
+    p1wins = 0
+    p2wins = 0
+    while match.has("map" + str(i) + "win", False):
+        newGame = DBEntry()
+        newGame.mapname = getStr(match, "map" + str(i))
+        mapwinner = getInt(match, "map" + str(i) + "win")
+        newGame.mapwinner = mapwinner
+        if mapwinner == 1:
+            p1wins = p1wins + 1
+        elif mapwinner == 2:
+            p2wins = p2wins + 1
+        newGame.matchid = matchid
+        newGame.vodlink = getStr(match, "vodgame" + str(i))
+        i = i + 1
+        games.append(newGame)
+
+    newMatch.player1wins = p1wins
+    newMatch.player2wins = p2wins
+    newMatch.winner = getInt(match, "winner")
+    matches.append(newMatch)
 
 def getDivisionFromTitle(title):
     if ("Challenger" in title) or ("Code A" in title): 
@@ -95,7 +141,8 @@ def handleScheduleEntry(entry, title, name):
         mergedSchedule = False
         for candidateSchedule in scheduleMap[lastSchedule.region][lastSchedule.division][lastSchedule.round]:
             if ((candidateSchedule.time < lastSchedule.time + 2 * 60 * 60 * 1000) and
-                (candidateSchedule.time > lastSchedule.time - 6 * 60 * 60 * 1000)):
+                (candidateSchedule.time > lastSchedule.time - 6 * 60 * 60 * 1000) and
+                candidateSchedule.name == lastSchedule.name):
                 lastSchedule = candidateSchedule
                 mergedSchedule = True
         if not mergedSchedule:
@@ -112,10 +159,13 @@ def getStr(entry, tag):
         return None
 
 def getInt(entry, tag):
-    if entry.has(tag):
-        return int(unicode(entry.get(tag).value))
-    else:
-        return None
+    try:
+        if entry.has(tag):
+            return int(unicode(entry.get(tag).value))
+        else:
+            return None
+    except ValueError:
+        return None # Someone typed something in that wasn't a number
 
 def handleGroupEntry(entry):
     newParticipant = DBEntry()
@@ -188,6 +238,7 @@ for page_xml in root_xml.iter(MW_XML_PREFIX + "page"):
     
 DB.initDB()
 DB.insert(matches, "matches")
-DB.insert(participants, "participants")
+DB.insert(participants, "groups")
 DB.insert(schedule, "schedule")
+DB.insert(games, "maps")
 S3.uploadData(DB)
