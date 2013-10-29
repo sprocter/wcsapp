@@ -376,7 +376,7 @@ public class LandingPage extends Activity {
 			}
 			c.close();
 			publishProgress(70);
-			table = "participants";
+			table = "groups";
 			columns = new String[] { "id", "name", "flag", "race", "place",
 					"matcheswon", "matcheslost", "mapswon", "mapslost",
 					"result" };
