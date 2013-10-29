@@ -3,6 +3,7 @@ package com.mthatcher.starcraft2wcs.entry;
 import android.view.View;
 import android.widget.TextView;
 
+import com.mthatcher.starcraft2wcs.LandingPage;
 import com.mthatcher.starcraft2wcs.LandingPage.Country;
 import com.mthatcher.starcraft2wcs.LandingPage.MatchResult;
 import com.mthatcher.starcraft2wcs.LandingPage.Race;
@@ -102,13 +103,13 @@ public class GroupEntry implements GroupOrBracketEntry{
 		return mapsLost;
 	}
 
-	public static ViewHolder getHolder(View convertView, int numEntrants) {
+	public static ViewHolder getHolder(View convertView) {
 		ViewHolder holder = new ViewHolder();
 		holder.isGroupHolder = true;
 		holder.groupName = (TextView) convertView.findViewById(R.id.schedule_name);
 		holder.date = (TextView) convertView.findViewById(R.id.schedule_date);
 		holder.size = 0;
-		for(int i = 0; i < numEntrants; i++){
+		for(int i = 0; i < DEFAULT_NUM_ENTRANTS; i++){
 			addRow(convertView.findViewById(rowIds[i]), i, holder);
 		}
 		return holder;

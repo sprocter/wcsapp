@@ -103,14 +103,14 @@ public class BracketEntry implements GroupOrBracketEntry {
 		return p2Race;
 	}
 
-	public static ViewHolder getHolder(View convertView, int numEntrants) {
+	public static ViewHolder getHolder(View convertView) {
 		ViewHolder holder = new ViewHolder();
 		holder.isGroupHolder = false;
 		holder.groupName = (TextView) convertView.findViewById(R.id.schedule_name);
 		holder.date = (TextView) convertView.findViewById(R.id.schedule_date);
 		holder.size = 0;
 		int p1i, p2i;
-		for (int i = 0; i < numEntrants; i++) {
+		for (int i = 0; i < DEFAULT_NUM_ENTRANTS; i++) {
 			p1i = i * 2;
 			p2i = i * 2 + 1;
 			addRow(convertView.findViewById(rowIds[i]), p1i, p2i, holder);

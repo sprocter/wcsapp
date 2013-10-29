@@ -40,7 +40,9 @@ import com.mthatcher.starcraft2wcs.entry.ViewHolderData;
 
 public class LandingPage extends Activity {
 
-	public final static String GROUP_DATA = "com.mthatcher.starcraft2wcs.GROUP_DATA";
+	public final static String GROUP_DATA_EXTRA = "com.mthatcher.starcraft2wcs.GROUP_DATA_EXTRA";
+	public final static String ENTRY_ID_EXTRA = "com.mthatcher.starcraft2wcs.ENTRY_ID_EXTRA";
+	private static final int ENTRY_ID_TAG = 0;
 	private final String DATA_URL = "https://objects.dreamhost.com/sc2wcsapp/data/sqlite.db.gz";
 	private final String DEBUG_TAG = "LANDING PAGE";
 	public int startPos;
@@ -95,12 +97,13 @@ public class LandingPage extends Activity {
 		listView.setSelection(startPos);
 	}
 
-	public void loadGroupDetail(View view){
+	public void loadGroupDetail(View view) {
 		Intent intent = new Intent(this, ViewGroupDetail.class);
-		intent.putExtra(GROUP_DATA, new ViewHolderData((ViewHolder) view.getTag()));
+		intent.putExtra(GROUP_DATA_EXTRA, new ViewHolderData((ViewHolder) view.getTag()));
+		intent.putExtra(ENTRY_ID_EXTRA, (Integer) view.getTag(ENTRY_ID_TAG));
 		startActivity(intent);
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -162,13 +165,14 @@ public class LandingPage extends Activity {
 				if (item.isGroupEntry) {
 					convertView = vi.inflate(R.layout.group_stage_tbl, parent,
 							false);
-					holder = GroupEntry.getHolder(convertView, 4);
+					holder = GroupEntry.getHolder(convertView);
 				} else {
 					convertView = vi.inflate(R.layout.bracket_stage_tbl,
 							parent, false);
-					holder = BracketEntry.getHolder(convertView, 4);
+					holder = BracketEntry.getHolder(convertView);
 				}
 				convertView.setTag(holder);
+				convertView.setTag(ENTRY_ID_TAG, item.getId());
 			} else {
 				holder = (ViewHolder) convertView.getTag();
 			}
@@ -214,7 +218,7 @@ public class LandingPage extends Activity {
 			}
 
 			for (i = 0; i < numPlayers; i++) {
-				if(!(item.getPlayer(i) instanceof BracketEntry))
+				if (!(item.getPlayer(i) instanceof BracketEntry))
 					tblV = null;
 				BracketEntry player = (BracketEntry) item.getPlayer(i);
 				p1i = i * 2;
@@ -254,7 +258,7 @@ public class LandingPage extends Activity {
 				} else {
 					holder.playerName.get(p1i).setBackgroundColor(loserColor);
 					holder.race.get(p1i).setBackgroundColor(loserColor);
-					holder.flag.get(p1i).setBackgroundColor(loserColor);					
+					holder.flag.get(p1i).setBackgroundColor(loserColor);
 					holder.playerName.get(p2i).setBackgroundColor(loserColor);
 					holder.race.get(p2i).setBackgroundColor(loserColor);
 					holder.flag.get(p2i).setBackgroundColor(loserColor);
@@ -262,7 +266,8 @@ public class LandingPage extends Activity {
 			}
 		}
 
-		private void getGroupView(ViewHolder holder, ScheduleEntry item, View convertView) {
+		private void getGroupView(ViewHolder holder, ScheduleEntry item,
+				View convertView) {
 			int bgColor = item.getColor();
 			int numPlayers = item.getNumPlayers();
 			holder.groupName.setText(item.getName());
@@ -288,12 +293,13 @@ public class LandingPage extends Activity {
 				GroupEntry.removeRow(holder);
 				tblV.removeViewAt(i--);
 			}
-			
+
 			for (i = 0; i < numPlayers; i++) {
 				GroupEntry player = (GroupEntry) item.getPlayer(i);
 				bgColor = player.getBackgroundColor();
 				if (player.getPlace() > 0) // TODO: Extract this to EntryUtil
-					holder.rank.get(i).setText(Integer.toString(player.getPlace()));
+					holder.rank.get(i).setText(
+							Integer.toString(player.getPlace()));
 				else {
 					holder.rank.get(i).setText("-");
 					bgColor = 0x00FFFFFF;
@@ -309,13 +315,12 @@ public class LandingPage extends Activity {
 				holder.race.get(i).setBackgroundColor(bgColor);
 				holder.playerName.get(i).setText(player.getName());
 				holder.playerName.get(i).setBackgroundColor(bgColor);
-				holder.matchScore.get(i).setText(Integer.toString(player
-						.getMatchesWon())
-						+ "-"
-						+ Integer.toString(player.getMatchesLost()));
+				holder.matchScore.get(i).setText(
+						Integer.toString(player.getMatchesWon()) + "-"
+								+ Integer.toString(player.getMatchesLost()));
 				holder.matchScore.get(i).setBackgroundColor(bgColor);
-				holder.mapScore.get(i)
-						.setText(Integer.toString(player.getMapsWon()) + "-"
+				holder.mapScore.get(i).setText(
+						Integer.toString(player.getMapsWon()) + "-"
 								+ Integer.toString(player.getMapsLost()));
 				holder.mapScore.get(i).setBackgroundColor(bgColor);
 			}
@@ -397,6 +402,7 @@ public class LandingPage extends Activity {
 							c.getString(9)));
 					c.move(1);
 				}
+				//TODO: Refactor this so it isn't duplicated
 				entry.addPlayer(new GroupEntry(c.getString(1), c.getString(2),
 						c.getString(3), c.getString(4), c.getInt(5), c
 								.getInt(6), c.getInt(7), c.getInt(8), c
@@ -427,9 +433,10 @@ public class LandingPage extends Activity {
 							.getString(9), c.getString(10)));
 					c.move(1);
 				}
+				//TODO: Refactor this so it isn't duplicated
 				entry.addPlayer(new BracketEntry(c.getString(2),
-						c.getString(3), c.getString(4), c.getString(5), c
-								.getString(6), c.getString(7), c.getString(1),
+						c.getString(3), c.getString(4), c.getString(5),
+						c.getString(6), c.getString(7), c.getString(1),
 						c.getString(9), c.getString(10)));
 				c.close();
 			}

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/match_detail_tbl"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="15dp"
+    android:shrinkColumns="*"
+    android:stretchColumns="*" >
+
+    <TextView
+        android:id="@+id/group_detail_1_name"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:textColor="#000000" />
+
+    <TextView
+        android:id="@+id/group_detail_1_race"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:textColor="#000000" />
+
+    <TextView
+        android:id="@+id/group_detail_1_map_score"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:textColor="#000000" />
+
+    <TextView
+        android:id="@+id/group_detail_2_map_score"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:textColor="#000000" />
+
+    <TextView
+        android:id="@+id/group_detail_2_race"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:textColor="#000000" />
+
+    <TextView
+        android:id="@+id/group_detail_2_name"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:textColor="#000000" />
+
+    <include
+        android:id="@+id/group_detail_row_1"
+        layout="@layout/map_detail_row" />
+
+    <include
+        android:id="@+id/group_detail_row_2"
+        layout="@layout/map_detail_row" />
+
+    <include
+        android:id="@+id/group_detail_row_3"
+        layout="@layout/map_detail_row" />
+
+</TableLayout>

@@ -3,6 +3,8 @@ package com.mthatcher.starcraft2wcs;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -27,9 +29,23 @@ public class ViewGroupDetail extends Activity {
 		setContentView(R.layout.activity_view_group_detail);
 		setupActionBar();
 		Intent intent = getIntent();
-		// Spin off AsyncTask to read match / game data while we draw the UI...
 		initKnownValues((ViewHolderData) intent
-				.getParcelableExtra(LandingPage.GROUP_DATA));
+				.getParcelableExtra(LandingPage.GROUP_DATA_EXTRA));
+		initNewValues(intent.getExtras().getInt(LandingPage.ENTRY_ID_EXTRA));
+	}
+
+	private void initNewValues(int entryid) {
+		doDBQuery(entryid);
+	}
+
+	private void doDBQuery(int entryid) {
+		WcsDBHelper dbHelper = new WcsDBHelper(getBaseContext());
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		// TODO: Use a raw query along the lines of...
+		/*
+		 * SELECT maps.matchid, maps.mapname, maps.mapwinner FROM maps, matches
+		 * WHERE maps.matchid = matches.id AND matches.scheduleid = 1;
+		 */
 	}
 
 	private void initKnownValues(ViewHolderData data) {
@@ -44,10 +60,10 @@ public class ViewGroupDetail extends Activity {
 
 		TextView groupNameTV = (TextView) findViewById(R.id.schedule_name);
 		TextView dateTV = (TextView) findViewById(R.id.schedule_date);
-		
+
 		groupNameTV.setText(data.getGroupName());
 		dateTV.setText(data.getDate());
-		
+
 		initPlayerRows(data);
 	}
 
@@ -57,21 +73,25 @@ public class ViewGroupDetail extends Activity {
 		TableRow currentRow;
 		TextView rankTV, flagTV, raceTV, nameTV, matchTV, gameTV;
 		Drawable flagD, raceD;
-		for(int i = 0; i < tl.getChildCount() - 2; i++){
+		for (int i = 0; i < tl.getChildCount() - 2; i++) {
 			flagD = new BitmapDrawable(getResources(), data.getFlag()[i]);
 			raceD = new BitmapDrawable(getResources(), data.getRace()[i]);
-			
+
 			currentRow = (TableRow) tl.getChildAt(i + 2);
 			rankTV = (TextView) currentRow.findViewById(R.id.group_player_rank);
 			flagTV = (TextView) currentRow.findViewById(R.id.group_player_flag);
 			raceTV = (TextView) currentRow.findViewById(R.id.group_player_race);
 			nameTV = (TextView) currentRow.findViewById(R.id.group_player_name);
-			matchTV = (TextView) currentRow.findViewById(R.id.group_player_match_score);
-			gameTV = (TextView) currentRow.findViewById(R.id.group_player_map_score);
-			
+			matchTV = (TextView) currentRow
+					.findViewById(R.id.group_player_match_score);
+			gameTV = (TextView) currentRow
+					.findViewById(R.id.group_player_map_score);
+
 			rankTV.setText(data.getRank()[i]);
-			flagTV.setCompoundDrawablesWithIntrinsicBounds(flagD, null, null, null);
-			raceTV.setCompoundDrawablesWithIntrinsicBounds(raceD, null, null, null);
+			flagTV.setCompoundDrawablesWithIntrinsicBounds(flagD, null, null,
+					null);
+			raceTV.setCompoundDrawablesWithIntrinsicBounds(raceD, null, null,
+					null);
 			nameTV.setText(data.getPlayerName()[i]);
 			matchTV.setText(data.getMatchScore()[i]);
 			gameTV.setText(data.getMapScore()[i]);
