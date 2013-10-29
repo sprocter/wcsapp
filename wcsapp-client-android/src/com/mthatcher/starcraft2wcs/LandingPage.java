@@ -36,10 +36,11 @@ import com.mthatcher.starcraft2wcs.entry.EntryUtil;
 import com.mthatcher.starcraft2wcs.entry.GroupEntry;
 import com.mthatcher.starcraft2wcs.entry.GroupOrBracketEntry;
 import com.mthatcher.starcraft2wcs.entry.ViewHolder;
+import com.mthatcher.starcraft2wcs.entry.ViewHolderData;
 
 public class LandingPage extends Activity {
 
-	private final static String GROUP_ID = "com.mthatcher.starcraft2wcs.GROUPID";
+	public final static String GROUP_DATA = "com.mthatcher.starcraft2wcs.GROUP_DATA";
 	private final String DATA_URL = "https://objects.dreamhost.com/sc2wcsapp/data/sqlite.db.gz";
 	private final String DEBUG_TAG = "LANDING PAGE";
 	public int startPos;
@@ -81,8 +82,6 @@ public class LandingPage extends Activity {
 
 		ScheduleAdapter listAdapter = null;
 		try {
-			// listAdapter = new ArrayAdapter<String>(this, R.layout.am_row,
-			// task.get());
 			listAdapter = new ScheduleAdapter(task.get());
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
@@ -98,7 +97,7 @@ public class LandingPage extends Activity {
 
 	public void loadGroupDetail(View view){
 		Intent intent = new Intent(this, ViewGroupDetail.class);
-		intent.putExtra(GROUP_ID, 7);
+		intent.putExtra(GROUP_DATA, new ViewHolderData((ViewHolder) view.getTag()));
 		startActivity(intent);
 	}
 	
@@ -147,9 +146,9 @@ public class LandingPage extends Activity {
 		@Override
 		public int getItemViewType(int position) {
 			if (items.get(position).isGroupEntry)
-				return 0;
+				return 0; // Group
 			else
-				return 1;
+				return 1; // Bracket
 		}
 
 		@Override
