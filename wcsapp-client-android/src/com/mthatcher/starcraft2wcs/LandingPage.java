@@ -34,7 +34,7 @@ import android.widget.TableLayout;
 import com.mthatcher.starcraft2wcs.entry.BracketEntry;
 import com.mthatcher.starcraft2wcs.entry.EntryUtil;
 import com.mthatcher.starcraft2wcs.entry.GroupEntry;
-import com.mthatcher.starcraft2wcs.entry.GroupOrBracketEntry;
+import com.mthatcher.starcraft2wcs.entry.Entry;
 import com.mthatcher.starcraft2wcs.entry.ViewHolder;
 import com.mthatcher.starcraft2wcs.entry.ViewHolderData;
 
@@ -502,7 +502,7 @@ public class LandingPage extends Activity {
 		private Region region;
 		private String name;
 		private boolean isGroupEntry;
-		private ArrayList<GroupOrBracketEntry> players;
+		private ArrayList<Entry> players;
 
 		public ScheduleEntry(String id, String time, String division,
 				String region, String name) {
@@ -512,7 +512,7 @@ public class LandingPage extends Activity {
 			this.region = setRegionFromString(region);
 			this.name = name;
 			this.isGroupEntry = true;
-			players = new ArrayList<GroupOrBracketEntry>();
+			players = new ArrayList<Entry>();
 		}
 
 		public int getColor() {
@@ -536,7 +536,7 @@ public class LandingPage extends Activity {
 			return isGroupEntry;
 		}
 
-		public GroupOrBracketEntry getPlayer(int n) {
+		public Entry getPlayer(int n) {
 			return players.get(n);
 		}
 
@@ -548,7 +548,7 @@ public class LandingPage extends Activity {
 			return id;
 		}
 
-		public void addPlayer(GroupOrBracketEntry player) {
+		public void addPlayer(Entry player) {
 			players.add(player);
 		}
 

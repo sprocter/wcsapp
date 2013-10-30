@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.widget.TextView;
@@ -18,6 +19,7 @@ public class ViewHolderData implements Parcelable{
 	private String[] playerName;
 	private String[] matchScore;
 	private String[] mapScore;
+	private int[] backgroundColor;
 	private int size;
 	
 	public ViewHolderData(Parcel in) {
@@ -30,6 +32,7 @@ public class ViewHolderData implements Parcelable{
 		playerName = in.createStringArray();
 		matchScore = in.createStringArray();
 		mapScore = in.createStringArray();
+		backgroundColor = in.createIntArray();
 		size = in.readInt();
 	}
 	
@@ -43,6 +46,7 @@ public class ViewHolderData implements Parcelable{
 		playerName = getStringArray(v.playerName);
 		matchScore = getStringArray(v.matchScore);
 		mapScore = getStringArray(v.mapScore);
+		backgroundColor = getColorArray(v.playerName);
 		size = v.size;
 	}
 
@@ -82,6 +86,10 @@ public class ViewHolderData implements Parcelable{
 		return mapScore;
 	}
 
+	public int[] getBackgroundColor() {
+		return backgroundColor;
+	}
+	
 	public int getSize() {
 		return size;
 	}
@@ -102,6 +110,7 @@ public class ViewHolderData implements Parcelable{
 		out.writeStringArray(playerName);
 		out.writeStringArray(matchScore);
 		out.writeStringArray(mapScore);
+		out.writeIntArray(backgroundColor);
 		out.writeInt(size);
 	}
 	
@@ -119,6 +128,14 @@ public class ViewHolderData implements Parcelable{
 		String[] ret = new String[list.size()];
 		for(int i = 0; i < list.size(); i++){
 			ret[i] = list.get(i).getText().toString();
+		}
+		return ret;
+	}
+	
+	private int[] getColorArray(ArrayList<TextView> list) {
+		int[] ret = new int[list.size()];
+		for(int i = 0; i < list.size(); i++){
+			ret[i] = ((ColorDrawable)list.get(i).getBackground()).getColor();
 		}
 		return ret;
 	}

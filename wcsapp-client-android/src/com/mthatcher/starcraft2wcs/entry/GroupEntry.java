@@ -8,7 +8,7 @@ import com.mthatcher.starcraft2wcs.LandingPage.MatchResult;
 import com.mthatcher.starcraft2wcs.LandingPage.Race;
 import com.mthatcher.starcraft2wcs.R;
 
-public class GroupEntry implements GroupOrBracketEntry{
+public class GroupEntry implements Entry{
 	private String name;
 	private Country country;
 	private Race race;

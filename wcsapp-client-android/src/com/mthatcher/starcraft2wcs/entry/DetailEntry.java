@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import android.graphics.drawable.Drawable;
 
-public class DetailEntry {
+public class DetailEntry implements Entry{
 	private ArrayList<MapDetail> maps;
 	private String player1Name;
 	private String player2Name;

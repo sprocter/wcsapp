@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -51,7 +52,7 @@ public class ViewGroupDetail extends Activity {
 
 	private void displayDetailEntries(ArrayList<DetailEntry> entries) {
 		ViewGroup currentContent = (ViewGroup) findViewById(android.R.id.content);
-		TableLayout tl = (TableLayout) currentContent.getChildAt(0);
+		TableLayout tl = (TableLayout) ((ScrollView)currentContent.getChildAt(0)).getChildAt(0);
 		TableRow currentRow;
 		TextView p1NameTV, p1RaceTV, p1FlagTV, p1WinsTV, p2NameTV, p2RaceTV, p2FlagTV, p2WinsTV, p1MapWinTV, mapNameTV, p2MapWinTV;
 		DetailEntry curEntry;
@@ -78,6 +79,18 @@ public class ViewGroupDetail extends Activity {
 			p2RaceTV.setCompoundDrawablesWithIntrinsicBounds(curEntry.getPlayer2Race(), null, null, null);
 			p2NameTV.setText(curEntry.getPlayer2Name());
 			
+			if(curEntry.doesPlayer1Win()){
+				//TODO: Extract this to EntryUtil
+				p1NameTV.setBackgroundColor(0xFFCCFFCC);
+				p1RaceTV.setBackgroundColor(0xFFCCFFCC);
+				p1FlagTV.setBackgroundColor(0xFFCCFFCC);			
+			}
+			if(curEntry.doesPlayer2Win()){			
+				p2NameTV.setBackgroundColor(0xFFCCFFCC);
+				p2RaceTV.setBackgroundColor(0xFFCCFFCC);
+				p2FlagTV.setBackgroundColor(0xFFCCFFCC);
+			}
+			
 			curMaps = curEntry.getMaps();
 			for(int j = 0; j < curMaps.size(); j++){
 				curMap = curMaps.get(j);
@@ -89,9 +102,9 @@ public class ViewGroupDetail extends Activity {
 				
 				mapNameTV.setText(curMap.getMapName());
 				if(curMap.isP1Wins())
-					p1MapWinTV.setText("X");
+					p1MapWinTV.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.mapwin, 0);
 				if(curMap.isP2Wins())
-					p2MapWinTV.setText("X");
+					p2MapWinTV.setCompoundDrawablesWithIntrinsicBounds(R.drawable.mapwin, 0, 0, 0);
 			}
 		}
 	}
@@ -121,7 +134,7 @@ public class ViewGroupDetail extends Activity {
 				player1Name = c.getString(0);
 				player2Name = c.getString(1);
 			}
-			maps.add(de.new MapDetail(c.getString(2), c.getString(3)));
+			de.addMapDetail(de.new MapDetail(c.getString(2), c.getString(3)));
 			c.move(1);
 		}
 		c.close();
@@ -149,7 +162,7 @@ public class ViewGroupDetail extends Activity {
 
 	private void initPlayerRows(ViewHolderData data) {
 		ViewGroup currentContent = (ViewGroup) findViewById(android.R.id.content);
-		TableLayout tl = (TableLayout) currentContent.getChildAt(0);
+		TableLayout tl = (TableLayout) ((ScrollView)currentContent.getChildAt(0)).getChildAt(0);
 		TableRow currentRow;
 		TextView rankTV, flagTV, raceTV, nameTV, matchTV, gameTV;
 		Drawable flagD, raceD;
@@ -171,13 +184,19 @@ public class ViewGroupDetail extends Activity {
 					.findViewById(R.id.group_player_map_score);
 
 			rankTV.setText(data.getRank()[i]);
+			rankTV.setBackgroundColor(data.getBackgroundColor()[i]);
 			flagTV.setCompoundDrawablesWithIntrinsicBounds(flagD, null, null,
 					null);
+			flagTV.setBackgroundColor(data.getBackgroundColor()[i]);
 			raceTV.setCompoundDrawablesWithIntrinsicBounds(raceD, null, null,
 					null);
+			raceTV.setBackgroundColor(data.getBackgroundColor()[i]);
 			nameTV.setText(data.getPlayerName()[i]);
+			nameTV.setBackgroundColor(data.getBackgroundColor()[i]);
 			matchTV.setText(data.getMatchScore()[i]);
+			matchTV.setBackgroundColor(data.getBackgroundColor()[i]);
 			gameTV.setText(data.getMapScore()[i]);
+			gameTV.setBackgroundColor(data.getBackgroundColor()[i]);
 		}
 	}
 

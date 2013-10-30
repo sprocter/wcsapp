@@ -7,7 +7,7 @@ import com.mthatcher.starcraft2wcs.LandingPage.Country;
 import com.mthatcher.starcraft2wcs.LandingPage.Race;
 import com.mthatcher.starcraft2wcs.R;
 
-public class BracketEntry implements GroupOrBracketEntry {
+public class BracketEntry implements Entry {
 	private String p1Name;
 	private String p2Name;
 	private Country p1Country;
@@ -63,16 +63,6 @@ public class BracketEntry implements GroupOrBracketEntry {
 
 	public int getWinner() {
 		return winner;
-	}
-
-	@Override
-	public int getBackgroundColor() {
-		return 0xFFFFFFFF;
-	}
-
-	@Override
-	public Race getRace() {
-		return Race.TERRAN;
 	}
 
 	public String getP1Name() {
