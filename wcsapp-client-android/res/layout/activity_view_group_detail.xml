@@ -27,5 +27,17 @@
     <include
         android:id="@+id/group_detail_1"
         layout="@layout/match_detail_tbl" />
+    <include
+        android:id="@+id/group_detail_2"
+        layout="@layout/match_detail_tbl" />
+    <include
+        android:id="@+id/group_detail_3"
+        layout="@layout/match_detail_tbl" />
+    <include
+        android:id="@+id/group_detail_4"
+        layout="@layout/match_detail_tbl" />
+    <include
+        android:id="@+id/group_detail_5"
+        layout="@layout/match_detail_tbl" />
     
 </TableLayout>

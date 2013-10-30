@@ -12,6 +12,8 @@ public class DetailEntry {
 	private Drawable player2Race;
 	private Drawable player1Flag;
 	private Drawable player2Flag;
+	private int player1Wins;
+	private int player2Wins;
 
 	public DetailEntry(String p1Name, String p2Name, Drawable p1Race,
 			Drawable p2Race, Drawable p1Flag, Drawable p2Flag,
@@ -23,6 +25,8 @@ public class DetailEntry {
 		this.player1Flag = p1Flag;
 		this.player2Flag = p2Flag;
 		maps = mapDetails;
+		player1Wins = 0;
+		player2Wins = 0;
 	}
 
 	public String getPlayer1Name() {
@@ -52,8 +56,28 @@ public class DetailEntry {
 	public ArrayList<MapDetail> getMaps() {
 		return maps;
 	}
+	
+	public int getPlayer1Wins() {
+		return player1Wins;
+	}
+
+	public int getPlayer2Wins() {
+		return player2Wins;
+	}
+
+	public boolean doesPlayer1Win() {
+		return player1Wins > player2Wins;
+	}
+	
+	public boolean doesPlayer2Win() {
+		return player2Wins > player1Wins;
+	}
 
 	public void addMapDetail(MapDetail map) {
+		if(map.isP1Wins())
+			player1Wins++;
+		if(map.isP2Wins())
+			player2Wins++;
 		maps.add(map);
 	}
 

@@ -46,7 +46,54 @@ public class ViewGroupDetail extends Activity {
 
 	private void initNewValues(int entryid) {
 		ArrayList<DetailEntry> entries = getDetailEntries(entryid);
-		int six = 7;
+		displayDetailEntries(entries);
+	}
+
+	private void displayDetailEntries(ArrayList<DetailEntry> entries) {
+		ViewGroup currentContent = (ViewGroup) findViewById(android.R.id.content);
+		TableLayout tl = (TableLayout) currentContent.getChildAt(0);
+		TableRow currentRow;
+		TextView p1NameTV, p1RaceTV, p1FlagTV, p1WinsTV, p2NameTV, p2RaceTV, p2FlagTV, p2WinsTV, p1MapWinTV, mapNameTV, p2MapWinTV;
+		DetailEntry curEntry;
+		ArrayList<MapDetail> curMaps;
+		MapDetail curMap;
+		for (int i = 0; i < 5; i++) {
+			curEntry = entries.get(i);
+			currentRow = (TableRow) ((TableLayout)tl.getChildAt(i + 6)).getChildAt(0);
+			p1NameTV = (TextView) currentRow.findViewById(R.id.group_detail_1_name);
+			p1RaceTV = (TextView) currentRow.findViewById(R.id.group_detail_1_race);
+			p1FlagTV = (TextView) currentRow.findViewById(R.id.group_detail_1_flag);
+			p1WinsTV = (TextView) currentRow.findViewById(R.id.group_detail_1_map_score);
+			p2NameTV = (TextView) currentRow.findViewById(R.id.group_detail_2_name);
+			p2RaceTV = (TextView) currentRow.findViewById(R.id.group_detail_2_race);
+			p2FlagTV = (TextView) currentRow.findViewById(R.id.group_detail_2_flag);
+			p2WinsTV = (TextView) currentRow.findViewById(R.id.group_detail_2_map_score);
+			
+			p1NameTV.setText(curEntry.getPlayer1Name());
+			p1RaceTV.setCompoundDrawablesWithIntrinsicBounds(curEntry.getPlayer1Race(), null, null, null);
+			p1FlagTV.setCompoundDrawablesWithIntrinsicBounds(curEntry.getPlayer1Flag(), null, null, null);
+			p1WinsTV.setText(String.valueOf(curEntry.getPlayer1Wins()));
+			p2WinsTV.setText(String.valueOf(curEntry.getPlayer2Wins()));
+			p2FlagTV.setCompoundDrawablesWithIntrinsicBounds(curEntry.getPlayer2Flag(), null, null, null);
+			p2RaceTV.setCompoundDrawablesWithIntrinsicBounds(curEntry.getPlayer2Race(), null, null, null);
+			p2NameTV.setText(curEntry.getPlayer2Name());
+			
+			curMaps = curEntry.getMaps();
+			for(int j = 0; j < curMaps.size(); j++){
+				curMap = curMaps.get(j);
+				
+				currentRow = (TableRow) ((TableLayout)tl.getChildAt(i + 6)).getChildAt(1 + j);
+				p1MapWinTV = (TextView) currentRow.findViewById(R.id.player_1_map_win);
+				p2MapWinTV = (TextView) currentRow.findViewById(R.id.player_2_map_win);
+				mapNameTV = (TextView) currentRow.findViewById(R.id.map_name);
+				
+				mapNameTV.setText(curMap.getMapName());
+				if(curMap.isP1Wins())
+					p1MapWinTV.setText("X");
+				if(curMap.isP2Wins())
+					p2MapWinTV.setText("X");
+			}
+		}
 	}
 
 	private ArrayList<DetailEntry> getDetailEntries(int entryid) {
@@ -106,7 +153,7 @@ public class ViewGroupDetail extends Activity {
 		TableRow currentRow;
 		TextView rankTV, flagTV, raceTV, nameTV, matchTV, gameTV;
 		Drawable flagD, raceD;
-		for (int i = 0; i < tl.getChildCount() - 3; i++) {
+		for (int i = 0; i < tl.getChildCount() - 7; i++) {
 			flagD = new BitmapDrawable(getResources(), data.getFlag()[i]);
 			raceD = new BitmapDrawable(getResources(), data.getRace()[i]);
 
@@ -191,3 +238,4 @@ public class ViewGroupDetail extends Activity {
 	}
 
 }
+

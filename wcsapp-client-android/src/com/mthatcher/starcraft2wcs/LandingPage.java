@@ -43,7 +43,7 @@ public class LandingPage extends Activity {
 	public final static String GROUP_DATA_EXTRA = "com.mthatcher.starcraft2wcs.GROUP_DATA_EXTRA";
 	public final static String ENTRY_ID_EXTRA = "com.mthatcher.starcraft2wcs.ENTRY_ID_EXTRA";
 	private static final int ENTRY_ID_TAG = R.id.ENTRY_ID_TAG;
-	private final String DATA_URL = "https://objects.dreamhost.com/sc2wcsapp/data/sqlite.db.gz";
+	private final String DATA_URL = "http://skorchedearth.com/sandbox/wcsapp/wcsapp-server/sqlite.gz";
 	private final String DEBUG_TAG = "LANDING PAGE";
 	public int startPos;
 
@@ -70,9 +70,7 @@ public class LandingPage extends Activity {
 	@Override
 	protected void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 		setContentView(R.layout.activity_landing_page);
-
 		ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 		AsyncTask<String, Integer, ArrayList<ScheduleEntry>> task = null;
 		NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
