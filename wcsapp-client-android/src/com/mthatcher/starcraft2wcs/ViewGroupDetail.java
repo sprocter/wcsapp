@@ -1,5 +1,8 @@
 package com.mthatcher.starcraft2wcs;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
@@ -19,13 +22,20 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import com.mthatcher.starcraft2wcs.entry.DetailEntry;
+import com.mthatcher.starcraft2wcs.entry.DetailEntry.MapDetail;
 import com.mthatcher.starcraft2wcs.entry.ViewHolderData;
 
 public class ViewGroupDetail extends Activity {
 
+	private HashMap<String, Drawable> nameToRace;
+	private HashMap<String, Drawable> nameToFlag;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		nameToRace = new HashMap<String, Drawable>();
+		nameToFlag = new HashMap<String, Drawable>();
 		setContentView(R.layout.activity_view_group_detail);
 		setupActionBar();
 		Intent intent = getIntent();
@@ -35,17 +45,40 @@ public class ViewGroupDetail extends Activity {
 	}
 
 	private void initNewValues(int entryid) {
-		doDBQuery(entryid);
+		ArrayList<DetailEntry> entries = getDetailEntries(entryid);
+		int six = 7;
 	}
 
-	private void doDBQuery(int entryid) {
-		WcsDBHelper dbHelper = new WcsDBHelper(getBaseContext());
+	private ArrayList<DetailEntry> getDetailEntries(int entryid) {
+		ArrayList<DetailEntry> entries = new ArrayList<DetailEntry>();
+		WcsDBHelper dbHelper = AppClass.getDBHelper();
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
-		// TODO: Use a raw query along the lines of...
-		/*
-		 * SELECT maps.matchid, maps.mapname, maps.mapwinner FROM maps, matches
-		 * WHERE maps.matchid = matches.id AND matches.scheduleid = 1;
-		 */
+		Cursor c = db
+				.rawQuery(
+						"SELECT matches.player1name, matches.player2Name, maps.mapname, maps.mapwinner FROM maps, matches WHERE maps.matchid = matches.id AND matches.scheduleid = ?",
+						new String[] { String.valueOf(entryid) });
+		c.moveToFirst();
+		ArrayList<MapDetail> maps = null;
+		String player1Name = "$DEFAULTVAL$";
+		String player2Name = "$DEFAULTVAL$";
+		DetailEntry de = null;
+		while (!c.isAfterLast()) {
+			if (!(player1Name.equals(c.getString(0)) && player2Name.equals(c
+					.getString(1)))) {
+				maps = new ArrayList<MapDetail>();
+				de = new DetailEntry(c.getString(0), c.getString(1),
+						nameToRace.get(c.getString(0)), nameToRace.get(c
+								.getString(1)), nameToFlag.get(c.getString(0)),
+						nameToFlag.get(c.getString(1)), maps);
+				entries.add(de);
+				player1Name = c.getString(0);
+				player2Name = c.getString(1);
+			}
+			maps.add(de.new MapDetail(c.getString(2), c.getString(3)));
+			c.move(1);
+		}
+		c.close();
+		return entries;
 	}
 
 	private void initKnownValues(ViewHolderData data) {
@@ -73,9 +106,12 @@ public class ViewGroupDetail extends Activity {
 		TableRow currentRow;
 		TextView rankTV, flagTV, raceTV, nameTV, matchTV, gameTV;
 		Drawable flagD, raceD;
-		for (int i = 0; i < tl.getChildCount() - 2; i++) {
+		for (int i = 0; i < tl.getChildCount() - 3; i++) {
 			flagD = new BitmapDrawable(getResources(), data.getFlag()[i]);
 			raceD = new BitmapDrawable(getResources(), data.getRace()[i]);
+
+			nameToFlag.put(data.getPlayerName()[i], flagD);
+			nameToRace.put(data.getPlayerName()[i], raceD);
 
 			currentRow = (TableRow) tl.getChildAt(i + 2);
 			rankTV = (TextView) currentRow.findViewById(R.id.group_player_rank);

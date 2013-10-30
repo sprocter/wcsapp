@@ -3,7 +3,6 @@ package com.mthatcher.starcraft2wcs.entry;
 import android.view.View;
 import android.widget.TextView;
 
-import com.mthatcher.starcraft2wcs.LandingPage;
 import com.mthatcher.starcraft2wcs.LandingPage.Country;
 import com.mthatcher.starcraft2wcs.LandingPage.MatchResult;
 import com.mthatcher.starcraft2wcs.LandingPage.Race;

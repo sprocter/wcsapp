@@ -1,9 +1,6 @@
 package com.mthatcher.starcraft2wcs.entry;
 
-import java.util.ArrayList;
-
 import android.view.View;
-import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.mthatcher.starcraft2wcs.LandingPage.Country;
@@ -70,7 +67,6 @@ public class BracketEntry implements GroupOrBracketEntry {
 
 	@Override
 	public int getBackgroundColor() {
-		// TODO Auto-generated method stub
 		return 0xFFFFFFFF;
 	}
 

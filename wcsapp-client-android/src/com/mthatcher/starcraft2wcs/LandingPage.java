@@ -42,7 +42,7 @@ public class LandingPage extends Activity {
 
 	public final static String GROUP_DATA_EXTRA = "com.mthatcher.starcraft2wcs.GROUP_DATA_EXTRA";
 	public final static String ENTRY_ID_EXTRA = "com.mthatcher.starcraft2wcs.ENTRY_ID_EXTRA";
-	private static final int ENTRY_ID_TAG = 0;
+	private static final int ENTRY_ID_TAG = R.id.ENTRY_ID_TAG;
 	private final String DATA_URL = "https://objects.dreamhost.com/sc2wcsapp/data/sqlite.db.gz";
 	private final String DEBUG_TAG = "LANDING PAGE";
 	public int startPos;
@@ -68,16 +68,16 @@ public class LandingPage extends Activity {
 	}
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	protected void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
 		setContentView(R.layout.activity_landing_page);
 
 		ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 		AsyncTask<String, Integer, ArrayList<ScheduleEntry>> task = null;
 		NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
 		if (networkInfo != null && networkInfo.isConnected()) {
-			task = new DownloadDataAndUpdateDBTask(getApplicationContext())
-					.execute(DATA_URL);
+			task = new DownloadDataAndUpdateDBTask().execute(DATA_URL);
 		} else {
 			// TODO: Handle this.
 		}
@@ -99,6 +99,7 @@ public class LandingPage extends Activity {
 
 	public void loadGroupDetail(View view) {
 		Intent intent = new Intent(this, ViewGroupDetail.class);
+		// TODO: Use application class for this instead of parcelable
 		intent.putExtra(GROUP_DATA_EXTRA, new ViewHolderData((ViewHolder) view.getTag()));
 		intent.putExtra(ENTRY_ID_EXTRA, (Integer) view.getTag(ENTRY_ID_TAG));
 		startActivity(intent);
@@ -175,6 +176,7 @@ public class LandingPage extends Activity {
 				convertView.setTag(ENTRY_ID_TAG, item.getId());
 			} else {
 				holder = (ViewHolder) convertView.getTag();
+				convertView.setTag(ENTRY_ID_TAG, item.getId());
 			}
 
 			if (item != null) {
@@ -329,11 +331,11 @@ public class LandingPage extends Activity {
 
 	private class DownloadDataAndUpdateDBTask extends
 			AsyncTask<String, Integer, ArrayList<ScheduleEntry>> {
-		private Context context;
+//		private Context context;
 
-		public DownloadDataAndUpdateDBTask(Context applicationContext) {
-			context = applicationContext;
-		}
+//		public DownloadDataAndUpdateDBTask(Context applicationContext) {
+//			context = applicationContext;
+//		}
 
 		@Override
 		protected ArrayList<ScheduleEntry> doInBackground(String... urls) {
@@ -395,18 +397,13 @@ public class LandingPage extends Activity {
 					continue;
 				}
 				entry.setIsGroupEntry(true);
-				while (!c.isLast()) {
+				while (!c.isAfterLast()) {
 					entry.addPlayer(new GroupEntry(c.getString(1), c
 							.getString(2), c.getString(3), c.getString(4), c
 							.getInt(5), c.getInt(6), c.getInt(7), c.getInt(8),
 							c.getString(9)));
 					c.move(1);
 				}
-				//TODO: Refactor this so it isn't duplicated
-				entry.addPlayer(new GroupEntry(c.getString(1), c.getString(2),
-						c.getString(3), c.getString(4), c.getInt(5), c
-								.getInt(6), c.getInt(7), c.getInt(8), c
-								.getString(9)));
 				c.close();
 			}
 			publishProgress(80);
@@ -426,18 +423,13 @@ public class LandingPage extends Activity {
 					continue;
 				}
 				entry.setIsGroupEntry(false);
-				while (!c.isLast()) {
-					entry.addPlayer(new BracketEntry(c.getString(2), c
-							.getString(3), c.getString(4), c.getString(5), c
-							.getString(6), c.getString(7), c.getString(1), c
-							.getString(9), c.getString(10)));
+				while (!c.isAfterLast()) {
+					entry.addPlayer(new BracketEntry(c.getString(2),
+							c.getString(3), c.getString(4), c.getString(5),
+							c.getString(6), c.getString(7), c.getString(1),
+							c.getString(9), c.getString(10)));
 					c.move(1);
 				}
-				//TODO: Refactor this so it isn't duplicated
-				entry.addPlayer(new BracketEntry(c.getString(2),
-						c.getString(3), c.getString(4), c.getString(5),
-						c.getString(6), c.getString(7), c.getString(1),
-						c.getString(9), c.getString(10)));
 				c.close();
 			}
 			publishProgress(90);
@@ -445,7 +437,7 @@ public class LandingPage extends Activity {
 		}
 
 		private WcsDBHelper updateDB(String sql) {
-			WcsDBHelper dbHelper = new WcsDBHelper(context);
+			WcsDBHelper dbHelper = AppClass.getDBHelper();
 			publishProgress(30);
 			dbHelper.updateDB(dbHelper.getWritableDatabase(), sql);
 			publishProgress(40);
@@ -589,7 +581,7 @@ public class LandingPage extends Activity {
 					return R.drawable.wcs_logo_kr_challenger;
 				else
 					return R.drawable.wcs_logo_kr_plain;
-			default: // TODO: Add leagues to generic logo?
+			default:
 				return R.drawable.wcs_logo_nowhere_plain;
 			}
 		}

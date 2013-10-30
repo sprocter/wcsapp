@@ -7,13 +7,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class WcsDBHelper extends SQLiteOpenHelper {
-	public static final int DATABASE_VERSION = 1;
+	public static final int DATABASE_VERSION = 2;
 	public static final String DATABASE_NAME = "sc2wcs.sqlite";
-	private String DELETE_SQL = "DROP TABLE IF EXISTS matches; DROP TABLE IF EXISTS games;" +
-			" DROP TABLE IF EXISTS schedule; DROP TABLE IF EXISTS participants";
+	private String DELETE_SQL = "DROP TABLE IF EXISTS matches; DROP TABLE IF EXISTS maps;" +
+			" DROP TABLE IF EXISTS schedule; DROP TABLE IF EXISTS groups";
 	
 	public WcsDBHelper(Context context) {
-//		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 		super(context, null, null, DATABASE_VERSION);
 	}
 	
@@ -24,9 +23,15 @@ public class WcsDBHelper extends SQLiteOpenHelper {
 
 	private void splitAndRunQueries(SQLiteDatabase db, String batchSQL) {
 		StringTokenizer tok = new StringTokenizer(batchSQL, ";");
+//		db.beginTransaction();
+//		int i = 0;
 		while(tok.hasMoreTokens()){
+//			i++;
+//			String temp = tok.nextToken(); 
 			db.execSQL(tok.nextToken());
 		}
+//		db.setTransactionSuccessful();
+//		db.endTransaction();
 	}
 
 	@Override
