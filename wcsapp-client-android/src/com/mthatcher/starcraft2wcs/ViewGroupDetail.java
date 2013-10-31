@@ -3,12 +3,13 @@ package com.mthatcher.starcraft2wcs;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -40,8 +41,7 @@ public class ViewGroupDetail extends Activity {
 		setContentView(R.layout.activity_view_group_detail);
 		setupActionBar();
 		Intent intent = getIntent();
-		initKnownValues((ViewHolderData) intent
-				.getParcelableExtra(LandingPage.GROUP_DATA_EXTRA));
+		initKnownValues(AppClass.getVhd());
 		initNewValues(intent.getExtras().getInt(LandingPage.ENTRY_ID_EXTRA));
 	}
 
@@ -79,17 +79,12 @@ public class ViewGroupDetail extends Activity {
 			p2RaceTV.setCompoundDrawablesWithIntrinsicBounds(curEntry.getPlayer2Race(), null, null, null);
 			p2NameTV.setText(curEntry.getPlayer2Name());
 			
-			if(curEntry.doesPlayer1Win()){
-				//TODO: Extract this to EntryUtil
-				p1NameTV.setBackgroundColor(0xFFCCFFCC);
-				p1RaceTV.setBackgroundColor(0xFFCCFFCC);
-				p1FlagTV.setBackgroundColor(0xFFCCFFCC);			
-			}
-			if(curEntry.doesPlayer2Win()){			
-				p2NameTV.setBackgroundColor(0xFFCCFFCC);
-				p2RaceTV.setBackgroundColor(0xFFCCFFCC);
-				p2FlagTV.setBackgroundColor(0xFFCCFFCC);
-			}
+			p1NameTV.setBackgroundColor(curEntry.getP1BackgroundColor());
+			p1RaceTV.setBackgroundColor(curEntry.getP1BackgroundColor());
+			p1FlagTV.setBackgroundColor(curEntry.getP1BackgroundColor());			
+			p2NameTV.setBackgroundColor(curEntry.getP2BackgroundColor());
+			p2RaceTV.setBackgroundColor(curEntry.getP2BackgroundColor());
+			p2FlagTV.setBackgroundColor(curEntry.getP2BackgroundColor());
 			
 			curMaps = curEntry.getMaps();
 			for(int j = 0; j < curMaps.size(); j++){
@@ -101,9 +96,9 @@ public class ViewGroupDetail extends Activity {
 				mapNameTV = (TextView) currentRow.findViewById(R.id.map_name);
 				
 				mapNameTV.setText(curMap.getMapName());
-				if(curMap.isP1Wins())
+				if(curMap.doesPlayer1Win())
 					p1MapWinTV.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.mapwin, 0);
-				if(curMap.isP2Wins())
+				if(curMap.doesPlayer2Win())
 					p2MapWinTV.setCompoundDrawablesWithIntrinsicBounds(R.drawable.mapwin, 0, 0, 0);
 			}
 		}
@@ -160,6 +155,8 @@ public class ViewGroupDetail extends Activity {
 		initPlayerRows(data);
 	}
 
+	@SuppressWarnings("deprecation")
+	@SuppressLint("NewApi")
 	private void initPlayerRows(ViewHolderData data) {
 		ViewGroup currentContent = (ViewGroup) findViewById(android.R.id.content);
 		TableLayout tl = (TableLayout) ((ScrollView)currentContent.getChildAt(0)).getChildAt(0);
@@ -167,8 +164,8 @@ public class ViewGroupDetail extends Activity {
 		TextView rankTV, flagTV, raceTV, nameTV, matchTV, gameTV;
 		Drawable flagD, raceD;
 		for (int i = 0; i < tl.getChildCount() - 7; i++) {
-			flagD = new BitmapDrawable(getResources(), data.getFlag()[i]);
-			raceD = new BitmapDrawable(getResources(), data.getRace()[i]);
+			flagD = data.getFlag()[i];
+			raceD = data.getRace()[i];
 
 			nameToFlag.put(data.getPlayerName()[i], flagD);
 			nameToRace.put(data.getPlayerName()[i], raceD);
@@ -182,21 +179,30 @@ public class ViewGroupDetail extends Activity {
 					.findViewById(R.id.group_player_match_score);
 			gameTV = (TextView) currentRow
 					.findViewById(R.id.group_player_map_score);
-
+			
 			rankTV.setText(data.getRank()[i]);
-			rankTV.setBackgroundColor(data.getBackgroundColor()[i]);
 			flagTV.setCompoundDrawablesWithIntrinsicBounds(flagD, null, null,
 					null);
-			flagTV.setBackgroundColor(data.getBackgroundColor()[i]);
 			raceTV.setCompoundDrawablesWithIntrinsicBounds(raceD, null, null,
 					null);
-			raceTV.setBackgroundColor(data.getBackgroundColor()[i]);
 			nameTV.setText(data.getPlayerName()[i]);
-			nameTV.setBackgroundColor(data.getBackgroundColor()[i]);
 			matchTV.setText(data.getMatchScore()[i]);
-			matchTV.setBackgroundColor(data.getBackgroundColor()[i]);
 			gameTV.setText(data.getMapScore()[i]);
-			gameTV.setBackgroundColor(data.getBackgroundColor()[i]);
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN){
+				gameTV.setBackground(data.getBackgroundColor()[i]);
+				matchTV.setBackground(data.getBackgroundColor()[i]);
+				nameTV.setBackground(data.getBackgroundColor()[i]);
+				raceTV.setBackground(data.getBackgroundColor()[i]);
+				flagTV.setBackground(data.getBackgroundColor()[i]);
+				rankTV.setBackground(data.getBackgroundColor()[i]);
+			} else{
+				gameTV.setBackgroundDrawable(data.getBackgroundColor()[i]);
+				matchTV.setBackgroundDrawable(data.getBackgroundColor()[i]);
+				nameTV.setBackgroundDrawable(data.getBackgroundColor()[i]);
+				raceTV.setBackgroundDrawable(data.getBackgroundColor()[i]);
+				flagTV.setBackgroundDrawable(data.getBackgroundColor()[i]);
+				rankTV.setBackgroundDrawable(data.getBackgroundColor()[i]);
+			}
 		}
 	}
 

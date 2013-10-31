@@ -24,7 +24,7 @@
 
     <TextView
         android:id="@+id/group_player_name"
-        android:layout_weight="1"
+        android:layout_weight="5"
         android:gravity="center"
         android:textColor="#000000" />
 

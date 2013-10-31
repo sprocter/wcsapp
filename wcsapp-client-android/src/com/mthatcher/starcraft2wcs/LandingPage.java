@@ -43,7 +43,7 @@ public class LandingPage extends Activity {
 	public final static String GROUP_DATA_EXTRA = "com.mthatcher.starcraft2wcs.GROUP_DATA_EXTRA";
 	public final static String ENTRY_ID_EXTRA = "com.mthatcher.starcraft2wcs.ENTRY_ID_EXTRA";
 	private static final int ENTRY_ID_TAG = R.id.ENTRY_ID_TAG;
-	private final String DATA_URL = "http://skorchedearth.com/sandbox/wcsapp/wcsapp-server/sqlite.gz";
+	private final String DATA_URL = "https://objects.dreamhost.com/sc2wcsapp/data/sqlite.db.gz";
 	private final String DEBUG_TAG = "LANDING PAGE";
 	public int startPos;
 
@@ -98,7 +98,7 @@ public class LandingPage extends Activity {
 	public void loadGroupDetail(View view) {
 		Intent intent = new Intent(this, ViewGroupDetail.class);
 		// TODO: Use application class for this instead of parcelable
-		intent.putExtra(GROUP_DATA_EXTRA, new ViewHolderData((ViewHolder) view.getTag()));
+		AppClass.setVhd(new ViewHolderData((ViewHolder) view.getTag()));
 		intent.putExtra(ENTRY_ID_EXTRA, (Integer) view.getTag(ENTRY_ID_TAG));
 		startActivity(intent);
 	}
@@ -189,8 +189,6 @@ public class LandingPage extends Activity {
 
 		private void getBracketView(ViewHolder holder, ScheduleEntry item,
 				View convertView) {
-			int winnerColor = 0xFFCCFFCC;
-			int loserColor = 0x00FFFFFF;
 			int numPlayers = item.getNumPlayers();
 			holder.groupName.setText(item.getName());
 			holder.groupName.setCompoundDrawablesWithIntrinsicBounds(
@@ -241,28 +239,18 @@ public class LandingPage extends Activity {
 				holder.mapScore.get(p2i).setText(
 						EntryUtil.getWinsStr(2, player));
 
-				if (player.getWinner() == 1) {
-					holder.playerName.get(p1i).setBackgroundColor(winnerColor);
-					holder.race.get(p1i).setBackgroundColor(winnerColor);
-					holder.flag.get(p1i).setBackgroundColor(winnerColor);
-					holder.playerName.get(p2i).setBackgroundColor(loserColor);
-					holder.race.get(p2i).setBackgroundColor(loserColor);
-					holder.flag.get(p2i).setBackgroundColor(loserColor);
-				} else if (player.getWinner() == 2) {
-					holder.playerName.get(p1i).setBackgroundColor(loserColor);
-					holder.race.get(p1i).setBackgroundColor(loserColor);
-					holder.flag.get(p1i).setBackgroundColor(loserColor);
-					holder.playerName.get(p2i).setBackgroundColor(winnerColor);
-					holder.race.get(p2i).setBackgroundColor(winnerColor);
-					holder.flag.get(p2i).setBackgroundColor(winnerColor);
-				} else {
-					holder.playerName.get(p1i).setBackgroundColor(loserColor);
-					holder.race.get(p1i).setBackgroundColor(loserColor);
-					holder.flag.get(p1i).setBackgroundColor(loserColor);
-					holder.playerName.get(p2i).setBackgroundColor(loserColor);
-					holder.race.get(p2i).setBackgroundColor(loserColor);
-					holder.flag.get(p2i).setBackgroundColor(loserColor);
-				}
+				holder.playerName.get(p1i).setBackgroundColor(
+						player.getP1BackgroundColor());
+				holder.race.get(p1i).setBackgroundColor(
+						player.getP1BackgroundColor());
+				holder.flag.get(p1i).setBackgroundColor(
+						player.getP1BackgroundColor());
+				holder.playerName.get(p2i).setBackgroundColor(
+						player.getP2BackgroundColor());
+				holder.race.get(p2i).setBackgroundColor(
+						player.getP2BackgroundColor());
+				holder.flag.get(p2i).setBackgroundColor(
+						player.getP2BackgroundColor());
 			}
 		}
 
@@ -297,7 +285,7 @@ public class LandingPage extends Activity {
 			for (i = 0; i < numPlayers; i++) {
 				GroupEntry player = (GroupEntry) item.getPlayer(i);
 				bgColor = player.getBackgroundColor();
-				if (player.getPlace() > 0) // TODO: Extract this to EntryUtil
+				if (player.getPlace() > 0)
 					holder.rank.get(i).setText(
 							Integer.toString(player.getPlace()));
 				else {
@@ -329,11 +317,6 @@ public class LandingPage extends Activity {
 
 	private class DownloadDataAndUpdateDBTask extends
 			AsyncTask<String, Integer, ArrayList<ScheduleEntry>> {
-//		private Context context;
-
-//		public DownloadDataAndUpdateDBTask(Context applicationContext) {
-//			context = applicationContext;
-//		}
 
 		@Override
 		protected ArrayList<ScheduleEntry> doInBackground(String... urls) {
@@ -422,10 +405,10 @@ public class LandingPage extends Activity {
 				}
 				entry.setIsGroupEntry(false);
 				while (!c.isAfterLast()) {
-					entry.addPlayer(new BracketEntry(c.getString(2),
-							c.getString(3), c.getString(4), c.getString(5),
-							c.getString(6), c.getString(7), c.getString(1),
-							c.getString(9), c.getString(10)));
+					entry.addPlayer(new BracketEntry(c.getString(2), c
+							.getString(3), c.getString(4), c.getString(5), c
+							.getString(6), c.getString(7), c.getString(1), c
+							.getString(9), c.getString(10)));
 					c.move(1);
 				}
 				c.close();

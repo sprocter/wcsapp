@@ -51,11 +51,11 @@ public class GroupEntry implements Entry{
 	public int getBackgroundColor() {
 		switch (result) {
 		case WIN:
-			return 0xFFCCFFCC;
+			return EntryUtil.getWinnerColor();
 		case LOSE:
-			return 0xFFFFDDAA;
+			return EntryUtil.getDownColor();
 		case STAY:
-			return 0xFFEEEE88;
+			return EntryUtil.getStayColor();
 		default:
 			return 0xFFFFFFFF;
 		}

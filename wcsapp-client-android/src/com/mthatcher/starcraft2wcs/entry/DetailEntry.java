@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import android.graphics.drawable.Drawable;
 
 public class DetailEntry implements Entry{
+	
 	private ArrayList<MapDetail> maps;
 	private String player1Name;
 	private String player2Name;
@@ -74,9 +75,9 @@ public class DetailEntry implements Entry{
 	}
 
 	public void addMapDetail(MapDetail map) {
-		if(map.isP1Wins())
+		if(map.doesPlayer1Win())
 			player1Wins++;
-		if(map.isP2Wins())
+		if(map.doesPlayer2Win())
 			player2Wins++;
 		maps.add(map);
 	}
@@ -104,12 +105,26 @@ public class DetailEntry implements Entry{
 			return mapName;
 		}
 
-		public boolean isP1Wins() {
+		public boolean doesPlayer1Win() {
 			return p1Wins;
 		}
 
-		public boolean isP2Wins() {
+		public boolean doesPlayer2Win() {
 			return p2Wins;
 		}
+	}
+
+	public int getP1BackgroundColor() {
+		if(doesPlayer1Win())
+			return EntryUtil.getWinnerColor();
+		else
+			return EntryUtil.getLoserColor();
+	}
+	
+	public int getP2BackgroundColor() {
+		if(doesPlayer2Win())
+			return EntryUtil.getWinnerColor();
+		else
+			return EntryUtil.getLoserColor();
 	}
 }

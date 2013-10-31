@@ -88,6 +88,20 @@ public class BracketEntry implements Entry {
 	public Race getP2Race() {
 		return p2Race;
 	}
+	
+	public int getP1BackgroundColor() {
+		if(winner == 1)
+			return EntryUtil.getWinnerColor();
+		else
+			return EntryUtil.getLoserColor();
+	}
+	
+	public int getP2BackgroundColor() {
+		if(winner == 2)
+			return EntryUtil.getWinnerColor();
+		else
+			return EntryUtil.getLoserColor();
+	}
 
 	public static ViewHolder getHolder(View convertView) {
 		ViewHolder holder = new ViewHolder();

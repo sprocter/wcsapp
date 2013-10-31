@@ -174,7 +174,11 @@ public class EntryUtil {
 		else if(wins.equalsIgnoreCase("q"))
 			return 1;
 		else
-			return Integer.parseInt(wins); // TODO: Handle this throwing an exception
+			try {
+				return Integer.parseInt(wins);
+			} catch(NumberFormatException e) {
+				return 0;
+			}
 	}
 	
 	public static String getWinsStr(int playerNum, BracketEntry player){
@@ -194,5 +198,21 @@ public class EntryUtil {
 				return Integer.toString(player.getP1wins());
 			else
 				return Integer.toString(player.getP2wins());
+	}
+
+	public static int getWinnerColor() {
+		return 0xFFCCFFCC;
+	}
+	
+	public static int getLoserColor() {
+		return 0x00FFFFFF;
+	}
+	
+	public static int getDownColor() {
+		return 0xFFFFDDAA;
+	}
+
+	public static int getStayColor() {
+		return 0xFFEEEE88;
 	}
 }

@@ -3,57 +3,35 @@ package com.mthatcher.starcraft2wcs.entry;
 import java.util.ArrayList;
 
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Parcel;
-import android.os.Parcelable;
+import android.graphics.drawable.Drawable;
 import android.widget.TextView;
 
-public class ViewHolderData implements Parcelable{
-	private boolean isGroupHolder;
+public class ViewHolderData{
 	private String groupName;
 	private String date;
 	private String[] rank;
-	private Bitmap[] flag;
-	private Bitmap[] race;
+	private Drawable[] flag;
+	private Drawable[] race;
 	private String[] playerName;
 	private String[] matchScore;
 	private String[] mapScore;
-	private int[] backgroundColor;
+	private Drawable[] backgroundColor;
 	private int size;
 	
-	public ViewHolderData(Parcel in) {
-		isGroupHolder = in.readInt() == 1 ? true : false;
-		groupName = in.readString();
-		date = in.readString();
-		rank = in.createStringArray();
-		flag = in.createTypedArray(Bitmap.CREATOR);
-		race = in.createTypedArray(Bitmap.CREATOR);
-		playerName = in.createStringArray();
-		matchScore = in.createStringArray();
-		mapScore = in.createStringArray();
-		backgroundColor = in.createIntArray();
-		size = in.readInt();
-	}
-	
 	public ViewHolderData(ViewHolder v) {
-		isGroupHolder = v.isGroupHolder;
 		groupName = v.groupName.getText().toString();
 		date = v.date.getText().toString();
 		rank = getStringArray(v.rank);
-		flag = getBitmapArray(v.flag);
-		race = getBitmapArray(v.race);
+		flag = getDrawableArray(v.flag);
+		race = getDrawableArray(v.race);
 		playerName = getStringArray(v.playerName);
 		matchScore = getStringArray(v.matchScore);
 		mapScore = getStringArray(v.mapScore);
-		backgroundColor = getColorArray(v.playerName);
+		backgroundColor = getBackground(v.playerName);
 		size = v.size;
 	}
-
-	public boolean isGroupHolder() {
-		return isGroupHolder;
-	}
-
+	
 	public String getGroupName() {
 		return groupName;
 	}
@@ -66,11 +44,11 @@ public class ViewHolderData implements Parcelable{
 		return rank;
 	}
 
-	public Bitmap[] getFlag() {
+	public Drawable[] getFlag() {
 		return flag;
 	}
 
-	public Bitmap[] getRace() {
+	public Drawable[] getRace() {
 		return race;
 	}
 
@@ -86,43 +64,13 @@ public class ViewHolderData implements Parcelable{
 		return mapScore;
 	}
 
-	public int[] getBackgroundColor() {
+	public Drawable[] getBackgroundColor() {
 		return backgroundColor;
 	}
 	
 	public int getSize() {
 		return size;
 	}
-	
-	@Override
-	public int describeContents() {
-		return 0;
-	}
-
-	@Override
-	public void writeToParcel(Parcel out, int flags) {
-		out.writeInt(isGroupHolder ? 1 : 0); // Android has no "writeBoolean(...)" :(
-		out.writeString(groupName);
-		out.writeString(date);
-		out.writeStringArray(rank);
-		out.writeTypedArray(flag, flags);
-		out.writeTypedArray(race, flags);
-		out.writeStringArray(playerName);
-		out.writeStringArray(matchScore);
-		out.writeStringArray(mapScore);
-		out.writeIntArray(backgroundColor);
-		out.writeInt(size);
-	}
-	
-    public static final Parcelable.Creator<ViewHolderData> CREATOR = new Parcelable.Creator<ViewHolderData>() {
-        public ViewHolderData createFromParcel(Parcel in) {
-            return new ViewHolderData(in);
-        }
-
-        public ViewHolderData[] newArray(int size) {
-            return new ViewHolderData[size];
-        }
-    };
 
 	private String[] getStringArray(ArrayList<TextView> list) {
 		String[] ret = new String[list.size()];
@@ -132,18 +80,18 @@ public class ViewHolderData implements Parcelable{
 		return ret;
 	}
 	
-	private int[] getColorArray(ArrayList<TextView> list) {
-		int[] ret = new int[list.size()];
+	private Drawable[] getBackground(ArrayList<TextView> list) {
+		Drawable[] ret = new Drawable[list.size()];
 		for(int i = 0; i < list.size(); i++){
-			ret[i] = ((ColorDrawable)list.get(i).getBackground()).getColor();
+			ret[i] = list.get(i).getBackground();
 		}
 		return ret;
 	}
 	
-	private Bitmap[] getBitmapArray(ArrayList<TextView> list) {
-		Bitmap[] ret = new Bitmap[list.size()];
+	private Drawable[] getDrawableArray(ArrayList<TextView> list) {
+		Drawable[] ret = new Drawable[list.size()];
 		for(int i = 0; i < list.size(); i++){
-			ret[i] = ((BitmapDrawable)list.get(i).getCompoundDrawables()[0]).getBitmap();
+			ret[i] = list.get(i).getCompoundDrawables()[0];
 		}
 		return ret;
 	}
