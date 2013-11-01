@@ -5,7 +5,8 @@
     android:layout_height="match_parent"
     android:padding="15dp"
     android:shrinkColumns="*"
-    android:stretchColumns="*" >
+    android:stretchColumns="*"
+    android:onClick="loadDetail">
 
     <include layout="@layout/schedule_entry_name_row" />
 

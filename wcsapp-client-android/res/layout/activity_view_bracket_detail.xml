@@ -1,0 +1,55 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_weight="1">
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:shrinkColumns="*"
+        android:stretchColumns="*"
+        tools:context=".ViewGroupDetail" >
+
+        <include layout="@layout/schedule_entry_name_row" />
+
+        <include layout="@layout/schedule_entry_date_row" />
+
+        <include
+            android:id="@+id/group_row_1"
+            layout="@layout/bracket_stage_row" />
+
+        <include
+            android:id="@+id/group_row_2"
+            layout="@layout/bracket_stage_row" />
+
+        <include
+            android:id="@+id/group_row_3"
+            layout="@layout/bracket_stage_row" />
+
+        <include
+            android:id="@+id/group_row_4"
+            layout="@layout/bracket_stage_row" />
+
+        <include
+            android:id="@+id/bracket_detail_1"
+            layout="@layout/match_detail_tbl" />
+
+        <include
+            android:id="@+id/bracket_detail_2"
+            layout="@layout/match_detail_tbl" />
+
+        <include
+            android:id="@+id/bracket_detail_3"
+            layout="@layout/match_detail_tbl" />
+
+        <include
+            android:id="@+id/bracket_detail_4"
+            layout="@layout/match_detail_tbl" />
+    </TableLayout>
+
+</ScrollView>

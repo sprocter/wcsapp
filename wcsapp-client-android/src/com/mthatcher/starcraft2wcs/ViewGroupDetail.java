@@ -9,7 +9,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,25 +31,32 @@ public class ViewGroupDetail extends Activity {
 
 	private HashMap<String, Drawable> nameToRace;
 	private HashMap<String, Drawable> nameToFlag;
-
+	private ArrayList<DetailEntry> entries;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		nameToRace = new HashMap<String, Drawable>();
 		nameToFlag = new HashMap<String, Drawable>();
-		setContentView(R.layout.activity_view_group_detail);
 		setupActionBar();
 		Intent intent = getIntent();
-		initKnownValues(AppClass.getVhd());
-		initNewValues(intent.getExtras().getInt(LandingPage.ENTRY_ID_EXTRA));
+		ViewHolderData vhd = AppClass.getVhd();
+		entries = getDetailEntries(intent.getExtras().getInt(LandingPage.ENTRY_ID_EXTRA));
+		int numPlayers = vhd.isGroupEntry() ? vhd.getPlayerName().length : vhd.getPlayerName().length / 2;
+		if(vhd.isGroupEntry()){
+			setContentView(R.layout.activity_view_group_detail);
+		} else {
+			setContentView(R.layout.activity_view_bracket_detail);
+		}
+		initKnownValues(vhd, numPlayers);
+		initNewValues(numPlayers);
 	}
 
-	private void initNewValues(int entryid) {
-		ArrayList<DetailEntry> entries = getDetailEntries(entryid);
-		displayDetailEntries(entries);
+	private void initNewValues(int numPlayers) {
+		displayDetailEntries(entries, numPlayers);
 	}
 
-	private void displayDetailEntries(ArrayList<DetailEntry> entries) {
+	private void displayDetailEntries(ArrayList<DetailEntry> entries, int numPlayers) {
 		ViewGroup currentContent = (ViewGroup) findViewById(android.R.id.content);
 		TableLayout tl = (TableLayout) ((ScrollView)currentContent.getChildAt(0)).getChildAt(0);
 		TableRow currentRow;
@@ -58,9 +64,10 @@ public class ViewGroupDetail extends Activity {
 		DetailEntry curEntry;
 		ArrayList<MapDetail> curMaps;
 		MapDetail curMap;
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < entries.size(); i++) {
 			curEntry = entries.get(i);
-			currentRow = (TableRow) ((TableLayout)tl.getChildAt(i + 6)).getChildAt(0);
+			
+			currentRow = (TableRow) ((TableLayout)tl.getChildAt(i + 2 + numPlayers)).getChildAt(0);
 			p1NameTV = (TextView) currentRow.findViewById(R.id.group_detail_1_name);
 			p1RaceTV = (TextView) currentRow.findViewById(R.id.group_detail_1_race);
 			p1FlagTV = (TextView) currentRow.findViewById(R.id.group_detail_1_flag);
@@ -90,7 +97,7 @@ public class ViewGroupDetail extends Activity {
 			for(int j = 0; j < curMaps.size(); j++){
 				curMap = curMaps.get(j);
 				
-				currentRow = (TableRow) ((TableLayout)tl.getChildAt(i + 6)).getChildAt(1 + j);
+				currentRow = (TableRow) ((TableLayout)tl.getChildAt(i + 2 + numPlayers)).getChildAt(1 + j);
 				p1MapWinTV = (TextView) currentRow.findViewById(R.id.player_1_map_win);
 				p2MapWinTV = (TextView) currentRow.findViewById(R.id.player_2_map_win);
 				mapNameTV = (TextView) currentRow.findViewById(R.id.map_name);
@@ -136,14 +143,15 @@ public class ViewGroupDetail extends Activity {
 		return entries;
 	}
 
-	private void initKnownValues(ViewHolderData data) {
+	private void initKnownValues(ViewHolderData data, int numRows) {
 		/*
 		 * In the normal case we'll have 4 players, we want to avoid as much
 		 * work as possible for that normal case so we use != instead of < or >
 		 * here.
 		 */
-		if (data.getPlayerName().length != 4) {
-			adjustTableSize(data);
+		int expectedNumPlayers = data.isGroupEntry() ? 4 : 8;
+		if (data.getPlayerName().length != expectedNumPlayers) {
+			adjustTableSize(data, numRows);
 		}
 
 		TextView groupNameTV = (TextView) findViewById(R.id.schedule_name);
@@ -152,12 +160,20 @@ public class ViewGroupDetail extends Activity {
 		groupNameTV.setText(data.getGroupName());
 		dateTV.setText(data.getDate());
 
-		initPlayerRows(data);
+		if(data.isGroupEntry())
+			initGroupRows(data);
+		else
+			initBracketRows(data);
+	}
+	
+	private void initBracketRows(ViewHolderData data) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@SuppressWarnings("deprecation")
 	@SuppressLint("NewApi")
-	private void initPlayerRows(ViewHolderData data) {
+	private void initGroupRows(ViewHolderData data) {
 		ViewGroup currentContent = (ViewGroup) findViewById(android.R.id.content);
 		TableLayout tl = (TableLayout) ((ScrollView)currentContent.getChildAt(0)).getChildAt(0);
 		TableRow currentRow;
@@ -206,26 +222,51 @@ public class ViewGroupDetail extends Activity {
 		}
 	}
 
-	private void adjustTableSize(ViewHolderData data) {
+	private void adjustTableSize(ViewHolderData data, int numRows) {
 		// Get the current view
 		ViewGroup currentContent = (ViewGroup) findViewById(android.R.id.content);
 
 		// Get the table held by the current view
-		TableLayout tl = (TableLayout) currentContent.getChildAt(0);
+		TableLayout tl = (TableLayout) ((ScrollView)currentContent.getChildAt(0)).getChildAt(0);
 
 		LayoutInflater vi = LayoutInflater.from(getBaseContext());
 
+		// Strip match detail rows (we'll re-add them later once we know how
+		// many entries we have)
+		int numMatches = data.isGroupEntry() ? 5 : 4;
+		for(int i = 0; i < numMatches; i++)
+			tl.removeViewAt(tl.getChildCount() - 1);
+		
 		// Add more rows if we need them. We add 2 to the number of
 		// players (name / date rows) to get the number of rows we need
-		while (tl.getChildCount() < data.getPlayerName().length + 2) {
-			View newRow = vi.inflate(R.layout.group_stage_row, null);
+		while (tl.getChildCount() < numRows + 2) {
+			View newRow;
+			if(data.isGroupEntry())
+				newRow = vi.inflate(R.layout.group_stage_row, null);
+			else 
+				newRow = vi.inflate(R.layout.bracket_stage_row, null);
 			tl.addView(newRow);
 		}
 
 		// Remove rows if we had too many...
-		while (tl.getChildCount() > data.getPlayerName().length + 2) {
+		while (tl.getChildCount() > numRows + 2) {
 			tl.removeViewAt(tl.getChildCount() - 1);
 		}
+		
+		// Re-add match detail rows
+		for(int i = 0; i < entries.size(); i++){
+			TableLayout newRow = (TableLayout) vi.inflate(R.layout.match_detail_tbl, null);
+			// Most series are best-of-three, but if this one is different we
+			// have to adjust its size
+			if(entries.get(i).getMaps().size() != 3){
+				while(newRow.getChildCount() - 1 < entries.get(i).getMaps().size())
+					newRow.addView(vi.inflate(R.layout.map_detail_row, null));
+				while(newRow.getChildCount() - 1 > entries.get(i).getMaps().size())
+					newRow.removeViewAt(newRow.getChildCount() - 1);
+			}
+			tl.addView(newRow);
+		}
+		
 	}
 
 	/**

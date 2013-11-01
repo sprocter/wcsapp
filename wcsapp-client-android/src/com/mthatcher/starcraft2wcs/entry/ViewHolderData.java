@@ -2,12 +2,11 @@ package com.mthatcher.starcraft2wcs.entry;
 
 import java.util.ArrayList;
 
-import android.graphics.Bitmap;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.widget.TextView;
 
 public class ViewHolderData{
+	private boolean isGroupEntry;
 	private String groupName;
 	private String date;
 	private String[] rank;
@@ -29,6 +28,7 @@ public class ViewHolderData{
 		matchScore = getStringArray(v.matchScore);
 		mapScore = getStringArray(v.mapScore);
 		backgroundColor = getBackground(v.playerName);
+		isGroupEntry = v.isGroupHolder;
 		size = v.size;
 	}
 	
@@ -70,6 +70,10 @@ public class ViewHolderData{
 	
 	public int getSize() {
 		return size;
+	}
+	
+	public boolean isGroupEntry() {
+		return isGroupEntry;
 	}
 
 	private String[] getStringArray(ArrayList<TextView> list) {

@@ -6,7 +6,7 @@
     android:padding="15dp"
     android:shrinkColumns="*"
     android:stretchColumns="*" 
-    android:onClick="loadGroupDetail">
+    android:onClick="loadDetail">
 
     <include layout="@layout/schedule_entry_name_row" />
 

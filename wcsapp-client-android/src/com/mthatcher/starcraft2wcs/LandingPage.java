@@ -95,7 +95,7 @@ public class LandingPage extends Activity {
 		listView.setSelection(startPos);
 	}
 
-	public void loadGroupDetail(View view) {
+	public void loadDetail(View view) {
 		Intent intent = new Intent(this, ViewGroupDetail.class);
 		// TODO: Use application class for this instead of parcelable
 		AppClass.setVhd(new ViewHolderData((ViewHolder) view.getTag()));
