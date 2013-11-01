@@ -56,7 +56,6 @@ def handleMatchList(entry):
             handleMatch(param.value.filter(True, r'MatchMaps')[0], matchTitle)
 
 def handleMatch(match, matchTitle):
-    matchid = len(matches) + 1
     newMatch = DBEntry()
     newMatch.matchtype = "group"
     newMatch.scheduleid = lastSchedule.id
@@ -66,7 +65,14 @@ def handleMatch(match, matchTitle):
     newMatch.player2race = getStr(match, "player2race")
     newMatch.player1flag = "-"
     newMatch.player2flag = "-"
-    
+    p1wins, p2wins = handleGame(match)
+    newMatch.player1wins = p1wins
+    newMatch.player2wins = p2wins
+    newMatch.winner = getInt(match, "winner")
+    matches.append(newMatch)
+
+def handleGame(match):
+    matchid = len(matches) + 1
     i = 1
     p1wins = 0
     p2wins = 0
@@ -83,11 +89,7 @@ def handleMatch(match, matchTitle):
         newGame.vodlink = getStr(match, "vodgame" + str(i))
         i = i + 1
         games.append(newGame)
-
-    newMatch.player1wins = p1wins
-    newMatch.player2wins = p2wins
-    newMatch.winner = getInt(match, "winner")
-    matches.append(newMatch)
+    return p1wins, p2wins
 
 def getDivisionFromTitle(title):
     if ("Challenger" in title) or ("Code A" in title): 
@@ -200,11 +202,11 @@ def handleBracket(wikicode, bracketType, title):
                                title)
     
 def handleBracketEntry(entry, prefix1, prefix2, prefixg, title):
-    # This somewhat ugly block of code will be replaced when game parsing is implemented
     if entry.has(prefixg + 'details'):
-        handleScheduleEntry(entry.get(prefixg + 'details').value.filter_templates(matches=r'BracketMatchSummary')[0],
-                            title, 
+        bracketMatchSummary = entry.get(prefixg + 'details').value.filter_templates(matches=r'BracketMatchSummary')[0]
+        handleScheduleEntry(bracketMatchSummary, title, 
                             unicode(entry.get(prefix1[:2]).value).strip() if entry.has(prefix1[:2]) else unicode(entry.name).strip())
+        handleGame(bracketMatchSummary)
     newMatch = DBEntry()
     newMatch.matchtype = 'bracket'
     newMatch.scheduleid = lastSchedule.id
