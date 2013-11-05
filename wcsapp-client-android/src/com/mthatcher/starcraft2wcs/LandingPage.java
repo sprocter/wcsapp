@@ -350,7 +350,7 @@ public class LandingPage extends Activity {
 			c.moveToFirst();
 			long currentTime = System.currentTimeMillis();
 			boolean startPosFound = false;
-			while (!c.isLast()) {
+			while (!c.isAfterLast()) {
 				if (!startPosFound
 						&& Long.parseLong(c.getString(1)) > currentTime) {
 					startPosFound = true;
