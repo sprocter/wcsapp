@@ -92,15 +92,15 @@ public class ViewGroupDetail extends Activity {
 
 			p1NameTV.setText(curEntry.getPlayer1Name());
 			p1RaceTV.setCompoundDrawablesWithIntrinsicBounds(
-					curEntry.getPlayer1Race(), null, null, null);
+					nameToRace.get(curEntry.getPlayer1Name()), null, null, null);
 			p1FlagTV.setCompoundDrawablesWithIntrinsicBounds(
-					curEntry.getPlayer1Flag(), null, null, null);
+					nameToFlag.get(curEntry.getPlayer1Name()), null, null, null);
 			p1WinsTV.setText(String.valueOf(curEntry.getPlayer1Wins()));
 			p2WinsTV.setText(String.valueOf(curEntry.getPlayer2Wins()));
 			p2FlagTV.setCompoundDrawablesWithIntrinsicBounds(
-					curEntry.getPlayer2Flag(), null, null, null);
+					nameToFlag.get(curEntry.getPlayer2Name()), null, null, null);
 			p2RaceTV.setCompoundDrawablesWithIntrinsicBounds(
-					curEntry.getPlayer2Race(), null, null, null);
+					nameToRace.get(curEntry.getPlayer2Name()), null, null, null);
 			p2NameTV.setText(curEntry.getPlayer2Name());
 
 			p1NameTV.setBackgroundColor(curEntry.getP1BackgroundColor());
@@ -222,8 +222,19 @@ public class ViewGroupDetail extends Activity {
 		for (int i = 0; i < tl.getChildCount() - 2; i++) {
 			p1 = i * 2;
 			p2 = p1 + 1;
+
+			flag1D = data.getFlag()[p1];
+			flag2D = data.getFlag()[p2];
+			race1D = data.getRace()[p1];
+			race2D = data.getRace()[p2];
+			
 			currentRow = (TableRow) tl.getChildAt(i + 2);
 
+			nameToFlag.put(data.getPlayerName()[p1], flag1D);
+			nameToRace.put(data.getPlayerName()[p1], race1D);
+			nameToFlag.put(data.getPlayerName()[p2], flag2D);
+			nameToRace.put(data.getPlayerName()[p2], race2D);
+			
 			flag1D = data.getFlag()[p1];
 			flag2D = data.getFlag()[p2];
 			race1D = data.getRace()[p1];
