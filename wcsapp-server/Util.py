@@ -76,6 +76,8 @@ class Constants:
     correct, but I think it fits here.
     """
     prefixes = {}
+    prefixes['2'] = []
+    prefixes['2'].append(('R1D1', 'R1D2', 'R1G1'))
     prefixes['c'] = []
     prefixes['c'].append(('R1D1', 'R1D2', 'R1G1'))
     prefixes['c'].append(('R1D3', 'R1D4', 'R1G2'))
@@ -93,6 +95,22 @@ class Constants:
     prefixes['8'].append(('R2W1', 'R2W2', 'R2G1'))
     prefixes['8'].append(('R2W3', 'R2W4', 'R2G2'))
     prefixes['8'].append(('R3W1', 'R3W2', 'R3G1'))
+    prefixes['16'] = []
+    prefixes['16'].append(('R1D1', 'R1D2', 'R1G1'))
+    prefixes['16'].append(('R1D3', 'R1D4', 'R1G2'))
+    prefixes['16'].append(('R1D5', 'R1D6', 'R1G3'))
+    prefixes['16'].append(('R1D7', 'R1D8', 'R1G4'))
+    prefixes['16'].append(('R1D9', 'R1D10', 'R1G5'))
+    prefixes['16'].append(('R1D11', 'R1D12', 'R1G6'))
+    prefixes['16'].append(('R1D13', 'R1D14', 'R1G7'))
+    prefixes['16'].append(('R1D15', 'R1D16', 'R1G8'))
+    prefixes['16'].append(('R2W1', 'R2W2', 'R2G1'))
+    prefixes['16'].append(('R2W3', 'R2W4', 'R2G2'))
+    prefixes['16'].append(('R2W5', 'R2W6', 'R2G3'))
+    prefixes['16'].append(('R2W7', 'R2W8', 'R2G4'))
+    prefixes['16'].append(('R3W1', 'R3W2', 'R3G1'))
+    prefixes['16'].append(('R3W3', 'R3W4', 'R3G2'))
+    prefixes['16'].append(('R4W1', 'R4W2', 'R4G1'))
     
     """
     Holy crap, dealing with time zones / parsing time is a huge pain compared to,
@@ -159,9 +177,10 @@ class Constants:
              '2013 WCS Season 3 Europe/Challenger',
              '2013 WCS Season 3 Europe/Challenger/Group Stage',
              '2013 WCS Season 3 Korea GSL/Challenger',
-             '2013 WCS Season 3 Korea GSL/Up and Down Matches'
+             '2013 WCS Season 3 Korea GSL/Up and Down Matches',
              '2013 WCS Season 3 Europe/Challenger/Group Stage',
-             '2013 WCS Season 3 America/Challenger/Group Stage']
+             '2013 WCS Season 3 America/Challenger/Group Stage',
+             '2013 WCS Grand Finals']
     
     Schedule = {}
     Schedule['a'] = {}
@@ -199,7 +218,7 @@ class Constants:
     Schedule['k']['x']['x'] = []
     Schedule['x'] = {}
     Schedule['x']['x'] = {}
-    Schedule['x']['x']['group'] = [] # Vin Diesel joke?
+    Schedule['x']['x']['group'] = []
     
 """
 I straight up do not understand this class, or the strip_tags function below

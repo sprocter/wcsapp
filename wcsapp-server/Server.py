@@ -32,8 +32,10 @@ def handlePage(wikicode, title):
         handleBracket(wikicode.filter(True, r'ChallengerBracket'), 'c', title)
     else:
         handleBracket(wikicode.filter(True, r'WCSChallengerBracket'), 'c', title)
+    handleBracket(wikicode.filter(True, r'16SEBracket'), '16', title)
     handleBracket(wikicode.filter(True, r'8SEBracket'), '8', title)
     handleBracket(wikicode.filter(True, r'4SEBracket'), '4', title)
+    handleBracket(wikicode.filter(True, r'2SEBracket'), '2', title)
 
 def handleGroup(wikicode, title):
     for entry in wikicode:
