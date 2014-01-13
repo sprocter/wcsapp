@@ -162,7 +162,7 @@ class Constants:
         for tz_code in tz_descr[1:]:
             tzd[tz_code] = tz_offset
             
-    pageNames = ['2013 WCS Season 3',
+    '''pageNames = ['2013 WCS Season 3',
              '2013 WCS Season 3 America/Premier/Ro32',
              '2013 WCS Season 3 America/Premier/Ro16',
              '2013 WCS Season 3 America/Premier',
@@ -180,10 +180,19 @@ class Constants:
              '2013 WCS Season 3 Korea GSL/Up and Down Matches',
              '2013 WCS Season 3 Europe/Challenger/Group Stage',
              '2013 WCS Season 3 America/Challenger/Group Stage',
-             '2013 WCS Grand Finals']
+             '2013 WCS Grand Finals']'''
+    pageNames = ['2014 Global StarCraft II League Season 1/Code A']
+    
+    
     
     Schedule = {}
-    Schedule['a'] = {}
+    Schedule['k'] = {}
+    Schedule['k']['c'] = {}
+    Schedule['k']['c']['Ro40'] = []
+    Schedule['k']['c']['Ro24'] = []
+    Schedule['k']['c']['group'] = []
+    
+'''    Schedule['a'] = {}
     Schedule['a']['c'] = {}
     Schedule['a']['c']['Ro40'] = []
     Schedule['a']['c']['Ro24'] = []
@@ -205,11 +214,6 @@ class Constants:
     Schedule['e']['p']['group'] = []
     Schedule['e']['x'] = {}
     Schedule['e']['x']['x'] = []
-    Schedule['k'] = {}
-    Schedule['k']['c'] = {}
-    Schedule['k']['c']['Ro40'] = []
-    Schedule['k']['c']['Ro24'] = []
-    Schedule['k']['c']['group'] = []
     Schedule['k']['p'] = {}
     Schedule['k']['p']['Ro32'] = []
     Schedule['k']['p']['Ro16'] = []
@@ -218,7 +222,7 @@ class Constants:
     Schedule['k']['x']['x'] = []
     Schedule['x'] = {}
     Schedule['x']['x'] = {}
-    Schedule['x']['x']['group'] = []
+    Schedule['x']['x']['group'] = []'''
     
 """
 I straight up do not understand this class, or the strip_tags function below

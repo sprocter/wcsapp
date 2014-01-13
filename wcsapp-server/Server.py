@@ -105,7 +105,7 @@ def getRegionFromTitle(title):
         return "a"
     elif "Europe" in title:
         return "e"
-    elif "Korea" in title:
+    elif "Korea" in title or "Global StarCraft II League" in title:
         return "k"
     return "x"
 
