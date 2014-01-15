@@ -4,12 +4,9 @@ import urllib2
 import urllib
 import sys
 import xml.etree.ElementTree as ET
+from mwparserfromhell.nodes import (Template, Tag, Text)
 from dateutil import parser
-from Util import DB
-from Util import S3
-from Util import Constants
-from Util import MLStripper
-from Util import DBEntry
+from Util import (DB, S3, Constants, MLStripper, DBEntry)
 
 def strip_tags(html):
     s = MLStripper()
@@ -20,6 +17,7 @@ lastSchedule = DBEntry()
 matches = []
 participants = []
 games = []
+standings = []
 scheduleId = 1
 scheduleMap = Constants.Schedule
 schedule = []
@@ -27,20 +25,36 @@ DB = DB()
 S3 = S3()
         
 def handlePage(wikicode, title):
-    handleGroup(wikicode.filter(True, r'GroupTableSlot|GroupTableStart|MatchList'), title)
-    if len(wikicode.filter(True, r'WCSChallengerBracket')) == 0:
-        handleBracket(wikicode.filter(True, r'ChallengerBracket'), 'c', title)
+    if 'Standings' in title:
+        handleStandings(wikicode)
+        return
+    handleGroup(wikicode.filter(True, r'GroupTableSlot|GroupTableStart|MatchList', forcetype=Template), title)
+    if len(wikicode.filter(True, r'WCSChallengerBracket', forcetype=Template)) == 0:
+        handleBracket(wikicode.filter(True, r'ChallengerBracket', forcetype=Template), 'c', title)
     else:
-        handleBracket(wikicode.filter(True, r'WCSChallengerBracket'), 'c', title)
-    handleBracket(wikicode.filter(True, r'16SEBracket'), '16', title)
-    handleBracket(wikicode.filter(True, r'8SEBracket'), '8', title)
-    handleBracket(wikicode.filter(True, r'4SEBracket'), '4', title)
-    handleBracket(wikicode.filter(True, r'2SEBracket'), '2', title)
+        handleBracket(wikicode.filter(True, r'WCSChallengerBracket', forcetype=Template), 'c', title)
+    handleBracket(wikicode.filter(True, r'16SEBracket', forcetype=Template), '16', title)
+    handleBracket(wikicode.filter(True, r'8SEBracket', forcetype=Template), '8', title)
+    handleBracket(wikicode.filter(True, r'4SEBracket', forcetype=Template), '4', title)
+    handleBracket(wikicode.filter(True, r'2SEBracket', forcetype=Template), '2', title)
+
+def handleStandings(wikicode):
+    ranks = wikicode.filter(True, r'\|\d+', forcetype=Text)
+    linkifiedNames = wikicode.filter_wikilinks()
+    flagRace = wikicode.filter(True, r'flagRace', forcetype=Template)
+    points = wikicode.filter(True, r"'''", forcetype=Tag)
+    for i in range(0, len(flagRace)):
+        standing = DBEntry()
+        standing.rank = int((ranks[i][1 + ranks[i].rfind('\n'):].replace('|','')).strip())
+        standing.name = unicode(linkifiedNames[i + 2].title)
+        standing.flag = unicode(flagRace[i].params[0].value)
+        standing.race = unicode(flagRace[i].params[1].value)
+        standing.points = int(unicode(points[i].contents))
+        standings.append(standing)
+        i += 1
 
 def handleGroup(wikicode, title):
     for entry in wikicode:
-        if type(entry) != mwparserfromhell.nodes.template.Template:
-            continue;
         if unicode(entry.name) == "GroupTableStart":
             handleGroupTable(entry, title)
         elif unicode(entry.name) == "GroupTableSlot":
@@ -194,8 +208,6 @@ def handleBracket(wikicode, bracketType, title):
     else:
         bracketSize = int(bracketType) - 1
     for entry in wikicode:
-        if type(entry) != mwparserfromhell.nodes.template.Template:
-            continue;
         for matchNum in range(bracketSize):
             handleBracketEntry(entry, 
                                Constants.prefixes[bracketType][matchNum][0], 
@@ -241,6 +253,7 @@ for page_xml in root_xml.iter(MW_XML_PREFIX + "page"):
     handlePage(wikicode, page_xml[0].text)
     
 DB.initDB()
+DB.insert(standings, "standings")
 DB.insert(matches, "matches")
 DB.insert(participants, "groups")
 DB.insert(schedule, "schedule")

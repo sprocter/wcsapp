@@ -14,10 +14,12 @@ class DB:
         cursor.execute('DROP TABLE IF EXISTS matches')
         cursor.execute('DROP TABLE IF EXISTS schedule')
         cursor.execute('DROP TABLE IF EXISTS groups')
+        cursor.execute('DROP TABLE IF EXISTS standings')
         cursor.execute('CREATE TABLE "maps" ("id" INTEGER PRIMARY KEY  NOT NULL ,"mapname" TEXT,"mapwinner" INTEGER DEFAULT (null) ,"vodlink" TEXT,"matchid" INTEGER NOT NULL  DEFAULT (null) )')
         cursor.execute('CREATE TABLE "matches" ("id" INTEGER PRIMARY KEY  NOT NULL ,"winner" TEXT,"player1name" TEXT,"player2name" TEXT,"player1race" TEXT,"player2race" TEXT,"player1flag" TEXT,"player2flag" TEXT,"numgames" INTEGER DEFAULT (null) ,"matchname" TEXT,"scheduleid" INTEGER NOT NULL  DEFAULT (null) , "matchnum" INTEGER, "matchtype" TEXT, "player1wins" TEXT, "player2wins" TEXT)')
         cursor.execute('CREATE TABLE "schedule" ("id" INTEGER PRIMARY KEY NOT NULL ,"time" INTEGER,"division" TEXT,"region" TEXT,"name" TEXT, "round" TEXT)')
         cursor.execute('CREATE TABLE "groups" ("id" INTEGER PRIMARY KEY NOT NULL, "name" TEXT, "flag" TEXT, "race" TEXT, "place" INTEGER, "matcheswon" INTEGER, "matcheslost" INTEGER, "mapswon" INTEGER, "mapslost" INTEGER, "result" TEXT, "scheduleid" INTEGER)')
+        cursor.execute('CREATE TABLE "standings" ("id" INTEGER PRIMARY KEY NOT NULL, "rank" INTEGER, "name" TEXT, "flag" TEXT, "race" TEXT, "points" INTEGER)')
         self.conn.commit()
         
     def insert(self, objs, tableName):
@@ -161,29 +163,9 @@ class Constants:
         tz_offset = int(float(tz_descr[0]) * 3600)
         for tz_code in tz_descr[1:]:
             tzd[tz_code] = tz_offset
-            
-    '''pageNames = ['2013 WCS Season 3',
-             '2013 WCS Season 3 America/Premier/Ro32',
-             '2013 WCS Season 3 America/Premier/Ro16',
-             '2013 WCS Season 3 America/Premier',
-             '2013 WCS Season 3 Europe/Premier/Ro32',
-             '2013 WCS Season 3 Europe/Premier/Ro16',
-             '2013 WCS Season 3 Europe/Premier',
-             '2013 WCS Season 3 Korea GSL/Premier/Ro32',
-             '2013 WCS Season 3 Korea GSL/Premier/Ro16',
-             '2013 WCS Season 3 Korea GSL/Premier',
-             '2013 WCS Season 3 America/Premier',
-             '2013 WCS Season 3 America/Challenger',
-             '2013 WCS Season 3 Europe/Challenger',
-             '2013 WCS Season 3 Europe/Challenger/Group Stage',
-             '2013 WCS Season 3 Korea GSL/Challenger',
-             '2013 WCS Season 3 Korea GSL/Up and Down Matches',
-             '2013 WCS Season 3 Europe/Challenger/Group Stage',
-             '2013 WCS Season 3 America/Challenger/Group Stage',
-             '2013 WCS Grand Finals']'''
-    pageNames = ['2014 Global StarCraft II League Season 1/Code A']
-    
-    
+
+    pageNames = ['2014 Global StarCraft II League Season 1/Code A',
+                 '2014 StarCraft II World Championship Series/Standings']
     
     Schedule = {}
     Schedule['k'] = {}
