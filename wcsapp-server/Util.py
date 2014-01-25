@@ -165,6 +165,8 @@ class Constants:
             tzd[tz_code] = tz_offset
 
     pageNames = ['2014 Global StarCraft II League Season 1/Code A',
+                 '2014 WCS Season 1 Europe/Challenger',
+                 '2014 WCS Season 1 America/Challenger',
                  '2014 StarCraft II World Championship Series/Standings']
     
     Schedule = {}
@@ -173,7 +175,16 @@ class Constants:
     Schedule['k']['c']['Ro40'] = []
     Schedule['k']['c']['Ro24'] = []
     Schedule['k']['c']['group'] = []
-    
+    Schedule['e'] = {}
+    Schedule['e']['c'] = {}
+    Schedule['e']['c']['Ro40'] = []
+    Schedule['e']['c']['Ro24'] = []
+    Schedule['e']['c']['group'] = []
+    Schedule['a'] = {}
+    Schedule['a']['c'] = {}
+    Schedule['a']['c']['Ro40'] = []
+    Schedule['a']['c']['Ro24'] = []
+    Schedule['a']['c']['group'] = []
 '''    Schedule['a'] = {}
     Schedule['a']['c'] = {}
     Schedule['a']['c']['Ro40'] = []
@@ -185,11 +196,6 @@ class Constants:
     Schedule['a']['p']['group'] = []
     Schedule['a']['x'] = {} 
     Schedule['a']['x']['x'] = []
-    Schedule['e'] = {}
-    Schedule['e']['c'] = {}
-    Schedule['e']['c']['Ro40'] = []
-    Schedule['e']['c']['Ro24'] = []
-    Schedule['e']['c']['group'] = []
     Schedule['e']['p'] = {}
     Schedule['e']['p']['Ro32'] = []
     Schedule['e']['p']['Ro16'] = []

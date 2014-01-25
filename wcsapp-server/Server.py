@@ -28,11 +28,10 @@ def handlePage(wikicode, title):
     if 'Standings' in title:
         handleStandings(wikicode)
         return
-    handleGroup(wikicode.filter(True, r'GroupTableSlot|GroupTableStart|MatchList', forcetype=Template), title)
-    if len(wikicode.filter(True, r'WCSChallengerBracket', forcetype=Template)) == 0:
-        handleBracket(wikicode.filter(True, r'ChallengerBracket', forcetype=Template), 'c', title)
+    if 'GroupTableSlot' in unicode(wikicode) and 'MatchList' in unicode(wikicode):
+        handleGroup(wikicode.filter(True, r'GroupTableSlot|GroupTableStart|MatchList', forcetype=Template), title)
     else:
-        handleBracket(wikicode.filter(True, r'WCSChallengerBracket', forcetype=Template), 'c', title)
+        handleHeadsUpMatchList(wikicode.filter(True, r'MatchList', forcetype=Template), title)
     handleBracket(wikicode.filter(True, r'16SEBracket', forcetype=Template), '16', title)
     handleBracket(wikicode.filter(True, r'8SEBracket', forcetype=Template), '8', title)
     handleBracket(wikicode.filter(True, r'4SEBracket', forcetype=Template), '4', title)
@@ -52,6 +51,32 @@ def handleStandings(wikicode):
         standing.points = int(unicode(points[i].contents))
         standings.append(standing)
         i += 1
+
+def handleHeadsUpMatchList(wikicode, title):
+    for entry in wikicode:
+        for param in entry.params:
+            if param[:3] == 'Day':
+                name = unicode(param).strip()
+            elif param[:5] == 'match':
+                handleScheduleEntry(param.value.get(0), title, name)
+                handleHeadsUpMatch(param.value.get(0))
+
+def handleHeadsUpMatch(match):
+    newMatch = DBEntry()
+    newMatch.matchtype = 'bracket'
+    newMatch.scheduleid = lastSchedule.id
+    newMatch.player1name = getStr(match, 'player1')
+    newMatch.player2name = getStr(match, 'player2')
+    newMatch.player1race = getStr(match, 'player1race')
+    newMatch.player2race = getStr(match, 'player2race')
+    newMatch.player1flag = getStr(match, 'player1flag')
+    newMatch.player2flag = getStr(match, 'player2flag')
+    newMatch.player1wins, newMatch.player2wins = handleGame(match)
+    if match.has('winner') and getInt(match, 'winner') > 0:
+        newMatch.winner = getInt(match, 'winner')
+    else:
+        newMatch.winner = None
+    matches.append(newMatch)
 
 def handleGroup(wikicode, title):
     for entry in wikicode:
@@ -136,7 +161,11 @@ def getRoundFromTitle(title):
         return "group"
 
 def getTimestampFromDate(date):
-    dt = parser.parse(date, tzinfos=Constants.tzd, fuzzy=True)
+    try:
+        dt = parser.parse(date, tzinfos=Constants.tzd, fuzzy=True)
+    except ValueError:
+        # Got a garbage date, use the closest thing we have...
+        return int(schedule[len(schedule) - 1].time) + 1
     return calendar.timegm(dt.utctimetuple()) * 1000
 
 def handleGroupTable(entry, title):
