@@ -90,11 +90,14 @@ def handleGroup(wikicode, title):
             print "Got garbage while handling group: " + entry.name
 
 def handleMatchList(entry):
-    for param in entry.params:
-        if param.name == "title":
-            matchTitle = param.value
-        elif param.name[:5] == "match": 
-            handleMatch(param.value.filter(True, r'MatchMaps')[0], matchTitle)
+    try:
+        for param in entry.params:
+            if param.name == "title":
+                matchTitle = param.value
+            elif param.name[:5] == "match": 
+                handleMatch(param.value.filter(True, r'MatchMaps')[0], matchTitle)
+    except NameError:
+        handleMatch(param.value.filter(True, r'MatchMaps')[0], "Match List")
 
 def handleMatch(match, matchTitle):
     newMatch = DBEntry()

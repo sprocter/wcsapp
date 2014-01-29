@@ -28,6 +28,8 @@ public class EntryUtil {
 			return R.drawable.flags_au;
 		case BE:
 			return R.drawable.flags_be;
+		case BG:
+			return R.drawable.flags_bg;
 		case CA:
 			return R.drawable.flags_ca;
 		case CL:
@@ -46,6 +48,8 @@ public class EntryUtil {
 			return R.drawable.flags_fr;
 		case GB:
 			return R.drawable.flags_gb;
+		case IE:
+			return R.drawable.flags_ie;
 		case IL:
 			return R.drawable.flags_il;
 		case KR:
@@ -60,6 +64,8 @@ public class EntryUtil {
 			return R.drawable.flags_nz;
 		case PE:
 			return R.drawable.flags_pe;
+		case PH:
+			return R.drawable.flags_ph;
 		case PL:
 			return R.drawable.flags_pl;
 		case RO:
@@ -107,6 +113,8 @@ public class EntryUtil {
 			return Country.AU;
 		} else if (country.equalsIgnoreCase("be") || country.equalsIgnoreCase("belgium")){
 			return Country.BE;
+		} else if (country.equalsIgnoreCase("bg") || country.equalsIgnoreCase("bulgaria")){
+			return Country.BG;
 		} else if (country.equalsIgnoreCase("ca") || country.equalsIgnoreCase("canada")){
 			return Country.CA;
 		} else if (country.equalsIgnoreCase("cn") || country.equalsIgnoreCase("china")){
@@ -125,6 +133,8 @@ public class EntryUtil {
 			return Country.FR;
 		} else if (country.equalsIgnoreCase("gb") || country.equalsIgnoreCase("uk") || country.equalsIgnoreCase("great britain")){
 			return Country.GB;
+		} else if (country.equalsIgnoreCase("ie") || country.equalsIgnoreCase("ireland")){
+			return Country.IE;
 		} else if (country.equalsIgnoreCase("il") || country.equalsIgnoreCase("israel")){
 			return Country.IL;
 		} else if (country.equalsIgnoreCase("kr") || country.equalsIgnoreCase("korea")){
@@ -139,6 +149,8 @@ public class EntryUtil {
 			return Country.NZ;
 		} else if (country.equalsIgnoreCase("pe") || country.equalsIgnoreCase("peru")){
 			return Country.PE;
+		} else if (country.equalsIgnoreCase("ph") || country.equalsIgnoreCase("philippines")){
+			return Country.PH;
 		} else if (country.equalsIgnoreCase("pl") || country.equalsIgnoreCase("poland")){
 			return Country.PL;
 		} else if (country.equalsIgnoreCase("ro") || country.equalsIgnoreCase("romania")){
