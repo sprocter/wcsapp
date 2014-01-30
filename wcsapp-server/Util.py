@@ -165,6 +165,7 @@ class Constants:
             tzd[tz_code] = tz_offset
 
     pageNames = ['2014 Global StarCraft II League Season 1/Code A',
+                 '2014 Global StarCraft II League Season 1/Code S/Ro32',
                  '2014 WCS Season 1 Europe/Challenger',
                  '2014 WCS Season 1 America/Challenger',
                  '2014 StarCraft II World Championship Series/Standings']
@@ -175,6 +176,10 @@ class Constants:
     Schedule['k']['c']['Ro40'] = []
     Schedule['k']['c']['Ro24'] = []
     Schedule['k']['c']['group'] = []
+    Schedule['k']['p'] = {}
+    Schedule['k']['p']['Ro32'] = []
+    Schedule['k']['p']['Ro16'] = []
+    Schedule['k']['p']['group'] = []
     Schedule['e'] = {}
     Schedule['e']['c'] = {}
     Schedule['e']['c']['Ro40'] = []
