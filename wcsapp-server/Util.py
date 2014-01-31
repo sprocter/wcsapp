@@ -168,6 +168,7 @@ class Constants:
                  '2014 Global StarCraft II League Season 1/Code S/Ro32',
                  '2014 WCS Season 1 Europe/Challenger',
                  '2014 WCS Season 1 America/Challenger',
+                 '2014 WCS Season 1 America/Premier/Ro32',
                  '2014 StarCraft II World Championship Series/Standings']
     
     Schedule = {}
@@ -190,16 +191,11 @@ class Constants:
     Schedule['a']['c']['Ro40'] = []
     Schedule['a']['c']['Ro24'] = []
     Schedule['a']['c']['group'] = []
-'''    Schedule['a'] = {}
-    Schedule['a']['c'] = {}
-    Schedule['a']['c']['Ro40'] = []
-    Schedule['a']['c']['Ro24'] = []
-    Schedule['a']['c']['group'] = []
     Schedule['a']['p'] = {}
     Schedule['a']['p']['Ro32'] = []
     Schedule['a']['p']['Ro16'] = []
     Schedule['a']['p']['group'] = []
-    Schedule['a']['x'] = {} 
+''' Schedule['a']['x'] = {} 
     Schedule['a']['x']['x'] = []
     Schedule['e']['p'] = {}
     Schedule['e']['p']['Ro32'] = []
@@ -207,10 +203,6 @@ class Constants:
     Schedule['e']['p']['group'] = []
     Schedule['e']['x'] = {}
     Schedule['e']['x']['x'] = []
-    Schedule['k']['p'] = {}
-    Schedule['k']['p']['Ro32'] = []
-    Schedule['k']['p']['Ro16'] = []
-    Schedule['k']['p']['group'] = []
     Schedule['k']['x'] = {}
     Schedule['k']['x']['x'] = []
     Schedule['x'] = {}
